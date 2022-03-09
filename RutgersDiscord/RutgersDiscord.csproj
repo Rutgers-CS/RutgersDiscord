@@ -15,11 +15,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Commands\" />
+    <ProjectReference Include="..\Discord.Addon.Interactivity\InteractivityAddon.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Discord.Addon.Interactivity\InteractivityAddon.csproj" />
+    <Folder Include="Commands\" />
   </ItemGroup>
 
 </Project>
