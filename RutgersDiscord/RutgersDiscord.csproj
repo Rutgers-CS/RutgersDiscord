@@ -7,9 +7,11 @@
 
   <ItemGroup>
     <PackageReference Include="CoreRCON" Version="5.0.2" />
+    <PackageReference Include="Dapper" Version="2.0.123" />
     <PackageReference Include="Discord.Net" Version="3.4.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0" />
+    <PackageReference Include="MySql.Data" Version="8.0.28" />
   </ItemGroup>
 
   <ItemGroup>

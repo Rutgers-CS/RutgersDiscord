@@ -5,6 +5,7 @@ using Discord.Interactions;
 using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
 using System.Threading.Tasks;
+using RutgersDiscord.Handlers;
 
 namespace RutgersDiscord
 {
@@ -31,6 +32,7 @@ namespace RutgersDiscord
                 .AddSingleton(_client)
                 .AddSingleton(_interaction)
                 .AddSingleton<InteractionHandler>()
+                .AddSingleton<DatabaseHandler>()
                 .AddSingleton(s => new InteractivityService(_client, interactiveConfig))
                 .BuildServiceProvider();
 
