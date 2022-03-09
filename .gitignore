@@ -335,4 +335,4 @@ ASALocalRun/
 
 
 # 
-*.launchSettings.json
+**/launchSettings.json
