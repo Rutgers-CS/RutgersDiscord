@@ -14,19 +14,24 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using RutgersDiscord.Commands.User;
+using RutgersDiscord.Handlers;
+using RutgersDiscord.Commands;
 
 namespace RutgersDiscord.Modules
 {
     public class InteractionModule : InteractionModuleBase<SocketInteractionContext>
     {
         private readonly DiscordSocketClient _client;
-        private readonly InteractivityService _interactive;
+        private readonly InteractivityService _interactivity;
+        private readonly DatabaseHandler _database;
         private readonly IServiceProvider _services;
 
-        public InteractionModule(DiscordSocketClient client, InteractivityService interactive, IServiceProvider services)
+        public InteractionModule(DiscordSocketClient client, InteractivityService interactivity, DatabaseHandler database, IServiceProvider services)
         {
             _client = client;
-            _interactive = interactive;
+            _interactivity = interactivity;
+            _database = database;
             _services = services;
         }
 
@@ -40,90 +45,22 @@ namespace RutgersDiscord.Modules
         [SlashCommand("register", "Provide required information to register for the event")]
         public async Task Register()
         {
-            var modalBuilder = new ModalBuilder()
-                .WithTitle("Event Registration")
-                .WithCustomId("registration_form")
-                .AddTextInput("Your Name:", "player_name", required:true)
-                .AddTextInput("Link to Steam profile:", "steam_url", required:true)
-                .AddTextInput("Your team name:", "team_name", required:true)
-                ;
-
-            await Context.Interaction.RespondWithModalAsync(modalBuilder.Build());
-
-            _client.ModalSubmitted += async modal =>
-            {
-                List<SocketMessageComponentData> components = modal.Data.Components.ToList();
-
-                //TODO: Replace with database connection
-                string playerName = components.First(x => x.CustomId == "player_name").Value;
-                string steamURL = components.First(x => x.CustomId == "steam_url").Value;
-                string teamName = components.First(x => x.CustomId == "team_name").Value;
-
-                string steamID = ResolveURL(steamURL).Result;
-
-                string msg = $"{playerName} with {steamID} on {teamName}";
-
-                await modal.RespondAsync(msg);
-            };
-        }
-
-        public async Task<string> ResolveURL(string url)
-        {
-            string trimmedURL = url.Replace("steamcommunity.com/id/", "").Replace("https://", "").Replace("/","");
-            long steamID64;
-
-            bool vanityURL = true;
-            if (trimmedURL.All(char.IsDigit)) vanityURL = false;
-
-            if (vanityURL)
-            {
-                string requestUrl = $"http://api.steampowered.com/ISteamUser/ResolveVanityURL/v0001/?key={Environment.GetEnvironmentVariable("steamWebAPIToken")}&vanityurl=" + trimmedURL;
-                HttpClient steamAPIClient = new HttpClient();
-                HttpResponseMessage response = await steamAPIClient.GetAsync(requestUrl);
-                string responseBody = await response.Content.ReadAsStringAsync();
-                dynamic deserializedResponse = JsonConvert.DeserializeObject<dynamic>(responseBody);
-
-                if(deserializedResponse.response.success == "1")
-                {
-                    string steamid = deserializedResponse.response.steamid;
-                    steamID64 = long.Parse(steamid);
-                }
-                else
-                {
-                    return "error";
-                }
-            }
-            else
-            {
-                steamID64 = long.Parse(trimmedURL);
-            }
-
-            var universe = (steamID64 >> 56) & 0xFF;
-            if (universe == 1) universe = 0;
-
-            var accountIDLowBit = steamID64 & 1;
-            var accountIDHighBit = (steamID64 >> 1) & 0x7FFFFFF;
-
-            string steamID = "STEAM_" + universe + ":" + accountIDLowBit + ":" + accountIDHighBit;
-            return steamID;
+            RegisterCommand rc = new RegisterCommand(_client, Context, _database, _interactivity);
+            rc.RegistrationForm();
         }
 
         [SlashCommand("ready", "Set your team as ready for the match")]
         public async Task TeamReady()
         {
-            //Replace with database lookup of team name based on discord id
-            string teamName = "testing";
-            await RespondAsync($"{teamName} is ready for the match");
-            //Tell MatchHandler that the team is ready
+            ReadyCommand rc = new ReadyCommand(_client, Context, _database, _interactivity);
+            rc.Ready();
         }
 
         [SlashCommand("unready", "Set your team as not ready for the match")]
         public async Task TeamUnReady()
         {
-            //Replace with database lookup of team name based on discord id
-            string teamName = "testing";
-            await RespondAsync($"{teamName} is not ready for the match");
-            //Tell MatchHandler that the team is not ready
+            UnReadyCommand urc = new UnReadyCommand(_client, Context, _database, _interactivity);
+            urc.UnReady();
         }
 
         [SlashCommand("admin", "Notify an admin")]
