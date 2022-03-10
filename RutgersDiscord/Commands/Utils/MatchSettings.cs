@@ -49,13 +49,13 @@ namespace RutgersDiscord.Commands.Utils
         private string webhook_authorization_header { get; set; }
     }
 
-    public MatchSettings()
+    /*public MatchSettings()
     {
 
-    }
+    }s
 
     public buildSettigns()
     {
 
-    }
+    }*/
 }
