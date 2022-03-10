@@ -1,4 +1,4 @@
-﻿internal class ServerInfo
+﻿public class ServerInfo
 {
     //Used to parse database values
     public long Id { get; set; }

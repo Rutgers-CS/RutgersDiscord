@@ -1,9 +1,11 @@
-﻿internal class MatchInfo
+﻿public class MatchInfo
 {
-    //Used to parse database values
-    public ushort MatchID { get; set; }
-    public string TeamName1 { get; set; }
-    public string TeamName2 { get; set; }
-
-    //TODO add more fields
+	public long TeamHome { get; set; }
+	public long TeamAway { get; set; }
+	public long MatchTime { get; set; }
+	public int? ScoreHome { get; set; }
+	public int? ScoreAway { get; set; }
+	public bool MatchFinished { get; set; }
+	public bool HomeTeamWon { get; set; }
+	public string Map { get; set; }
 }
