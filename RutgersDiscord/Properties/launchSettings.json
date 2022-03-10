@@ -6,7 +6,8 @@
         "discordTestServer": "670683408057237547",
         "botToken": "NjcwNjgyOTY2OTEyOTI1NzE4.Xix8Lw.CxPFLuz_zDmLooDKCypTorRNrBU",
         "dbConnectionString": "server=localhost;userid=root;",
-        "defaultDatabase": "test"
+        "defaultDatabase": "test",
+        "steamWebAPIToken": "186D2EF917BF0D72F5BFCB2FD6C40F5B"
       }
     }
   }
