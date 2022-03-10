@@ -11,6 +11,11 @@ namespace RutgersDiscord.Handlers
 {
     public class DatabaseHandler
     {
+        //Constants. maybe move them in the future
+        const string matchTable = "match_list";
+        const string playerTable = "player_list";
+        const string teamTable = "team_list";
+
         static readonly string m_strMySQLConnectionString = Environment.GetEnvironmentVariable("dbConnectionString");
 
         //TEMPORARY method. In the future we will only allow public methods here to output predefined types
@@ -20,11 +25,53 @@ namespace RutgersDiscord.Handlers
         }
 
 
+        public IEnumerable<MatchInfo> GetMatchInfo(ulong discordID, bool matchFinished = false)
+        {
+            PlayerInfo player = GetPlayerInfo(discordID);
+            return GetTableFromDBUsing<MatchInfo>($"SELECT * FROM {matchTable} " +
+                                                  $"WHERE (teamHome = {player.TeamID} OR " +
+                                                  $"teamAway = {player.TeamID}) AND " +
+                                                  $"matchFinished = {matchFinished}");
+        }
+
+        //Retrieves player info search either with discordID or SteamID
+        public PlayerInfo GetPlayerInfo(ulong discordID)
+        {
+            return GetTableFromDBUsing<PlayerInfo>($"SELECT * FROM {playerTable} WHERE discordID = {discordID}").First();
+        }
+
+        public PlayerInfo GetPlayerBySteam(ulong steamID)
+        {
+            return GetTableFromDBUsing<PlayerInfo>($"SELECT * FROM {playerTable} WHERE steamID = {steamID}").First();
+        }
+        
+
+        public TeamInfo GetTeamByUser(ulong discordID, bool captainOnly)
+        {
+            if(captainOnly)
+            {
+                return GetTableFromDBUsing<TeamInfo>($"SELECT * FROM {teamTable} " +
+                                                       $"WHERE player1 = {discordID}").First();
+            }
+            return GetTableFromDBUsing<TeamInfo>($"SELECT * FROM {teamTable} " +
+                                                 $"WHERE player1 = {discordID} OR " +
+                                                 $"player2 = {discordID}").First();
+        }
+
+        public TeamInfo GetTeamById(ulong teamID)
+        {
+            return GetTableFromDBUsing<TeamInfo>($"SELECT * FROM {teamTable} " +
+                                                 $"WHERE teamID = {teamID}").First();
+        }
+
         private IEnumerable<T> GetTableFromDBUsing<T>(string strQuery, string databaseName = null)
         {
             IEnumerable<T> outputList;
             strQuery = SanitizeString(strQuery);
-            databaseName = SanitizeString(databaseName);
+            if(databaseName != null)
+            {
+                databaseName = SanitizeString(databaseName);
+            }
             string connectionString;
 
             if (databaseName == null)
