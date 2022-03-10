@@ -47,15 +47,23 @@ namespace RutgersDiscord.Commands.Utils
         private bool wait_for_spectators { get; set; }
         private int warmup_time { get; set; }
         private string webhook_authorization_header { get; set; }
+
+
+        public MatchSettings(string map, List<string> team1, List<string> team2)
+        {
+            this.map = map;
+
+
+        }
+
+        public MatchSettings()
+        {
+
+        }
+
+        public string buildSettigns()
+        {
+            return "0";
+        }
     }
-
-    /*public MatchSettings()
-    {
-
-    }s
-
-    public buildSettigns()
-    {
-
-    }*/
 }
