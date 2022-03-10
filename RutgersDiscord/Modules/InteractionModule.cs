@@ -5,12 +5,15 @@ using Discord.Interactions;
 using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using System.Net.Http;
+using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace RutgersDiscord.Modules
 {
@@ -56,10 +59,36 @@ namespace RutgersDiscord.Modules
                 string steamURL = components.First(x => x.CustomId == "steam_url").Value;
                 string teamName = components.First(x => x.CustomId == "team_name").Value;
 
+                
+
                 string msg = $"{playerName} with {steamURL} on {teamName}";
 
                 await modal.RespondAsync(msg);
             };
+        }
+
+        /*public async Task<string> ResolveURL(string url)
+        {
+            string trimmedURL = url.Replace("steamcommunity.com/id/", "").Replace("https://", "");
+            string steamID64;
+
+            bool vanityURL = true;
+            foreach (char c in trimmedURL)
+            {
+                if (c < '0' || c > '9')
+                {
+                    vanityURL = false;
+                } 
+            }
+
+            if (vanityURL)
+            {
+                string requestUrl = $"http://api.steampowered.com/ISteamUser/ResolveVanityURL/v0001/?key={Environment.GetEnvironmentVariable("steamWebAPIToken")}&vanityurl=" + trimmedURL;
+                HttpClient steamAPIClient = new HttpClient();
+                var 
+            }
+
+            */
         }
 
         [SlashCommand("ready", "Set your team as ready for the match")]
@@ -144,24 +173,6 @@ namespace RutgersDiscord.Modules
                     //Flag as looking for team
                     await component.RespondAsync("No team");
                     break;
-            }
-        }
-
-        //Broken
-        [SlashCommand("steamid", "Lookup a SteamID from URL")]
-        public async Task SteamIDLookup()
-        {
-            var steamidCommand = new SlashCommandBuilder()
-                .WithName("steamid")
-                .WithDescription("Convert Steam URL to SteamID")
-                .AddOption("URL", ApplicationCommandOptionType.String, "Steam URL to be converted", isRequired: true);
-
-            try
-            {
-                await _client.Rest.CreateGuildCommand(steamidCommand.Build(), 670683408057237547);
-            }
-            catch (ApplicationException ex)
-            {
             }
         }
     }
