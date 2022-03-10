@@ -59,36 +59,53 @@ namespace RutgersDiscord.Modules
                 string steamURL = components.First(x => x.CustomId == "steam_url").Value;
                 string teamName = components.First(x => x.CustomId == "team_name").Value;
 
-                
+                string steamID = ResolveURL(steamURL).Result;
 
-                string msg = $"{playerName} with {steamURL} on {teamName}";
+                string msg = $"{playerName} with {steamID} on {teamName}";
 
                 await modal.RespondAsync(msg);
             };
         }
 
-        /*public async Task<string> ResolveURL(string url)
+        public async Task<string> ResolveURL(string url)
         {
-            string trimmedURL = url.Replace("steamcommunity.com/id/", "").Replace("https://", "");
-            string steamID64;
+            string trimmedURL = url.Replace("steamcommunity.com/id/", "").Replace("https://", "").Replace("/","");
+            long steamID64;
 
             bool vanityURL = true;
-            foreach (char c in trimmedURL)
-            {
-                if (c < '0' || c > '9')
-                {
-                    vanityURL = false;
-                } 
-            }
+            if (trimmedURL.All(char.IsDigit)) vanityURL = false;
 
             if (vanityURL)
             {
                 string requestUrl = $"http://api.steampowered.com/ISteamUser/ResolveVanityURL/v0001/?key={Environment.GetEnvironmentVariable("steamWebAPIToken")}&vanityurl=" + trimmedURL;
                 HttpClient steamAPIClient = new HttpClient();
-                var 
+                HttpResponseMessage response = await steamAPIClient.GetAsync(requestUrl);
+                string responseBody = await response.Content.ReadAsStringAsync();
+                dynamic deserializedResponse = JsonConvert.DeserializeObject<dynamic>(responseBody);
+
+                if(deserializedResponse.response.success == "1")
+                {
+                    string steamid = deserializedResponse.response.steamid;
+                    steamID64 = long.Parse(steamid);
+                }
+                else
+                {
+                    return "error";
+                }
+            }
+            else
+            {
+                steamID64 = long.Parse(trimmedURL);
             }
 
-            */
+            var universe = (steamID64 >> 56) & 0xFF;
+            if (universe == 1) universe = 0;
+
+            var accountIDLowBit = steamID64 & 1;
+            var accountIDHighBit = (steamID64 >> 1) & 0x7FFFFFF;
+
+            string steamID = "STEAM_" + universe + ":" + accountIDLowBit + ":" + accountIDHighBit;
+            return steamID;
         }
 
         [SlashCommand("ready", "Set your team as ready for the match")]
