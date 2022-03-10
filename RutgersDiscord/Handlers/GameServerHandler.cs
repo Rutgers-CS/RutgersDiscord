@@ -1,4 +1,5 @@
-﻿using System;
+﻿using RutgersDiscord.Commands.Utils;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,6 +9,9 @@ namespace RutgersDiscord.Handlers
 {
     internal class GameServerHandler
     {
-    
+        public async Task CreateServer()
+        {
+            MatchSettings ms = new MatchSettings();
+        }
     }
 }
