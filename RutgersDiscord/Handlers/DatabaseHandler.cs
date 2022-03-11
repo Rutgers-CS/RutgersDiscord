@@ -19,6 +19,7 @@ namespace RutgersDiscord.Handlers
         static readonly string m_strMySQLConnectionString = Environment.GetEnvironmentVariable("dbConnectionString");
 
         //TEMPORARY method. In the future we will only allow public methods here to output predefined types
+        [Obsolete("Don't use it")]
         public IEnumerable<T> GetTable<T>(string strQuery, string databaseName = null)
         {
             return GetTableFromDBUsing<T>(strQuery, databaseName);
@@ -62,6 +63,11 @@ namespace RutgersDiscord.Handlers
         {
             return GetTableFromDBUsing<TeamInfo>($"SELECT * FROM {teamTable} " +
                                                  $"WHERE teamID = {teamID}").First();
+        }
+
+        public IEnumerable<MapInfo> GetMapList(string mapListName)
+        {
+            return GetTableFromDBUsing<MapInfo>($"SELECT * FROM _map_list_{mapListName}");
         }
 
         private IEnumerable<T> GetTableFromDBUsing<T>(string strQuery, string databaseName = null)
