@@ -1,7 +1,7 @@
 ﻿public class ServerInfo
 {
     //Used to parse database values
-    public long Id { get; set; }
+    public long ID { get; set; }
     public string Name { get; set; }
     public long Channel { get; set; }
     public string Ip { get; set; }
