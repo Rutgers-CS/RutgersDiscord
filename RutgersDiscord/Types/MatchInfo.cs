@@ -1,5 +1,6 @@
 ﻿public class MatchInfo
 {
+	public long ID { get; set; }
 	public long TeamHome { get; set; }
 	public long TeamAway { get; set; }
 	public long MatchTime { get; set; }
