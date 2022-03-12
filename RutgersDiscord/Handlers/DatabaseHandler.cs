@@ -1,4 +1,5 @@
 ﻿using Dapper;
+using Dapper.Contrib.Extensions;
 using System;
 using MySql.Data.MySqlClient;
 using System.Collections.Generic;
@@ -70,6 +71,35 @@ namespace RutgersDiscord.Handlers
             return GetTableFromDBUsing<MapInfo>($"SELECT * FROM _map_list_{mapListName}");
         }
 
+        public bool ModifyMatch(MatchInfo newMatch, string databaseName = null)
+        {
+            if (databaseName != null)
+            {
+                databaseName = SanitizeString(databaseName);
+            }
+            string connectionString;
+
+            if (databaseName == null)
+            {
+                connectionString = m_strMySQLConnectionString + "database=" + Environment.GetEnvironmentVariable("defaultDatabase");
+            }
+            else
+            {
+                connectionString = m_strMySQLConnectionString + "database=" + databaseName;
+            }
+            bool b = false;
+            try
+            {
+                using var mysqlconnection = new MySqlConnection(connectionString);
+                b = mysqlconnection.Update(newMatch);
+            }
+            catch
+            {
+                //maybe catch something in the future
+            }
+            return b;
+        }
+
         private IEnumerable<T> GetTableFromDBUsing<T>(string strQuery, string databaseName = null)
         {
             IEnumerable<T> outputList;
@@ -88,7 +118,6 @@ namespace RutgersDiscord.Handlers
             {
                 connectionString = m_strMySQLConnectionString + "database=" + databaseName;
             }
-
 
             try
             {
