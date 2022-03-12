@@ -1,5 +1,8 @@
-﻿public class MatchInfo
+﻿using Dapper.Contrib.Extensions;
+[Table ("match_list")]
+public class MatchInfo
 {
+	[Key]
 	public long ID { get; set; }
 	public long TeamHome { get; set; }
 	public long TeamAway { get; set; }

@@ -364,6 +364,69 @@ namespace Interactivity
             }
         }
 
+        public async Task<InteractivityResult<SocketInteraction>> NextInteractionAsync(Predicate<SocketInteraction> filter = null, Func<SocketInteraction, bool, Task> actions = null,
+            TimeSpan? timeout = null, bool? runOnGateway = null, CancellationToken cancellationToken = default)
+        {
+            var startTime = DateTime.UtcNow;
+
+            actions ??= ((s, v) => Task.CompletedTask);
+            filter ??= (s => true);
+
+            var InteractionSource = new TaskCompletionSource<InteractivityResult<SocketInteraction>>();
+            var cancelSource = new TaskCompletionSource<bool>();
+
+            var cancellationRegistration = cancellationToken.Register(() => cancelSource.SetResult(true));
+
+            var InteractionTask = InteractionSource.Task;
+            var cancelTask = cancelSource.Task;
+            var timeoutTask = Task.Delay(timeout ?? DefaultTimeout);
+
+            async Task CheckInteractionAsync(SocketInteraction s)
+            {
+                if (s.User.Id == Client.CurrentUser.Id)
+                {
+                    return;
+                }
+                if (!filter.Invoke(s))
+                {
+                    await actions.Invoke(s, true).ConfigureAwait(false);
+                    return;
+                }
+
+                await actions.Invoke(s, false).ConfigureAwait(false);
+                InteractionSource.SetResult(new InteractivityResult<SocketInteraction>(s, s.CreatedAt - startTime, false, false));
+            }
+            async Task HandleInteractionAsync(SocketInteraction m)
+            {
+                if (runOnGateway ?? RunOnGateway)
+                {
+                    await CheckInteractionAsync(m);
+                }
+                else
+                {
+                    _ = Task.Run(() => CheckInteractionAsync(m));
+                }
+            }
+
+            try
+            {
+                Client.InteractionCreated += HandleInteractionAsync;
+
+                var result = await Task.WhenAny(InteractionTask, timeoutTask, cancelTask).ConfigureAwait(false);
+
+                return result == InteractionTask
+                    ? await InteractionTask.ConfigureAwait(false)
+                    : result == timeoutTask
+                        ? new InteractivityResult<SocketInteraction>(default, timeout ?? DefaultTimeout, true, false)
+                        : new InteractivityResult<SocketInteraction>(default, DateTime.UtcNow - startTime, false, true);
+            }
+            finally
+            {
+                Client.InteractionCreated -= HandleInteractionAsync;
+                cancellationRegistration.Dispose();
+            }
+        }
+
         /// <summary>
         /// Waits for a user/users to confirm something.
         /// </summary>
