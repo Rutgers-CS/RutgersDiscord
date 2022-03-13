@@ -27,13 +27,19 @@ namespace RutgersDiscord.Handlers
         }
 
 
-        public IEnumerable<MatchInfo> GetMatchInfo(ulong discordID, bool matchFinished = false)
+        public IEnumerable<MatchInfo> GetMatchByUser(ulong discordID, bool matchFinished = false)
         {
             PlayerInfo player = GetPlayerInfo(discordID);
             return GetTableFromDBUsing<MatchInfo>($"SELECT * FROM {matchTable} " +
                                                   $"WHERE (teamHome = {player.TeamID} OR " +
                                                   $"teamAway = {player.TeamID}) AND " +
                                                   $"matchFinished = {matchFinished}");
+        }
+
+        public MatchInfo GetMatchById (long matchID)
+        {
+            return GetTableFromDBUsing<MatchInfo>($"SELECT * FROM {matchTable} " +
+                                                  $"WHERE id = {matchID}").First();
         }
 
         //Retrieves player info search either with discordID or SteamID
@@ -73,20 +79,9 @@ namespace RutgersDiscord.Handlers
 
         public bool ModifyMatch(MatchInfo newMatch, string databaseName = null)
         {
-            if (databaseName != null)
-            {
-                databaseName = SanitizeString(databaseName);
-            }
-            string connectionString;
+            databaseName = SanitizeString(databaseName);
+            string connectionString = m_strMySQLConnectionString + "database=" + (databaseName ?? Environment.GetEnvironmentVariable("defaultDatabase"));
 
-            if (databaseName == null)
-            {
-                connectionString = m_strMySQLConnectionString + "database=" + Environment.GetEnvironmentVariable("defaultDatabase");
-            }
-            else
-            {
-                connectionString = m_strMySQLConnectionString + "database=" + databaseName;
-            }
             bool b = false;
             try
             {
@@ -100,24 +95,49 @@ namespace RutgersDiscord.Handlers
             return b;
         }
 
+        //return newMatchid 
+        public long AddMatch(MatchInfo newMatch, string databaseName = null)
+        {
+            databaseName = SanitizeString(databaseName);
+            string connectionString = m_strMySQLConnectionString + "database=" + (databaseName ?? Environment.GetEnvironmentVariable("defaultDatabase"));
+            
+            long output = 0;
+            try
+            {
+                using var mysqlconnection = new MySqlConnection(connectionString);
+                output = mysqlconnection.Insert(newMatch);
+            }
+            catch
+            {
+                //maybe catch something in the future
+            }
+            return output;
+        }
+
+        public bool DeleteMatch(MatchInfo newMatch, string databaseName = null)
+        {
+            databaseName = SanitizeString(databaseName);
+            string connectionString = m_strMySQLConnectionString + "database=" + (databaseName ?? Environment.GetEnvironmentVariable("defaultDatabase"));
+
+            bool output = false;
+            try
+            {
+                using var mysqlconnection = new MySqlConnection(connectionString);
+                output = mysqlconnection.Delete(newMatch);
+            }
+            catch
+            {
+                //maybe catch something in the future
+            }
+            return output;
+        }
+
         private IEnumerable<T> GetTableFromDBUsing<T>(string strQuery, string databaseName = null)
         {
             IEnumerable<T> outputList;
             strQuery = SanitizeString(strQuery);
-            if(databaseName != null)
-            {
-                databaseName = SanitizeString(databaseName);
-            }
-            string connectionString;
-
-            if (databaseName == null)
-            {
-                connectionString = m_strMySQLConnectionString + "database=" + Environment.GetEnvironmentVariable("defaultDatabase");
-            }
-            else
-            {
-                connectionString = m_strMySQLConnectionString + "database=" + databaseName;
-            }
+            databaseName = SanitizeString(databaseName);
+            string connectionString = m_strMySQLConnectionString + "database=" + (databaseName ?? Environment.GetEnvironmentVariable("defaultDatabase"));
 
             try
             {
@@ -132,14 +152,14 @@ namespace RutgersDiscord.Handlers
             {
                 throw e;
             }
-
             return outputList;
         }
 
         //We might need to whitelist more characters in the future
-        private string SanitizeString(string s)
+        private static string SanitizeString(string s)
         {
-            string str = new string((from c in s where char.IsWhiteSpace(c) 
+            if (s == null) return null;
+            string str = new((from c in s where char.IsWhiteSpace(c) 
                                      || char.IsLetterOrDigit(c)
                                      || c == '_' || c == '*' || c == '=' select c)
                                      .ToArray());

@@ -33,6 +33,30 @@ namespace RutgersDiscord.Modules
             await RespondAsync(response.First());
         }
 
-        //[SlashCommand]
+        [SlashCommand("match", "edits matches.", runMode: RunMode.Async)]
+        public void Match(OperationType op, [ComplexParameter] MatchInfo match)
+        {
+            switch (op)
+            {
+                case OperationType.add:
+                    _database.AddMatch(match);
+                    break;
+                case OperationType.delete:
+                    _database.DeleteMatch(match);
+                    break;
+                case OperationType.edit:
+                    _database.ModifyMatch(MatchInfo.Merge(_database.GetMatchById(match.ID), match));
+                    break;
+            }
+        }
+
+
+        /*        [SlashCommand("temp","temp",runMode:RunMode.Async)]
+                public async Task Temp()
+                {
+                    await Context.Interaction.RespondAsync(HelperMethods.RandomID().ToString(),ephemeral: true);
+                }*/
+
+
     }
 }
