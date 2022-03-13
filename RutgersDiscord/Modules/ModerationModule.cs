@@ -1,4 +1,5 @@
-﻿using Discord.Interactions;
+﻿using Discord;
+using Discord.Interactions;
 using Discord.WebSocket;
 using Interactivity;
 using RutgersDiscord.Handlers;
@@ -8,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace RutgersDiscord.Modules
 {
-    [RequireUserPermission(Discord.GuildPermission.Administrator, Group = "Permission")]
+    [RequireUserPermission(GuildPermission.Administrator, Group = "Permission")]
     [RequireOwner(Group = "Permission")]
     public class ModerationModule : InteractionModuleBase<SocketInteractionContext>
     {
@@ -31,5 +32,7 @@ namespace RutgersDiscord.Modules
             var response = _database.GetTable<string>(query);
             await RespondAsync(response.First());
         }
+
+        //[SlashCommand]
     }
 }
