@@ -34,18 +34,26 @@ namespace RutgersDiscord.Modules
         }
 
         [SlashCommand("match", "edits matches.", runMode: RunMode.Async)]
-        public void Match(OperationType op, [ComplexParameter] MatchInfo match)
+        public async Task Match(OperationType op, [ComplexParameter] MatchInfo match)
         {
             switch (op)
             {
                 case OperationType.add:
+                    if(_database.GetMatchById(match.ID) != null)
+                    {
+                        await RespondAsync("match already exists", ephemeral: true);
+                        return;
+                    }
                     _database.AddMatch(match);
+                    await RespondAsync($"match added");
                     break;
                 case OperationType.delete:
                     _database.DeleteMatch(match);
+                    await RespondAsync($"match deleted");
                     break;
                 case OperationType.edit:
                     _database.ModifyMatch(MatchInfo.Merge(_database.GetMatchById(match.ID), match));
+                    await RespondAsync($"match edited");
                     break;
             }
         }
