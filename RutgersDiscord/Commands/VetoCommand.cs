@@ -34,7 +34,7 @@ public class VetoCommand
         }
 
         //Find match
-        var matchList = _database.GetMatchInfo(_context.User.Id, false);
+        var matchList = _database.GetMatchByUser(_context.User.Id, false);
 
         //no match found
         if (matchList == null)
