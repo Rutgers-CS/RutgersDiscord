@@ -38,19 +38,20 @@ namespace RutgersDiscord.Handlers
 
         public MatchInfo GetMatchById (long matchID)
         {
+            if (matchID == 0) return null;
             return GetTableFromDBUsing<MatchInfo>($"SELECT * FROM {matchTable} " +
-                                                  $"WHERE id = {matchID}").First();
+                                                  $"WHERE id = {matchID}").FirstOrDefault();
         }
 
         //Retrieves player info search either with discordID or SteamID
         public PlayerInfo GetPlayerInfo(ulong discordID)
         {
-            return GetTableFromDBUsing<PlayerInfo>($"SELECT * FROM {playerTable} WHERE discordID = {discordID}").First();
+            return GetTableFromDBUsing<PlayerInfo>($"SELECT * FROM {playerTable} WHERE discordID = {discordID}").FirstOrDefault();
         }
 
         public PlayerInfo GetPlayerBySteam(ulong steamID)
         {
-            return GetTableFromDBUsing<PlayerInfo>($"SELECT * FROM {playerTable} WHERE steamID = {steamID}").First();
+            return GetTableFromDBUsing<PlayerInfo>($"SELECT * FROM {playerTable} WHERE steamID = {steamID}").FirstOrDefault();
         }
         
 
@@ -59,17 +60,17 @@ namespace RutgersDiscord.Handlers
             if(captainOnly)
             {
                 return GetTableFromDBUsing<TeamInfo>($"SELECT * FROM {teamTable} " +
-                                                       $"WHERE player1 = {discordID}").First();
+                                                       $"WHERE player1 = {discordID}").FirstOrDefault();
             }
             return GetTableFromDBUsing<TeamInfo>($"SELECT * FROM {teamTable} " +
                                                  $"WHERE player1 = {discordID} OR " +
-                                                 $"player2 = {discordID}").First();
+                                                 $"player2 = {discordID}").FirstOrDefault();
         }
 
         public TeamInfo GetTeamById(ulong teamID)
         {
             return GetTableFromDBUsing<TeamInfo>($"SELECT * FROM {teamTable} " +
-                                                 $"WHERE teamID = {teamID}").First();
+                                                 $"WHERE teamID = {teamID}").FirstOrDefault();
         }
 
         public IEnumerable<MapInfo> GetMapList(string mapListName)

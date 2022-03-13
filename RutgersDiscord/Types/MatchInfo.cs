@@ -5,7 +5,7 @@ using System;
 [Table ("match_list")]
 public class MatchInfo
 {
-	[Key]
+	[ExplicitKey]
 	public long ID { get; set; }
 	public long? TeamHome { get; set; }
 	public long? TeamAway { get; set; }
@@ -21,7 +21,7 @@ public class MatchInfo
     {
 		if(id == 0)
         {
-			HelperMethods.RandomID();
+			ID = HelperMethods.RandomID();
 		}
 		else
         {
@@ -37,7 +37,7 @@ public class MatchInfo
 		Map = map;
     }
 
-	public MatchInfo()
+	private MatchInfo()
     {
 
     }
