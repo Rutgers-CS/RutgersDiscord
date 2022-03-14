@@ -4,6 +4,7 @@ using Discord.WebSocket;
 using Interactivity;
 using RutgersDiscord.Handlers;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -33,6 +34,14 @@ namespace RutgersDiscord.Modules
             await RespondAsync(response.First());
         }
 
+        [SlashCommand("creatematch", "Creates a match.", runMode: RunMode.Async)]
+        public async Task CreateMatch(long teamHomeID, long teamAwayID, int month, int day, int hour)
+        {
+            DateTime t = new DateTime(DateTime.Now.Year,month,day,hour,0,0);
+            GenerateMatches g = new(_client, Context, _database, _interactive);
+            await g.CreateMatch(teamHomeID, teamAwayID,t);
+        }
+
         [SlashCommand("match", "edits matches.", runMode: RunMode.Async)]
         public async Task Match(OperationType op, [ComplexParameter] MatchInfo match)
         {
@@ -59,12 +68,11 @@ namespace RutgersDiscord.Modules
         }
 
 
-        /*        [SlashCommand("temp","temp",runMode:RunMode.Async)]
-                public async Task Temp()
-                {
-                    await Context.Interaction.RespondAsync(HelperMethods.RandomID().ToString(),ephemeral: true);
-                }*/
-
-
+        [SlashCommand("temp","temp",runMode:RunMode.Async)]
+        public async Task Temp()
+        {
+            GenerateMatches g = new(_client,Context,_database,_interactive);
+            await g.RunAsync();
+        }
     }
 }

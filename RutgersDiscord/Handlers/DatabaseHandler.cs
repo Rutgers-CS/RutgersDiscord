@@ -13,9 +13,9 @@ namespace RutgersDiscord.Handlers
     public class DatabaseHandler
     {
         //Constants. maybe move them in the future
-        const string matchTable = "match_list";
-        const string playerTable = "player_list";
-        const string teamTable = "team_list";
+        const string matchTable = Constants.Database.matchTable;
+        const string playerTable = Constants.Database.playerTable;
+        const string teamTable = Constants.Database.teamTable;
 
         static readonly string m_strMySQLConnectionString = Environment.GetEnvironmentVariable("dbConnectionString");
 
@@ -52,6 +52,11 @@ namespace RutgersDiscord.Handlers
         public PlayerInfo GetPlayerBySteam(ulong steamID)
         {
             return GetTableFromDBUsing<PlayerInfo>($"SELECT * FROM {playerTable} WHERE steamID = {steamID}").FirstOrDefault();
+        }
+
+        public List<PlayerInfo> GetPlayerByTeam(long teamID)
+        {
+            return GetTableFromDBUsing<PlayerInfo>($"SELECT * FROM {playerTable} WHERE teamID = {teamID}").ToList();
         }
         
 
