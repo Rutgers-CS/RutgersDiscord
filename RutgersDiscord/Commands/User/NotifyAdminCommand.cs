@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace RutgersDiscord.Commands.User
 {
@@ -37,7 +38,6 @@ namespace RutgersDiscord.Commands.User
             await _context.Interaction.RespondAsync("Admins have been notified.");
 
         }
-
 
     }
 
