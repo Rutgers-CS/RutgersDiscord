@@ -1,5 +1,4 @@
-﻿using CoreRCON;
-using Discord;
+﻿using Discord;
 using Interactivity;
 using Discord.Interactions;
 using Discord.WebSocket;
@@ -41,7 +40,13 @@ namespace RutgersDiscord.Modules
             await RespondAsync(input);
         }
 
-        //Not sure the correct placement/format for all of this, feel free to move it
+        [SlashCommand("veto", "Starts veto process", runMode: RunMode.Async)]
+        public async Task Veto()
+        {
+            VetoCommand v = new VetoCommand(_client, Context, _database, _interactivity);
+            await v.StartVeto();
+        }
+
         [SlashCommand("register", "Provide required information to register for the event")]
         public async Task Register()
         {

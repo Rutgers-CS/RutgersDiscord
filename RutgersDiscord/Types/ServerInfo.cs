@@ -1,6 +1,9 @@
-﻿public class ServerInfo
+﻿using Dapper.Contrib.Extensions;
+
+public class ServerInfo
 {
     //Used to parse database values
+    [ExplicitKey]
     public long ID { get; set; }
     public string Name { get; set; }
     public long Channel { get; set; }

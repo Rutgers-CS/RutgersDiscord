@@ -34,7 +34,7 @@ public class VetoCommand
         }
 
         //Find match
-        var matchList = _database.GetMatchInfo(_context.User.Id, false);
+        var matchList = _database.GetMatchByUser(_context.User.Id, false);
 
         //no match found
         if (matchList == null)
@@ -107,8 +107,9 @@ public class VetoCommand
             //updates the message
             await _context.Interaction.ModifyOriginalResponseAsync(m => { m.Embed = embed.Build(); m.Components = dropDownMenu.Build(); });
 
-            var reply = await _interactivity.NextButtonAsync(filter: s => s.User.Id == currentTurn.Id
+            var reply = await _interactivity.NextInteractionAsync(filter: s => s.User.Id == currentTurn.Id
                 && ((SocketMessageComponent)s).Data.CustomId == $"veto_main_{match.ID}");
+            await reply.Value.DeferAsync();
 
             int selection = int.Parse(((reply.Value as SocketMessageComponent).Data.Values as String[])[0]);
 
@@ -131,10 +132,8 @@ public class VetoCommand
             }
 
             mapsRemaining--;
-
-
-
         }
+        //veto Finished
 
         string mapName = "";
         for (int i = 0; i < mapPool.Count; i++)
@@ -146,13 +145,16 @@ public class VetoCommand
             }
         }
 
+        //TODO: add map image
         EmbedBuilder embedPost = new EmbedBuilder()
             .WithColor(new Color(168, 50, 50))
             .WithTitle($"{teamHome.TeamName} VS {teamAway.TeamName}")
             .WithDescription($"⠀\n Map:\n{mapName}");
 
-        await _context.Interaction.ModifyOriginalResponseAsync(m => { m.Embed = embedPost.Build(); m.Components = null; });
 
+        await _context.Interaction.ModifyOriginalResponseAsync(m => { m.Embed = embedPost.Build(); m.Components = emptyComponent.Build();});
+        match.Map = mapName;
+        _database.ModifyMatch(match);
     }
 
 
