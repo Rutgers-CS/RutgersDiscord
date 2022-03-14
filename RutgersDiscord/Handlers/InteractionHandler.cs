@@ -28,6 +28,37 @@ namespace RutgersDiscord.Handlers
             await _interaction.AddModulesAsync(assembly: Assembly.GetEntryAssembly(), _services);
             _client.InteractionCreated += HandleInteraction;
 
+
+            _interaction.SlashCommandExecuted += SlashCommandExecuted;
+        }
+
+        private Task SlashCommandExecuted(SlashCommandInfo arg1, IInteractionContext arg2, IResult arg3)
+        {
+            if (!arg3.IsSuccess)
+            {
+                switch (arg3.Error)
+                {
+                    case InteractionCommandError.UnmetPrecondition:
+                        arg2.Interaction.RespondAsync("Insufficient permissions",ephemeral:true);
+                        break;
+                    case InteractionCommandError.UnknownCommand:
+                        // implement
+                        break;
+                    case InteractionCommandError.BadArgs:
+                        // implement
+                        break;
+                    case InteractionCommandError.Exception:
+                        // implement
+                        break;
+                    case InteractionCommandError.Unsuccessful:
+                        // implement
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            return Task.CompletedTask;
         }
 
         private async Task HandleInteraction(SocketInteraction arg)
