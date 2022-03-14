@@ -1,4 +1,5 @@
-﻿using Discord.Interactions;
+﻿using Discord;
+using Discord.Interactions;
 using Discord.WebSocket;
 using Interactivity;
 using RutgersDiscord.Handlers;
@@ -8,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace RutgersDiscord.Modules
 {
-    [RequireUserPermission(Discord.GuildPermission.Administrator, Group = "Permission")]
+    [RequireUserPermission(GuildPermission.Administrator, Group = "Permission")]
     [RequireOwner(Group = "Permission")]
     public class ModerationModule : InteractionModuleBase<SocketInteractionContext>
     {
@@ -31,5 +32,39 @@ namespace RutgersDiscord.Modules
             var response = _database.GetTable<string>(query);
             await RespondAsync(response.First());
         }
+
+        [SlashCommand("match", "edits matches.", runMode: RunMode.Async)]
+        public async Task Match(OperationType op, [ComplexParameter] MatchInfo match)
+        {
+            switch (op)
+            {
+                case OperationType.add:
+                    if(_database.GetMatchById(match.ID) != null)
+                    {
+                        await RespondAsync("match already exists", ephemeral: true);
+                        return;
+                    }
+                    _database.AddMatch(match);
+                    await RespondAsync($"match added");
+                    break;
+                case OperationType.delete:
+                    _database.DeleteMatch(match);
+                    await RespondAsync($"match deleted");
+                    break;
+                case OperationType.edit:
+                    _database.ModifyMatch(MatchInfo.Merge(_database.GetMatchById(match.ID), match));
+                    await RespondAsync($"match edited");
+                    break;
+            }
+        }
+
+
+        /*        [SlashCommand("temp","temp",runMode:RunMode.Async)]
+                public async Task Temp()
+                {
+                    await Context.Interaction.RespondAsync(HelperMethods.RandomID().ToString(),ephemeral: true);
+                }*/
+
+
     }
 }

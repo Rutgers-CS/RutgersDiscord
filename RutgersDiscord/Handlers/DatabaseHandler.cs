@@ -1,4 +1,5 @@
 ﻿using Dapper;
+using Dapper.Contrib.Extensions;
 using System;
 using MySql.Data.MySqlClient;
 using System.Collections.Generic;
@@ -26,7 +27,7 @@ namespace RutgersDiscord.Handlers
         }
 
 
-        public IEnumerable<MatchInfo> GetMatchInfo(ulong discordID, bool matchFinished = false)
+        public IEnumerable<MatchInfo> GetMatchByUser(ulong discordID, bool matchFinished = false)
         {
             PlayerInfo player = GetPlayerInfo(discordID);
             return GetTableFromDBUsing<MatchInfo>($"SELECT * FROM {matchTable} " +
@@ -35,15 +36,22 @@ namespace RutgersDiscord.Handlers
                                                   $"matchFinished = {matchFinished}");
         }
 
+        public MatchInfo GetMatchById (long matchID)
+        {
+            if (matchID == 0) return null;
+            return GetTableFromDBUsing<MatchInfo>($"SELECT * FROM {matchTable} " +
+                                                  $"WHERE id = {matchID}").FirstOrDefault();
+        }
+
         //Retrieves player info search either with discordID or SteamID
         public PlayerInfo GetPlayerInfo(ulong discordID)
         {
-            return GetTableFromDBUsing<PlayerInfo>($"SELECT * FROM {playerTable} WHERE discordID = {discordID}").First();
+            return GetTableFromDBUsing<PlayerInfo>($"SELECT * FROM {playerTable} WHERE discordID = {discordID}").FirstOrDefault();
         }
 
         public PlayerInfo GetPlayerBySteam(ulong steamID)
         {
-            return GetTableFromDBUsing<PlayerInfo>($"SELECT * FROM {playerTable} WHERE steamID = {steamID}").First();
+            return GetTableFromDBUsing<PlayerInfo>($"SELECT * FROM {playerTable} WHERE steamID = {steamID}").FirstOrDefault();
         }
         
 
@@ -52,17 +60,17 @@ namespace RutgersDiscord.Handlers
             if(captainOnly)
             {
                 return GetTableFromDBUsing<TeamInfo>($"SELECT * FROM {teamTable} " +
-                                                       $"WHERE player1 = {discordID}").First();
+                                                       $"WHERE player1 = {discordID}").FirstOrDefault();
             }
             return GetTableFromDBUsing<TeamInfo>($"SELECT * FROM {teamTable} " +
                                                  $"WHERE player1 = {discordID} OR " +
-                                                 $"player2 = {discordID}").First();
+                                                 $"player2 = {discordID}").FirstOrDefault();
         }
 
         public TeamInfo GetTeamById(ulong teamID)
         {
             return GetTableFromDBUsing<TeamInfo>($"SELECT * FROM {teamTable} " +
-                                                 $"WHERE teamID = {teamID}").First();
+                                                 $"WHERE teamID = {teamID}").FirstOrDefault();
         }
 
         public IEnumerable<MapInfo> GetMapList(string mapListName)
@@ -70,25 +78,67 @@ namespace RutgersDiscord.Handlers
             return GetTableFromDBUsing<MapInfo>($"SELECT * FROM _map_list_{mapListName}");
         }
 
+        public bool ModifyMatch(MatchInfo newMatch, string databaseName = null)
+        {
+            databaseName = SanitizeString(databaseName);
+            string connectionString = m_strMySQLConnectionString + "database=" + (databaseName ?? Environment.GetEnvironmentVariable("defaultDatabase"));
+
+            bool b = false;
+            try
+            {
+                using var mysqlconnection = new MySqlConnection(connectionString);
+                b = mysqlconnection.Update(newMatch);
+            }
+            catch
+            {
+                //maybe catch something in the future
+            }
+            return b;
+        }
+
+        //return newMatchid 
+        public long AddMatch(MatchInfo newMatch, string databaseName = null)
+        {
+            databaseName = SanitizeString(databaseName);
+            string connectionString = m_strMySQLConnectionString + "database=" + (databaseName ?? Environment.GetEnvironmentVariable("defaultDatabase"));
+            
+            long output = 0;
+            try
+            {
+                using var mysqlconnection = new MySqlConnection(connectionString);
+                output = mysqlconnection.Insert(newMatch);
+            }
+            catch
+            {
+                //maybe catch something in the future
+            }
+            return output;
+        }
+
+        public bool DeleteMatch(MatchInfo newMatch, string databaseName = null)
+        {
+            databaseName = SanitizeString(databaseName);
+            string connectionString = m_strMySQLConnectionString + "database=" + (databaseName ?? Environment.GetEnvironmentVariable("defaultDatabase"));
+
+            bool output = false;
+            try
+            {
+                using var mysqlconnection = new MySqlConnection(connectionString);
+                output = mysqlconnection.Delete(newMatch);
+            }
+            catch
+            {
+                //maybe catch something in the future
+            }
+            return output;
+        }
+
         private IEnumerable<T> GetTableFromDBUsing<T>(string strQuery, string databaseName = null)
         {
             IEnumerable<T> outputList;
             strQuery = SanitizeString(strQuery);
-            if(databaseName != null)
-            {
-                databaseName = SanitizeString(databaseName);
-            }
-            string connectionString;
-
-            if (databaseName == null)
-            {
-                connectionString = m_strMySQLConnectionString + "database=" + Environment.GetEnvironmentVariable("defaultDatabase");
-            }
-            else
-            {
-                connectionString = m_strMySQLConnectionString + "database=" + databaseName;
-            }
-
+            databaseName = SanitizeString(databaseName);
+            string connectionString = m_strMySQLConnectionString + "database=" + (databaseName ?? Environment.GetEnvironmentVariable("defaultDatabase"));
 
             try
             {
@@ -103,14 +153,14 @@ namespace RutgersDiscord.Handlers
             {
                 throw e;
             }
-
             return outputList;
         }
 
         //We might need to whitelist more characters in the future
-        private string SanitizeString(string s)
+        private static string SanitizeString(string s)
         {
-            string str = new string((from c in s where char.IsWhiteSpace(c) 
+            if (s == null) return null;
+            string str = new((from c in s where char.IsWhiteSpace(c) 
                                      || char.IsLetterOrDigit(c)
                                      || c == '_' || c == '*' || c == '=' select c)
                                      .ToArray());
