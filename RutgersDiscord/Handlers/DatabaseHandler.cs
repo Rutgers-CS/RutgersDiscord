@@ -75,7 +75,7 @@ namespace RutgersDiscord.Handlers
             {
                 using (var sqliteConnection = new SqliteConnection(databaseName))
                 {
-                    return (await sqliteConnection.QueryAsync(query)).FirstOrDefault();
+                    return (await sqliteConnection.QueryAsync<PlayerInfo>(query)).FirstOrDefault();
                 }
             }
             catch
@@ -154,7 +154,7 @@ namespace RutgersDiscord.Handlers
             {
                 using (var sqliteConnection = new SqliteConnection(databaseName))
                 {
-                    return (await sqliteConnection.QueryAsync(query)).FirstOrDefault();
+                    return (await sqliteConnection.QueryAsync<PlayerInfo>(query)).FirstOrDefault();
                 }
             }
             catch
@@ -170,7 +170,7 @@ namespace RutgersDiscord.Handlers
             {
                 using (var sqliteConnection = new SqliteConnection(databaseName))
                 {
-                    return (await sqliteConnection.QueryAsync(query)).FirstOrDefault();
+                    return (await sqliteConnection.QueryAsync<PlayerInfo>(query)).FirstOrDefault();
                 }
             }
             catch
@@ -271,7 +271,7 @@ namespace RutgersDiscord.Handlers
             {
                 using (var sqliteConnection = new SqliteConnection(databaseName))
                 {
-                    return (await sqliteConnection.QueryAsync(query)).FirstOrDefault();
+                    return (await sqliteConnection.QueryAsync<TeamInfo>(query)).FirstOrDefault();
                 }
             }
             catch
@@ -321,7 +321,7 @@ namespace RutgersDiscord.Handlers
             {
                 using (var sqliteConnection = new SqliteConnection(databaseName))
                 {
-                    return (await sqliteConnection.QueryAsync(query)).FirstOrDefault();
+                    return (await sqliteConnection.QueryAsync<MatchInfo>(query)).FirstOrDefault();
                 }
             }
             catch
@@ -429,7 +429,7 @@ namespace RutgersDiscord.Handlers
             {
                 using (var sqliteConnection = new SqliteConnection(databaseName))
                 {
-                    return (await sqliteConnection.QueryAsync(query)).FirstOrDefault();
+                    return (await sqliteConnection.QueryAsync<MapInfo>(query)).FirstOrDefault();
                 }
             }
             catch
@@ -492,12 +492,12 @@ namespace RutgersDiscord.Handlers
         [Obsolete("Use MapIDs instead")]
         public async Task<MapInfo> GetMapByNameAsync(string mapName)
         {
-            string query = $"SELECT * FROM {mapTable} WHERE MapName = {mapName}";
+            string query = $"SELECT * FROM {mapTable} WHERE MapName = \"{mapName}\"";
             try
             {
                 using (var sqliteConnection = new SqliteConnection(databaseName))
                 {
-                    return (await sqliteConnection.QueryAsync(query)).FirstOrDefault();
+                    return (await sqliteConnection.QueryAsync<MapInfo>(query)).FirstOrDefault();
                 }
             }
             catch
@@ -531,7 +531,7 @@ namespace RutgersDiscord.Handlers
             if (s == null) return null;
             string str = new((from c in s where char.IsWhiteSpace(c) 
                                      || char.IsLetterOrDigit(c)
-                                     || c == '_' || c == '*' || c == '=' || c == '(' || c == ')' select c)
+                                     || c == '_' || c == '*' || c == '=' || c == '(' || c == ')' || c == '\\' || c == '"' select c)
                                      .ToArray());
             return str;
         }
