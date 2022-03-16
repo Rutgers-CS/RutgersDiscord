@@ -14,6 +14,7 @@ public class MatchInfo
 	public int? ScoreAway { get; set; }
 	public bool? MatchFinished { get; set; }
 	public bool? HomeTeamWon { get; set; }
+	public long? DiscordChannel { get; set; }
 	public long? MapID { get; set; }
 
 	[ComplexParameterCtor]
@@ -35,6 +36,7 @@ public class MatchInfo
 		MatchFinished = matchFinished;
 		HomeTeamWon = homeTeamWon;
 		MapID = mapID;
+		DiscordChannel = discordChannel;
     }
 
 	private MatchInfo()
@@ -55,6 +57,7 @@ public class MatchInfo
 		m.MatchFinished = newMatch.MatchFinished ?? oldMatch.MatchFinished;
 		m.HomeTeamWon = newMatch.HomeTeamWon ?? oldMatch.HomeTeamWon;
 		m.MapID = newMatch.MapID ?? oldMatch.MapID;
+		m.DiscordChannel = newMatch.DiscordChannel ?? oldMatch.DiscordChannel;
 		return m;
 	}
 

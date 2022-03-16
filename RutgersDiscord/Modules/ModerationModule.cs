@@ -15,14 +15,14 @@ namespace RutgersDiscord.Modules
     public class ModerationModule : InteractionModuleBase<SocketInteractionContext>
     {
         private readonly DiscordSocketClient _client;
-        private readonly InteractivityService _interactive;
+        private readonly InteractivityService _interactivity;
         private readonly IServiceProvider _services;
         private readonly DatabaseHandler _database;
 
-        public ModerationModule(DiscordSocketClient client, InteractivityService interactive, IServiceProvider services, DatabaseHandler database)
+        public ModerationModule(DiscordSocketClient client, InteractivityService interactivity, IServiceProvider services, DatabaseHandler database)
         {
             _client = client;
-            _interactive = interactive;
+            _interactivity = interactivity;
             _services = services;
             _database = database;
         }
@@ -34,6 +34,14 @@ namespace RutgersDiscord.Modules
             await RespondAsync(response.First());
         }
 
+        [SlashCommand("creatematch", "Creates a match.", runMode: RunMode.Async)]
+        public async Task CreateMatch(long teamHomeID, long teamAwayID, int month, int day, int hour)
+        {
+            DateTime t = new DateTime(DateTime.Now.Year,month,day,hour,0,0);
+            GenerateMatches g = new(_client, Context, _database, _interactivity);
+            await g.CreateMatch(teamHomeID, teamAwayID,t);
+        }
+
         [SlashCommand("match", "edits matches.", runMode: RunMode.Async)]
         public async Task Match(OperationType op, [ComplexParameter] MatchInfo match)
         {
@@ -42,7 +50,7 @@ namespace RutgersDiscord.Modules
                 case OperationType.create:
                     if(_database.GetMatchAsync(match.MatchID) != null)
                     {
-                        await RespondAsync("match already exists", ephemeral: true);
+                        await RespondAsync("Match already exists", ephemeral: true);
                         return;
                     }
                     await _database.AddMatchAsync(match);
