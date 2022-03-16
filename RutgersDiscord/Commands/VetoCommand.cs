@@ -26,7 +26,7 @@ public class VetoCommand
     public async Task StartVeto()
     {
         //Test for captain
-        TeamInfo team = await _database.GetTeamByDiscordIDAsync((long)_context.User.Id);
+        TeamInfo team = _database.GetTeamByDiscordIDAsync((long)_context.User.Id).Result;
         if(team.Player1 != (long)_context.User.Id)
         {
             await _context.Interaction.RespondAsync("User is not captain of a team");
@@ -34,7 +34,7 @@ public class VetoCommand
         }
 
         //Find match
-        var matchList = _database.GetMatchByAttribute(teamID1: team.TeamID, matchFinished: false);
+        var matchList = _database.GetMatchesFromPlayerAsync((long)_context.User.Id, false);
 
         //no match found
         if (matchList == null)

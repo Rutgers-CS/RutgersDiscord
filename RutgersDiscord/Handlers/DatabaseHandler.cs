@@ -30,7 +30,7 @@ namespace RutgersDiscord.Handlers
             TeamInfo team1 = new TeamInfo(1, "Team1", 222897049899630592, 164803512633524225, 0, 0);
             TeamInfo team2 = new TeamInfo(2, "Team2", 171431827746193410, 953059699627012142, 0, 0);
 
-            //MatchInfo match = new MatchInfo(0, 1, 2, null, null,null, false, null, null);
+            MatchInfo match = new MatchInfo(0, 1, 2, null, null,null, false, null, null);
 
             await AddPlayerAsync(august);
             await AddPlayerAsync(kenji);
@@ -40,14 +40,14 @@ namespace RutgersDiscord.Handlers
             await AddTeamAsync(team1);
             await AddTeamAsync(team2);
 
-            //await AddMatchAsync(match);
+            await AddMatchAsync(match);
         }
 
         //TEMPORARY method. In the future we will only allow public methods here to output predefined types
         [Obsolete("Don't use it")]
-        public async Task<IEnumerable<T>> GetTable<T>(string strQuery, string databaseName = null)
+        public IEnumerable<T> GetTable<T>(string strQuery, string databaseName = null)
         {
-            return await GetTableFromDBUsing<T>(strQuery, databaseName);
+            return GetTableFromDBUsing<T>(strQuery, databaseName).Result;
         }
 
         #region Players CRUD
@@ -75,7 +75,7 @@ namespace RutgersDiscord.Handlers
             {
                 using (var sqliteConnection = new SqliteConnection(databaseName))
                 {
-                    return (await sqliteConnection.QueryAsync(query)).FirstOrDefault();
+                    return await sqliteConnection.QueryAsync(query).Result.FirstOrDefault();
                 }
             }
             catch
@@ -118,35 +118,6 @@ namespace RutgersDiscord.Handlers
         #endregion
 
         #region Players Extra
-        public async Task<IEnumerable<PlayerInfo>> GetPlayerByAttribute(long? steam64ID = null, string steamID = null, string name = null, long? teamID = null, int? kills = null, int? deaths = null)
-        {
-            string filter = "true ";
-            if (steam64ID != null)
-            {
-                filter += $"AND Steam64ID = {steam64ID} ";
-            }
-            if (steamID != null)
-            {
-                filter += $"AND SteamID = {steamID} ";
-            }
-            if (name != null)
-            {
-                filter += $"AND Name = {name} ";
-            }
-            if (teamID != null)
-            {
-                filter += $"AND TeamID = {teamID}";
-            }
-            if (kills != null)
-            {
-                filter += $"AND Kills = {kills} ";
-            }
-            if (deaths != null)
-            {
-                filter += $"AND Deaths = {deaths}";
-            }
-            return await GetTableFromDBUsing<PlayerInfo>($"SELECT * FROM {playerTable} WHERE {filter}");
-        }
         public async Task<PlayerInfo> GetPlayerBySteam64IDAsync(long steam64ID)
         {
             string query = $"SELECT * FROM {playerTable} WHERE Steam64ID = {steam64ID}";
@@ -154,7 +125,7 @@ namespace RutgersDiscord.Handlers
             {
                 using (var sqliteConnection = new SqliteConnection(databaseName))
                 {
-                    return (await sqliteConnection.QueryAsync(query)).FirstOrDefault();
+                    return await sqliteConnection.QueryAsync(query).Result.FirstOrDefault();
                 }
             }
             catch
@@ -170,7 +141,7 @@ namespace RutgersDiscord.Handlers
             {
                 using (var sqliteConnection = new SqliteConnection(databaseName))
                 {
-                    return (await sqliteConnection.QueryAsync(query)).FirstOrDefault();
+                    return await sqliteConnection.QueryAsync(query).Result.FirstOrDefault();
                 }
             }
             catch
@@ -216,12 +187,12 @@ namespace RutgersDiscord.Handlers
 
         public async Task<TeamInfo> GetTeamAsync(long teamID)
         {
-            string query = $"SELECT * FROM {teamTable} WHERE TeamID = {teamID}";
+            string query = $"SELECT * FROM {playerTable} WHERE TeamID = {teamID}";
             try
             {
                 using (var sqliteConnection = new SqliteConnection(databaseName))
                 {
-                    return (await sqliteConnection.QueryAsync<TeamInfo>(query)).FirstOrDefault();
+                    return await sqliteConnection.QueryAsync(query).Result.FirstOrDefault();
                 }
             }
             catch
@@ -271,7 +242,7 @@ namespace RutgersDiscord.Handlers
             {
                 using (var sqliteConnection = new SqliteConnection(databaseName))
                 {
-                    return (await sqliteConnection.QueryAsync(query)).FirstOrDefault();
+                    return await sqliteConnection.QueryAsync(query).Result.FirstOrDefault();
                 }
             }
             catch
@@ -295,12 +266,41 @@ namespace RutgersDiscord.Handlers
                 return default;
             }
         }
+        //Add more attributes here later I'm lazy
+        public IEnumerable<MatchInfo> GetMatchByAttribute(long? teamID1 = null, long? teamID2 = null, long? matchTime = null, bool? matchFinished = null)
+        {
+            string filter = "true ";
+            if(teamID1 != null)
+            {
+                filter += $"AND (teamHome = {teamID1} OR teamAway = {teamID1}) ";
+            }
+            if(teamID2 != null)
+            {
+                filter += $"AND (teamHome = {teamID2} OR teamAway = {teamID2}) ";
+            }
+            if(matchTime != null)
+            {
+                filter += $"AND matchTime = {matchTime} ";
+            }
+            if(matchFinished != null)
+            {
+                filter += $"AND matchFinished = {matchFinished}";
+            }
+            return GetTableFromDBUsing<MatchInfo>($"SELECT * FROM {matchTable} WHERE {filter}");
+        }
+
+        public MatchInfo GetMatchById (long matchID)
+        {
+            if (matchID == 0) return null;
+            return GetTableFromDBUsing<MatchInfo>($"SELECT * FROM {matchTable} " +
+                                                  $"WHERE id = {matchID}").FirstOrDefault();
+        }
         #endregion
 
         #region Matches CRUD
         public async Task<int> AddMatchAsync(MatchInfo match)
         {
-            string query = $"INSERT INTO {matchTable} (MatchID, TeamHomeID, TeamAwayID, ScoreHome, ScoreAway, MatchFinished, MapID, DiscordChannel) VALUES (@MatchID, @TeamHomeID, @TeamAwayID, @ScoreHome, @ScoreAway, @MatchFinished, @MapID, @DiscordChannel)";
+            string query = $"INSERT INTO {matchTable} (MatchID, TeamHomeID, TeamAwayID, ScoreHome, ScoreAway, MatchFinished, MapID) VALUES (@MatchID, @TeamHomeID, @TeamAwayID, @ScoreHome, @ScoreAway, @MatchFinished, @MapID)";
             try
             {
                 using (var sqliteConnection = new SqliteConnection(databaseName))
@@ -321,7 +321,7 @@ namespace RutgersDiscord.Handlers
             {
                 using (var sqliteConnection = new SqliteConnection(databaseName))
                 {
-                    return (await sqliteConnection.QueryAsync(query)).FirstOrDefault();
+                    return await sqliteConnection.QueryAsync(query).Result.FirstOrDefault();
                 }
             }
             catch
@@ -332,7 +332,7 @@ namespace RutgersDiscord.Handlers
 
         public async Task<int> UpdateMatchAsync(MatchInfo match)
         {
-            string query = $"UPDATE {matchTable} SET TeamHomeID=@TeamHomeID, TeamAwayID=@TeamAwayID, ScoreHome=@ScoreHome, ScoreAway=@ScoreAway, MatchFinished=@MatchFinished, MapID=@MapID, DiscordChannel=@DiscordChannel WHERE MatchID=@MatchID";
+            string query = $"UPDATE {matchTable} SET TeamHomeID=@TeamHomeID, TeamAwayID=@TeamAwayID, ScoreHome=@ScoreHome, ScoreAway=@ScoreAway, MatchFinished=@MatchFinished, MapID=@MapID WHERE MatchID=@MatchID";
             try
             {
                 using (var sqliteConnection = new SqliteConnection(databaseName))
@@ -364,28 +364,21 @@ namespace RutgersDiscord.Handlers
         #endregion
 
         #region Matches Extra
-
-        //TODO: Add more attributes here later I'm lazy
-        public async Task<IEnumerable<MatchInfo>> GetMatchByAttribute(long? teamID1 = null, long? teamID2 = null, long? matchTime = null, bool? matchFinished = null)
+        public async Task<IEnumerable<MatchInfo>> GetMatchesFromPlayerAsync(long discordID, bool finished)
         {
-            string filter = "true ";
-            if (teamID1 != null)
+            PlayerInfo player = await GetPlayerAsync(discordID);
+            string query = $"SELECT * FROM {matchTable} WHERE (TeamHome = {player.TeamID}) OR (TeamAway = {player.TeamID}) AND (MatchFinished = {finished}";
+            try
             {
-                filter += $"AND (teamHomeID = {teamID1} OR teamAwayID = {teamID1}) ";
+                using (var sqliteConnection = new SqliteConnection(databaseName))
+                {
+                    return await sqliteConnection.QueryAsync<MatchInfo>(query);
+                }
             }
-            if (teamID2 != null)
+            catch
             {
-                filter += $"AND (teamHomeID = {teamID2} OR teamAwayID = {teamID2}) ";
+                return default;
             }
-            if (matchTime != null)
-            {
-                filter += $"AND matchTime = {matchTime} ";
-            }
-            if (matchFinished != null)
-            {
-                filter += $"AND matchFinished = {matchFinished}";
-            }
-            return await GetTableFromDBUsing<MatchInfo>($"SELECT * FROM {matchTable} WHERE {filter}");
         }
 
         public async Task<IEnumerable<MatchInfo>> GetAllMatchesAsync()
@@ -429,7 +422,7 @@ namespace RutgersDiscord.Handlers
             {
                 using (var sqliteConnection = new SqliteConnection(databaseName))
                 {
-                    return (await sqliteConnection.QueryAsync(query)).FirstOrDefault();
+                    return await sqliteConnection.QueryAsync(query).Result.FirstOrDefault();
                 }
             }
             catch
@@ -497,7 +490,7 @@ namespace RutgersDiscord.Handlers
             {
                 using (var sqliteConnection = new SqliteConnection(databaseName))
                 {
-                    return (await sqliteConnection.QueryAsync(query)).FirstOrDefault();
+                    return await sqliteConnection.QueryAsync(query).Result.FirstOrDefault();
                 }
             }
             catch
@@ -507,7 +500,7 @@ namespace RutgersDiscord.Handlers
         }
         #endregion
 
-        private async Task<IEnumerable<T>> GetTableFromDBUsing<T>(string strQuery, string databaseName = databaseName)
+        private async Task<IEnumerable<T>> GetTableFromDBUsing<T>(string strQuery, string databaseName = null)
         {
             strQuery = SanitizeString(strQuery);
 

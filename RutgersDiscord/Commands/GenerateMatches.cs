@@ -24,32 +24,31 @@ public class GenerateMatches
         _interactivity = interactivity;
     }
 
-    //test method
     public async Task RunAsync()
     {
-        await CreateMatchChannel(await GetUsersFromMatch(await _database.GetMatchAsync(1)),"test");
+        await CreateMatchChannel(GetUsersFromMatch(_database.GetMatchById(1)),"test");
     }
 
     public async Task CreateMatch(long teamHomeID, long teamAwayID, DateTime t)
     {
         //test if match exitst
-        if ((await _database.GetMatchByAttribute(teamHomeID,teamAwayID,matchFinished: false)).Count() != 0)
+        if (_database.GetMatchByAttribute(teamHomeID,teamAwayID,matchFinished: false).Count() != 0)
         {
             await _context.Interaction.RespondAsync("Match already exists",ephemeral: true);
             return;
         }
 
         //Get Info
-        TeamInfo teamHome = await _database.GetTeamAsync(teamHomeID);
-        TeamInfo teamAway = await _database.GetTeamAsync(teamAwayID);
+        TeamInfo teamHome = _database.GetTeamById((ulong)teamHomeID);
+        TeamInfo teamAway = _database.GetTeamById((ulong)teamAwayID);
 
 
         //Create match and channel;
         MatchInfo match = new(0, teamHomeID, teamAwayID, t.Ticks,matchFinished: false);
-        List<PlayerInfo> playerList = await GetUsersFromMatch(match);
+        List<PlayerInfo> playerList = GetUsersFromMatch(match);
         RestTextChannel channel = await CreateMatchChannel(playerList, $"{teamHome.TeamName}_vs_{teamAway.TeamName}");
         match.DiscordChannel = (long?)channel.Id;
-        await _database.AddMatchAsync(match);
+        _database.AddMatch(match);
 
         //Create Greeting message
         String greetingMessage = "Welcome ";
@@ -65,7 +64,7 @@ public class GenerateMatches
             .WithValue("`/reschedule [month] [day] [hour] [minute]` to request a match\n" +
                        "`/veto` to start veto on the map");
         EmbedBuilder embed = new EmbedBuilder()
-            .WithTitle($"{teamHome.TeamName} vs. {teamAway.TeamName}")
+            .WithTitle($"Team {teamHome.TeamName} vs. Team {teamAway.TeamName}")
             .AddField(commandList);
 
         //Send Message
@@ -75,11 +74,11 @@ public class GenerateMatches
         await _context.Interaction.RespondAsync("Channel Created");
     }
 
-    private async Task<List<PlayerInfo>> GetUsersFromMatch(MatchInfo match)
+    private List<PlayerInfo> GetUsersFromMatch(MatchInfo match)
     {
         List<PlayerInfo> playerList = new();
-        playerList.AddRange(await _database.GetPlayerByAttribute(teamID: (long)match.TeamHomeID));
-        playerList.AddRange(await _database.GetPlayerByAttribute(teamID: (long)match.TeamAwayID));
+        playerList.AddRange(_database.GetPlayerByTeam((long)match.TeamHome));
+        playerList.AddRange(_database.GetPlayerByTeam((long)match.TeamAway));
         return playerList;
     }
 
@@ -92,7 +91,7 @@ public class GenerateMatches
         {
             overwrite.Add(new Overwrite((ulong)player.DiscordID, PermissionTarget.User, new OverwritePermissions(viewChannel: PermValue.Allow)));
         }
-        return await _context.Guild.CreateTextChannelAsync(channelName, c => { c.CategoryId = Constants.ChannelCategories.matches; c.PermissionOverwrites = overwrite; });
+        return await _context.Guild.CreateTextChannelAsync("MatchTest", c => { c.CategoryId = Constants.ChannelCategories.matches; c.PermissionOverwrites = overwrite; });
     }
    
 }
