@@ -47,7 +47,7 @@ namespace RutgersDiscord.Handlers
         [Obsolete("Don't use it")]
         public IEnumerable<T> GetTable<T>(string strQuery, string databaseName = null)
         {
-            return GetTableFromDBUsing<T>(strQuery, databaseName);
+            return GetTableFromDBUsing<T>(strQuery, databaseName).Result;
         }
 
         #region Players CRUD
@@ -471,7 +471,7 @@ namespace RutgersDiscord.Handlers
         }
         #endregion
 
-        private async Task<IEnumerable<T>> GetTableFromDBUsing<T>(string strQuery)
+        private async Task<IEnumerable<T>> GetTableFromDBUsing<T>(string strQuery, string databaseName = null)
         {
             strQuery = SanitizeString(strQuery);
 
