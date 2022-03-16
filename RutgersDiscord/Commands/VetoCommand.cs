@@ -133,8 +133,8 @@ public class VetoCommand
 
             mapsRemaining--;
         }
-        //veto Finished
 
+        //Veto Finished
         string mapName = "";
         for (int i = 0; i < mapPool.Count; i++)
         {
@@ -149,7 +149,8 @@ public class VetoCommand
         EmbedBuilder embedPost = new EmbedBuilder()
             .WithColor(new Color(25, 25, 25))
             .WithTitle($"{teamHome.TeamName} VS {teamAway.TeamName}")
-            .WithDescription($"⠀\n Map:\n{mapName}");
+            .WithDescription($"⠀\n Map:\n{mapName}")
+            .WithImageUrl(Constants.ImgurAlbum[mapName]);
 
 
         await _context.Interaction.ModifyOriginalResponseAsync(m => { m.Embed = embedPost.Build(); m.Components = emptyComponent.Build();});
