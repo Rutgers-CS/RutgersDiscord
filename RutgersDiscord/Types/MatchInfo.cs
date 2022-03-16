@@ -20,14 +20,8 @@ public class MatchInfo
 	[ComplexParameterCtor]
 	public MatchInfo(long id = 0, long? teamHomeID = null, long? teamAwayID = null, long? matchTime = null, int? scoreHome = null, int? scoreAway = null, bool? matchFinished = null, bool? homeTeamWon = null, long? mapID = null,string discordChannel = null)
     {
-		if(id == 0)
-        {
-			MatchID = HelperMethods.RandomID();
-		}
-		else
-        {
-			MatchID = id;
-        }
+		Random r = new();
+		MatchID = r.Next(0, int.MaxValue);
 		TeamHomeID = teamHomeID;
 		TeamAwayID = teamAwayID;
 		MatchTime = matchTime;
