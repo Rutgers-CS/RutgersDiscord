@@ -30,7 +30,7 @@ namespace RutgersDiscord.Modules
         [SlashCommand("database", "queries database.", runMode: RunMode.Async)]
         public async Task Database(string query)
         {
-            var response = _database.GetTable<string>(query);
+            var response = await _database.GetTable<string>(query);
             await RespondAsync(response.First());
         }
 
