@@ -16,4 +16,5 @@
     {
         public const ulong matches = 952771705485553744;
     }
+        { "Pithead", "https://i.imgur.com/5dZFoBw.jpg" },
 }
