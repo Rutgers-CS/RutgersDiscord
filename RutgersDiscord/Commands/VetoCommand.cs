@@ -26,15 +26,15 @@ public class VetoCommand
     public async Task StartVeto()
     {
         //Test for captain
-        TeamInfo team = _database.GetTeamByUser(_context.User.Id, true);
-        if(team == null)
+        TeamInfo team = _database.GetTeamByDiscordIDAsync((long)_context.User.Id).Result;
+        if(team.Player1 != (long)_context.User.Id)
         {
             await _context.Interaction.RespondAsync("User is not captain of a team");
             return;
         }
 
         //Find match
-        var matchList = _database.GetMatchByUser(_context.User.Id, false);
+        var matchList = _database.GetMatchesFromPlayerAsync((long)_context.User.Id, false);
 
         //no match found
         if (matchList == null)
@@ -42,7 +42,7 @@ public class VetoCommand
             await _context.Interaction.RespondAsync("Match not found");
             return;
         }
-        MatchInfo match = matchList.First();
+        MatchInfo match = matchList.Result.First();
 
         //no match found
         if(match == null)
@@ -51,7 +51,7 @@ public class VetoCommand
             return;
         }
         //map is selected
-        if(match.Map != null)
+        if(match.MapID != null)
         {
             await _context.Interaction.RespondAsync("Veto was already done");
             return;
@@ -59,7 +59,7 @@ public class VetoCommand
 
         //TODO send confirmation to captain and create embed
         ComponentBuilder component = new ComponentBuilder()
-                .WithButton("Start Veto", $"veto_accept_{match.ID}");
+                .WithButton("Start Veto", $"veto_accept_{match.MatchID}");
         EmbedBuilder embed = new EmbedBuilder()
             .WithTitle("Waiting for opponent to accept");
         await _context.Interaction.RespondAsync(embed: embed.Build(),components: component.Build());
@@ -68,20 +68,20 @@ public class VetoCommand
 
         //Set Home and Away teams
         TeamInfo teamHome, teamAway;
-        if(team.TeamID == match.TeamHome)
+        if(team.TeamID == match.TeamHomeID)
         {
             teamHome = team;
-            teamAway = _database.GetTeamById((ulong)match.TeamAway);
+            teamAway = _database.GetTeamAsync((long)match.TeamAwayID).Result;
             var temp = await _interactivity.NextButtonAsync(u => (long)u.User.Id == teamAway.Player1
-                && ((SocketMessageComponent)u).Data.CustomId == $"veto_accept_{match.ID}");
+                && ((SocketMessageComponent)u).Data.CustomId == $"veto_accept_{match.MatchID}");
             await temp.Value.DeferAsync();
         }
         else
         {
             teamAway = team;
-            teamHome = _database.GetTeamById((ulong)match.TeamHome);
+            teamHome = _database.GetTeamAsync((long)match.TeamHomeID).Result;
             var temp = await _interactivity.NextButtonAsync(u => (long)u.User.Id == teamAway.Player1
-                && ((SocketMessageComponent)u).Data.CustomId == $"veto_accept_{match.ID}");
+                && ((SocketMessageComponent)u).Data.CustomId == $"veto_accept_{match.MatchID}");
             await temp.Value.DeferAsync();
         }
 
@@ -94,7 +94,7 @@ public class VetoCommand
         await _context.Interaction.ModifyOriginalResponseAsync(m => { m.Embed = embed.Build();m.Components = emptyComponent.Build(); });
 
         //Start veto
-        List<MapInfo> mapPool = _database.GetMapList("official").ToList();
+        List<MapInfo> mapPool = _database.GetAllMapsAsync().Result.ToList();
         var currentTurn = captainHome;
         int mapsRemaining = mapPool.Count;
         bool[] banCaptainHome = new bool[mapPool.Count];
@@ -108,7 +108,7 @@ public class VetoCommand
             await _context.Interaction.ModifyOriginalResponseAsync(m => { m.Embed = embed.Build(); m.Components = dropDownMenu.Build(); });
 
             var reply = await _interactivity.NextInteractionAsync(filter: s => s.User.Id == currentTurn.Id
-                && ((SocketMessageComponent)s).Data.CustomId == $"veto_main_{match.ID}");
+                && ((SocketMessageComponent)s).Data.CustomId == $"veto_main_{match.MatchID}");
             await reply.Value.DeferAsync();
 
             int selection = int.Parse(((reply.Value as SocketMessageComponent).Data.Values as String[])[0]);
@@ -153,8 +153,9 @@ public class VetoCommand
 
 
         await _context.Interaction.ModifyOriginalResponseAsync(m => { m.Embed = embedPost.Build(); m.Components = emptyComponent.Build();});
-        match.Map = mapName;
-        _database.ModifyMatch(match);
+        MapInfo map = await _database.GetMapByNameAsync(mapName);
+        match.MapID = map.MapID;
+        await _database.UpdateMatchAsync(match);
     }
 
 
@@ -209,7 +210,7 @@ public class VetoCommand
         }
 
         SelectMenuBuilder selectMenu = new SelectMenuBuilder()
-                .WithCustomId($"veto_main_{match.ID}")
+                .WithCustomId($"veto_main_{match.MatchID}")
                 .WithPlaceholder("Select Map Here")
                 .WithOptions(s);
 
