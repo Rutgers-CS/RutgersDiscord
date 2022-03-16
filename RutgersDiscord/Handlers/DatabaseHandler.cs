@@ -266,6 +266,35 @@ namespace RutgersDiscord.Handlers
                 return default;
             }
         }
+        //Add more attributes here later I'm lazy
+        public IEnumerable<MatchInfo> GetMatchByAttribute(long? teamID1 = null, long? teamID2 = null, long? matchTime = null, bool? matchFinished = null)
+        {
+            string filter = "true ";
+            if(teamID1 != null)
+            {
+                filter += $"AND (teamHome = {teamID1} OR teamAway = {teamID1}) ";
+            }
+            if(teamID2 != null)
+            {
+                filter += $"AND (teamHome = {teamID2} OR teamAway = {teamID2}) ";
+            }
+            if(matchTime != null)
+            {
+                filter += $"AND matchTime = {matchTime} ";
+            }
+            if(matchFinished != null)
+            {
+                filter += $"AND matchFinished = {matchFinished}";
+            }
+            return GetTableFromDBUsing<MatchInfo>($"SELECT * FROM {matchTable} WHERE {filter}");
+        }
+
+        public MatchInfo GetMatchById (long matchID)
+        {
+            if (matchID == 0) return null;
+            return GetTableFromDBUsing<MatchInfo>($"SELECT * FROM {matchTable} " +
+                                                  $"WHERE id = {matchID}").FirstOrDefault();
+        }
         #endregion
 
         #region Matches CRUD
@@ -495,7 +524,7 @@ namespace RutgersDiscord.Handlers
             if (s == null) return null;
             string str = new((from c in s where char.IsWhiteSpace(c) 
                                      || char.IsLetterOrDigit(c)
-                                     || c == '_' || c == '*' || c == '=' select c)
+                                     || c == '_' || c == '*' || c == '=' || c == '(' || c == ')' select c)
                                      .ToArray());
             return str;
         }

@@ -147,7 +147,7 @@ public class VetoCommand
 
         //TODO: add map image
         EmbedBuilder embedPost = new EmbedBuilder()
-            .WithColor(new Color(168, 50, 50))
+            .WithColor(new Color(25, 25, 25))
             .WithTitle($"{teamHome.TeamName} VS {teamAway.TeamName}")
             .WithDescription($"⠀\n Map:\n{mapName}");
 
