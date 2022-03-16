@@ -26,7 +26,7 @@ public class GenerateMatches
 
     public async Task RunAsync()
     {
-        await CreateMatchChannel(GetUsersFromMatch(_database.GetMatchById(1)));
+        await CreateMatchChannel(GetUsersFromMatch(_database.GetMatchById(1)),"test");
     }
 
     public async Task CreateMatch(long teamHomeID, long teamAwayID, DateTime t)
