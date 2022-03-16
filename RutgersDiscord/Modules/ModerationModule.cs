@@ -2,6 +2,7 @@
 using Discord.Interactions;
 using Discord.WebSocket;
 using Interactivity;
+using Interactivity.Pagination;
 using RutgersDiscord.Handlers;
 using System;
 using System.Collections.Generic;
@@ -15,14 +16,14 @@ namespace RutgersDiscord.Modules
     public class ModerationModule : InteractionModuleBase<SocketInteractionContext>
     {
         private readonly DiscordSocketClient _client;
-        private readonly InteractivityService _interactive;
+        private readonly InteractivityService _interactivity;
         private readonly IServiceProvider _services;
         private readonly DatabaseHandler _database;
 
-        public ModerationModule(DiscordSocketClient client, InteractivityService interactive, IServiceProvider services, DatabaseHandler database)
+        public ModerationModule(DiscordSocketClient client, InteractivityService interactivity, IServiceProvider services, DatabaseHandler database)
         {
             _client = client;
-            _interactive = interactive;
+            _interactivity = interactivity;
             _services = services;
             _database = database;
         }
@@ -38,7 +39,7 @@ namespace RutgersDiscord.Modules
         public async Task CreateMatch(long teamHomeID, long teamAwayID, int month, int day, int hour)
         {
             DateTime t = new DateTime(DateTime.Now.Year,month,day,hour,0,0);
-            GenerateMatches g = new(_client, Context, _database, _interactive);
+            GenerateMatches g = new(_client, Context, _database, _interactivity);
             await g.CreateMatch(teamHomeID, teamAwayID,t);
         }
 
@@ -48,9 +49,9 @@ namespace RutgersDiscord.Modules
             switch (op)
             {
                 case OperationType.add:
-                    if(_database.GetMatchById(match.ID) != null)
+                    if (_database.GetMatchById(match.ID) != null)
                     {
-                        await RespondAsync("match already exists", ephemeral: true);
+                        await RespondAsync("Match already exists", ephemeral: true);
                         return;
                     }
                     _database.AddMatch(match);
@@ -67,12 +68,9 @@ namespace RutgersDiscord.Modules
             }
         }
 
-
-        [SlashCommand("temp","temp",runMode:RunMode.Async)]
+        [SlashCommand("test1", "temp", runMode: RunMode.Async)]
         public async Task Temp()
         {
-            GenerateMatches g = new(_client,Context,_database,_interactive);
-            await g.RunAsync();
         }
     }
 }
