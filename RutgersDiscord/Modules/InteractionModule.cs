@@ -45,7 +45,7 @@ namespace RutgersDiscord.Modules
         public async Task Veto()
         {
             VetoCommand v = new VetoCommand(_client, Context, _database, _interactivity);
-            await v.StartVeto();
+            await v.StartVetoAcknowledge();
         }
 
         [SlashCommand("register", "Provide required information to register for the event")]

@@ -264,9 +264,13 @@ namespace RutgersDiscord.Handlers
         #endregion
 
         #region Teams Extra
-        public async Task<TeamInfo> GetTeamByDiscordIDAsync(long discordID)
+        public async Task<TeamInfo> GetTeamByDiscordIDAsync(long discordID, bool captainOnly = false)
         {
-            string query = $"SELECT * FROM {teamTable} WHERE (Player1 = {discordID}) OR (Player2 = {discordID})";
+            string query = $"SELECT * FROM {teamTable} WHERE (Player1 = {discordID})";
+            if (!captainOnly)
+            {
+                query += $" OR (Player2 = {discordID})";
+            }
             try
             {
                 using (var sqliteConnection = new SqliteConnection(databaseName))
@@ -366,24 +370,52 @@ namespace RutgersDiscord.Handlers
         #region Matches Extra
 
         //TODO: Add more attributes here later I'm lazy
-        public async Task<IEnumerable<MatchInfo>> GetMatchByAttribute(long? teamID1 = null, long? teamID2 = null, long? matchTime = null, bool? matchFinished = null)
+        public async Task<IEnumerable<MatchInfo>> GetMatchByAttribute(long? teamID1 = null, long? teamID2 = null, long? matchTime = null, int? scoreHome = null, int? scoreAway = null, bool? matchFinished = null,bool? homeTeamWon = null, int? mapID = null, long? discordChannel = null, bool? teamHomeReady = null, bool? teamAwayReady = null)
         {
             string filter = "true ";
             if (teamID1 != null)
             {
-                filter += $"AND (teamHomeID = {teamID1} OR teamAwayID = {teamID1}) ";
+                filter += $"AND (TeamHomeID = {teamID1} OR TeamAwayID = {teamID1}) ";
             }
             if (teamID2 != null)
             {
-                filter += $"AND (teamHomeID = {teamID2} OR teamAwayID = {teamID2}) ";
+                filter += $"AND (TeamHomeID = {teamID2} OR TeamAwayID = {teamID2}) ";
             }
             if (matchTime != null)
             {
-                filter += $"AND matchTime = {matchTime} ";
+                filter += $"AND MatchTime = {matchTime} ";
+            }
+            if(scoreHome != null)
+            {
+                filter += $"AND ScoreHome = {scoreHome} ";
+            }
+            if(scoreAway != null)
+            {
+                filter += $"AND ScoreAway = {scoreAway} ";
             }
             if (matchFinished != null)
             {
-                filter += $"AND matchFinished = {matchFinished}";
+                filter += $"AND MatchFinished = {matchFinished} ";
+            }
+            if(homeTeamWon != null)
+            {
+                filter += $"AND HomeTeamWon = {homeTeamWon} ";
+            }
+            if(mapID != null)
+            {
+                filter += $"AND MapID = {mapID} ";
+            }
+            if(discordChannel != null)
+            {
+                filter += $"AND DiscordChannel = {discordChannel} ";
+            }
+            if(teamHomeReady != null)
+            {
+                filter += $"AND TeamHomeReady = {teamHomeReady} ";
+            }
+            if (teamAwayReady != null)
+            {
+                filter += $"AND TeamAwayReady = {teamAwayReady} ";
             }
             return await GetTableFromDBUsing<MatchInfo>($"SELECT * FROM {matchTable} WHERE {filter}");
         }
