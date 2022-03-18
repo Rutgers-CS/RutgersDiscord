@@ -50,6 +50,7 @@ namespace RutgersDiscord.Handlers
             return await GetTableFromDBUsing<T>(strQuery, databaseName);
         }
 
+        #region Players
         #region Players CRUD
         public async Task<int> AddPlayerAsync(PlayerInfo player)
         {
@@ -145,38 +146,7 @@ namespace RutgersDiscord.Handlers
             {
                 filter += $"AND Deaths = {deaths}";
             }
-            return await GetTableFromDBUsing<PlayerInfo>($"SELECT * FROM {playerTable} WHERE {filter}");
-        }
-        public async Task<PlayerInfo> GetPlayerBySteam64IDAsync(long steam64ID)
-        {
-            string query = $"SELECT * FROM {playerTable} WHERE Steam64ID = {steam64ID}";
-            try
-            {
-                using (var sqliteConnection = new SqliteConnection(databaseName))
-                {
-                    return (await sqliteConnection.QueryAsync<PlayerInfo>(query)).FirstOrDefault();
-                }
-            }
-            catch
-            {
-                return default;
-            }
-        }
-
-        public async Task<PlayerInfo> GetPlayerBySteamIDAsync(string steamID)
-        {
-            string query = $"SELECT * FROM {playerTable} WHERE SteamID = {steamID}";
-            try
-            {
-                using (var sqliteConnection = new SqliteConnection(databaseName))
-                {
-                    return (await sqliteConnection.QueryAsync<PlayerInfo>(query)).FirstOrDefault();
-                }
-            }
-            catch
-            {
-                return default;
-            }
+            return await GenericQueryAsync<PlayerInfo>($"SELECT * FROM {playerTable} WHERE {filter}");
         }
 
         public async Task<IEnumerable<PlayerInfo>> GetAllPlayersAsync()
@@ -196,7 +166,9 @@ namespace RutgersDiscord.Handlers
             }
         }
         #endregion
+        #endregion
 
+        #region Teams
         #region Teams CRUD
         public async Task<int> AddTeamAsync(TeamInfo team)
         {
@@ -264,6 +236,7 @@ namespace RutgersDiscord.Handlers
         #endregion
 
         #region Teams Extra
+        [Obsolete("Switch to GetTeamsByAttribute()")]
         public async Task<TeamInfo> GetTeamByDiscordIDAsync(long discordID)
         {
             string query = $"SELECT * FROM {teamTable} WHERE (Player1 = {discordID}) OR (Player2 = {discordID})";
@@ -278,6 +251,32 @@ namespace RutgersDiscord.Handlers
             {
                 return default;
             }
+        }
+
+        public async Task<IEnumerable<TeamInfo>> GetTeamsByAttributeAsync(long? teamID = null, string teamName = null, long? playerID = null, int? wins = null, int? losses = null)
+        {
+            string filter = "true ";
+            if (teamID != null)
+            {
+                filter += $"AND TeamID = {teamID} ";
+            }
+            if (teamName != null)
+            {
+                filter += $"AND TeamName = {teamName} ";
+            }
+            if (playerID != null)
+            {
+                filter += $"AND (Player1 = {playerID} OR Player2 = {playerID}) ";
+            }
+            if (wins != null)
+            {
+                filter += $"AND Wins = {wins} ";
+            }
+            if (losses != null)
+            {
+                filter += $"AND Losses = {losses}";
+            }
+            return await GenericQueryAsync<TeamInfo>($"SELECT * FROM {teamTable} WHERE {filter}");
         }
 
         public async Task<IEnumerable<TeamInfo>> GetAllTeamsAsync()
@@ -296,7 +295,9 @@ namespace RutgersDiscord.Handlers
             }
         }
         #endregion
+        #endregion
 
+        #region Matches
         #region Matches CRUD
         public async Task<int> AddMatchAsync(MatchInfo match)
         {
@@ -404,7 +405,9 @@ namespace RutgersDiscord.Handlers
             }
         }
         #endregion
+        #endregion
 
+        #region Maps
         #region Maps CRUD
         public async Task<int> AddMapAsync(MapInfo map)
         {
@@ -505,8 +508,72 @@ namespace RutgersDiscord.Handlers
                 return default;
             }
         }
+
+        public async Task<IEnumerable<MatchInfo>> GetMapsByAttribute(long? mapID = null, string mapName = null, long? workshopID = null, string officialID = null, bool? officialMap = null)
+        {
+            string filter = "true ";
+            if (mapID != null)
+            {
+                filter += $"AND (MapID = {mapID}) ";
+            }
+            if (mapName != null)
+            {
+                filter += $"AND (MapName = {mapName}) ";
+            }
+            if (workshopID != null)
+            {
+                filter += $"AND WorkshopID = {workshopID} ";
+            }
+            if (officialID != null)
+            {
+                filter += $"AND OfficialID = {officialID} ";
+            }
+            if (officialMap != null)
+            {
+                filter += $"AND OfficialMap = {officialMap}";
+            }
+            return await GenericQueryAsync<MatchInfo>($"SELECT * FROM {mapTable} WHERE {filter}");
+        }
+        #endregion
         #endregion
 
+        public async Task<IEnumerable<T>> GenericQueryAsync<T>(string query)
+        {
+            query = SanitizeString(query);
+
+            try
+            {
+                using (var sqliteConnection = new SqliteConnection(databaseName))
+                {
+                    return await sqliteConnection.QueryAsync<T>(query);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+                return default;
+            }
+        }
+
+        public async Task<int> GenericExecuteAsync(string cmd)
+        {
+            cmd = SanitizeString(cmd);
+
+            try
+            {
+                using (var sqliteConnection = new SqliteConnection(databaseName))
+                {
+                    return await sqliteConnection.ExecuteAsync(cmd);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+                return default;
+            }
+        }
+
+        [Obsolete("Use GenericQueryAsync() Instead")]
         private async Task<IEnumerable<T>> GetTableFromDBUsing<T>(string strQuery, string databaseName = databaseName)
         {
             strQuery = SanitizeString(strQuery);
