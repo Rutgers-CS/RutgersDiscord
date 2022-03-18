@@ -4,7 +4,7 @@
 public class TeamInfo
 {
 	[ExplicitKey]
-	public long TeamID { get; set; }
+	public int TeamID { get; set; }
 	public string TeamName { get; set; }
 	//User 1 is captain
 	public long Player1 { get; set; }
@@ -13,7 +13,7 @@ public class TeamInfo
 	public int? Losses { get; set; }
 
 	private TeamInfo() { }
-	public TeamInfo(long teamID, string teamName, long player1, long player2, int? wins, int? losses)
+	public TeamInfo(int teamID, string teamName, long player1, long player2, int? wins, int? losses)
     {
 		TeamID = teamID;
 		TeamName = teamName;

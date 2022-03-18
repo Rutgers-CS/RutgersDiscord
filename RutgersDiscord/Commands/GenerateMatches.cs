@@ -30,7 +30,7 @@ public class GenerateMatches
         await CreateMatchChannel(await GetUsersFromMatch(await _database.GetMatchAsync(1)),"test");
     }
 
-    public async Task CreateMatch(long teamHomeID, long teamAwayID, DateTime t)
+    public async Task CreateMatch(int teamHomeID, int teamAwayID, DateTime t)
     {
         //test if match exitst
         if ((await _database.GetMatchByAttribute(teamHomeID,teamAwayID,matchFinished: false)).Count() != 0)

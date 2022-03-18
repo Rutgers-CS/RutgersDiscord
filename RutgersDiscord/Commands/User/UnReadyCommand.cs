@@ -27,10 +27,38 @@ namespace RutgersDiscord.Commands.User
 
         public async Task UnReady()
         {
-            //Replace with database lookup of team name based on discord id
-            string teamName = "testing";
-            await _context.Interaction.RespondAsync($"{teamName} is not ready for the match");
-            //Tell MatchHandler that the team is not ready
+            MatchInfo match = (await _database.GetMatchByAttribute(discordChannel: (long?)_context.Channel.Id)).FirstOrDefault();
+            if (match == null)
+            {
+                await _context.Interaction.RespondAsync("Match not found", ephemeral: true);
+                return;
+            }
+
+            TeamInfo team = await _database.GetTeamByDiscordIDAsync((long)_context.Interaction.User.Id, true);
+            if (team == null)
+            {
+                await _context.Interaction.RespondAsync("User not captain of a team", ephemeral: true);
+                return;
+            }
+
+            if(match.TeamHomeReady == true && match.TeamAwayReady == true) // (bool?) moment
+            {
+                await _context.Interaction.RespondAsync("Cannot unready after match starts", ephemeral: true);
+                return;
+            }
+
+            //remove ready
+            if(team.TeamID == match.TeamHomeID)
+            {
+                match.TeamHomeReady = false;
+            }
+            if(team.TeamID == match.TeamAwayID)
+            {
+                match.TeamAwayReady = false;
+            }
+            await _database.UpdateMatchAsync(match);
+
+            await _context.Interaction.RespondAsync($"{team.TeamName} is not ready");
         }
     }
 }

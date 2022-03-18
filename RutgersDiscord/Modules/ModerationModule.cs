@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using FluentScheduler;
 
 namespace RutgersDiscord.Modules
 {
@@ -35,7 +36,7 @@ namespace RutgersDiscord.Modules
         }
 
         [SlashCommand("creatematch", "Creates a match.", runMode: RunMode.Async)]
-        public async Task CreateMatch(long teamHomeID, long teamAwayID, int month, int day, int hour)
+        public async Task CreateMatch(int teamHomeID, int teamAwayID, int month, int day, int hour)
         {
             DateTime t = new DateTime(DateTime.Now.Year,month,day,hour,0,0);
             GenerateMatches g = new(_client, Context, _database, _interactivity);
@@ -263,11 +264,13 @@ namespace RutgersDiscord.Modules
         #endregion
 
 
-        /*        [SlashCommand("temp","temp",runMode:RunMode.Async)]
-                public async Task Temp()
-                {
-                    await Context.Interaction.RespondAsync(HelperMethods.RandomID().ToString(),ephemeral: true);
-                }*/
+        [SlashCommand("temp", "temp", runMode: RunMode.Async)]
+        public async Task Temp()
+        {
+            //JobManager.Initialize(new Registry());
+            //JobManager.AddJob
+            await Context.Interaction.RespondAsync("fin", ephemeral: true);
+        }
 
 
     }
