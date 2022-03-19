@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using FluentScheduler;
+using Discord.Rest;
 
 namespace RutgersDiscord.Modules
 {
@@ -267,9 +268,9 @@ namespace RutgersDiscord.Modules
         [SlashCommand("temp", "temp", runMode: RunMode.Async)]
         public async Task Temp()
         {
-            //JobManager.Initialize(new Registry());
-            //JobManager.AddJob
-            await Context.Interaction.RespondAsync("fin", ephemeral: true);
+            var a = _client.GetGuild(Constants.guild).GetTextChannel(Context.Channel.Id).SendMessageAsync("test");
+            //await channel.SendMessageAsync("test");
+            await DeferAsync();
         }
 
 

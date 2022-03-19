@@ -2,6 +2,7 @@
 
 public static class Constants
 {
+    public const ulong guild = 670683408057237547;
     public static class Database
     {
         public const string matchTable = "match_list";
