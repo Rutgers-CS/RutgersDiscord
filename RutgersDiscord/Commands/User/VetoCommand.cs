@@ -145,7 +145,7 @@ public class VetoCommand
 
         //TODO: add map image
         EmbedBuilder embedPost = new EmbedBuilder()
-            .WithColor(new Color(25, 25, 25))
+            .WithColor(Constants.EmbedColors.reject)
             .WithTitle($"{teamHome.TeamName} VS {teamAway.TeamName}")
             .WithDescription($"⠀\n Map:\n{mapName}")
             .WithImageUrl(Constants.ImgurAlbum[mapName]);
@@ -161,7 +161,7 @@ public class VetoCommand
     private EmbedBuilder EmbedHelper(SocketUser captainHome, SocketUser captainAway, SocketUser currentTurn, List<MapInfo> mapPool, bool[] banCaptainHome, bool[] banCaptainAway)
     {
         EmbedBuilder embed = new EmbedBuilder()
-            .WithColor(new Color(250, 218, 94))
+            .WithColor(Constants.EmbedColors.active)
             .WithDescription($"{currentTurn.Username} turn to ban");
 
         string checkmark = ":negative_squared_cross_mark:";

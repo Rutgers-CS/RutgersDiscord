@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace RutgersDiscord.Commands.User
 {
-    internal class UnReadyCommand
+    public class UnReadyCommand
     {
         private readonly DiscordSocketClient _client;
         private readonly SocketInteractionContext _context;
