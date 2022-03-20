@@ -20,13 +20,15 @@ namespace RutgersDiscord.Modules
         private readonly InteractivityService _interactivity;
         private readonly IServiceProvider _services;
         private readonly DatabaseHandler _database;
+        private readonly ScheduleHandler _schedule;
 
-        public ModerationModule(DiscordSocketClient client, InteractivityService interactivity, IServiceProvider services, DatabaseHandler database)
+        public ModerationModule(DiscordSocketClient client, InteractivityService interactivity, IServiceProvider services, DatabaseHandler database, ScheduleHandler schedule)
         {
             _client = client;
             _interactivity = interactivity;
             _services = services;
             _database = database;
+            _schedule = schedule;
         }
 
         [SlashCommand("database", "queries database.", runMode: RunMode.Async)]
@@ -40,7 +42,7 @@ namespace RutgersDiscord.Modules
         public async Task CreateMatch(int teamHomeID, int teamAwayID, int month, int day, int hour)
         {
             DateTime t = new DateTime(DateTime.Now.Year,month,day,hour,0,0);
-            GenerateMatches g = new(_client, Context, _database, _interactivity);
+            GenerateMatches g = new(_client, Context, _database, _interactivity,_schedule);
             await g.CreateMatch(teamHomeID, teamAwayID,t);
         }
 

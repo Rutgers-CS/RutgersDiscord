@@ -27,19 +27,24 @@ public class ScheduleHandler
 		//Get all players at once to not spam the database
 		IEnumerable<TeamInfo> allTeams = await _database.GetAllTeamsAsync();
 		foreach(MatchInfo match in futureMatches)
-        {
+		{
 			IEnumerable<TeamInfo> teams = allTeams.Where(s => (s.TeamID == match.TeamHomeID || s.TeamID == match.TeamAwayID));
 			List<long> players = teams.Select(t => t.Player1).ToList();
 			players.AddRange(teams.Select(t => t.Player2));
-			
-			JobManager.AddJob(async () => await MentionUsers(match),s => s.ToRunOnceAt(new DateTime((long)match.MatchTime) - TimeSpan.FromMinutes(15)));
+			JobManager.AddJob(async () => await MentionUsers((ulong)match.DiscordChannel,players),s => s.WithName($"[match_{match.MatchID}]").ToRunOnceAt(new DateTime((long)match.MatchTime) - TimeSpan.FromMinutes(15)));
         }
     }
 
-	private async Task MentionUsers(MatchInfo match)
+	public async Task MentionUsers(ulong channel, List<long> players)
     {
-		RestTextChannel channel = (RestTextChannel)await _client.GetChannelAsync((ulong)match.DiscordChannel);
-    }
+		string message = "heads up ";
+		foreach(long player in players)
+        {
+			message += $"<@{player}> ";
+        }
+		message += "there are 15 mins until match starts!";
+		await _client.GetGuild(Constants.guild).GetTextChannel(channel).SendMessageAsync(message);
+	}
 
 	
 }
