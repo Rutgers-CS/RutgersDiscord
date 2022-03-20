@@ -57,11 +57,11 @@ namespace RutgersDiscord.Commands.User
             TeamInfo teamOpponent;
             if (match.TeamHomeID == team.TeamID)
             {
-                teamOpponent = await _database.GetTeamAsync((long)match.TeamAwayID);
+                teamOpponent = await _database.GetTeamAsync((int)match.TeamAwayID);
             }
             else
             {
-                teamOpponent = await _database.GetTeamAsync((long)match.TeamHomeID);
+                teamOpponent = await _database.GetTeamAsync((int)match.TeamHomeID);
             }
 
             if (match.TeamHomeReady == true)

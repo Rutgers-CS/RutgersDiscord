@@ -214,7 +214,7 @@ namespace RutgersDiscord.Handlers
             }
         }
 
-        public async Task<TeamInfo> GetTeamAsync(long teamID)
+        public async Task<TeamInfo> GetTeamAsync(int teamID)
         {
             string query = $"SELECT * FROM {teamTable} WHERE TeamID = {teamID}";
             try
@@ -246,7 +246,7 @@ namespace RutgersDiscord.Handlers
             }
         }
 
-        public async Task<int> DeleteTeamAsync(long teamID)
+        public async Task<int> DeleteTeamAsync(int teamID)
         {
             string query = $"DELETE from {teamTable} WHERE TeamID = {teamID}";
             try
@@ -370,7 +370,7 @@ namespace RutgersDiscord.Handlers
         #region Matches Extra
 
         //TODO: Add more attributes here later I'm lazy
-        public async Task<IEnumerable<MatchInfo>> GetMatchByAttribute(long? teamID1 = null, long? teamID2 = null, long? matchTime = null, int? scoreHome = null, int? scoreAway = null, bool? matchFinished = null,bool? homeTeamWon = null, int? mapID = null, long? discordChannel = null, bool? teamHomeReady = null, bool? teamAwayReady = null)
+        public async Task<IEnumerable<MatchInfo>> GetMatchByAttribute(int? teamID1 = null, int? teamID2 = null, long? matchTime = null, int? scoreHome = null, int? scoreAway = null, bool? matchFinished = null,bool? homeTeamWon = null, int? mapID = null, long? discordChannel = null, bool? teamHomeReady = null, bool? teamAwayReady = null)
         {
             string filter = "true ";
             if (teamID1 != null)
@@ -454,7 +454,7 @@ namespace RutgersDiscord.Handlers
             }
         }
 
-        public async Task<MapInfo> GetMapAsync(long mapID)
+        public async Task<MapInfo> GetMapAsync(int mapID)
         {
             string query = $"SELECT * FROM {mapTable} WHERE MapID = {mapID}";
             try
@@ -486,7 +486,7 @@ namespace RutgersDiscord.Handlers
             }
         }
 
-        public async Task<int> DeleteMapAsync(long mapID)
+        public async Task<int> DeleteMapAsync(int mapID)
         {
             string query = $"DELETE from {mapTable} WHERE TeamID = {mapID}";
             try

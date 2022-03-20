@@ -128,7 +128,7 @@ namespace RutgersDiscord.Modules
         }
 
         [SlashCommand("read-team", "Reads a team", runMode: RunMode.Async)]
-        public async Task ReadTeam(long teamID)
+        public async Task ReadTeam(int teamID)
         {
             TeamInfo team = await _database.GetTeamAsync(teamID);
             EmbedBuilder embed = new EmbedBuilder()
@@ -146,7 +146,7 @@ namespace RutgersDiscord.Modules
         }
 
         [SlashCommand("delete-team", "Deletes a team", runMode: RunMode.Async)]
-        public async Task DeleteTeam(long teamID)
+        public async Task DeleteTeam(int teamID)
         {
             await _database.DeleteTeamAsync(teamID);
             await RespondAsync("Team Deleted");
@@ -221,7 +221,7 @@ namespace RutgersDiscord.Modules
         }
 
         [SlashCommand("read-map", "Reads a map", runMode: RunMode.Async)]
-        public async Task ReadMap(long mapID)
+        public async Task ReadMap(int mapID)
         {
             MapInfo map = await _database.GetMapAsync(mapID);
             EmbedBuilder embed = new EmbedBuilder()
@@ -239,7 +239,7 @@ namespace RutgersDiscord.Modules
         }
 
         [SlashCommand("delete-map", "Deletes a map", runMode: RunMode.Async)]
-        public async Task DeleteMap(long mapID)
+        public async Task DeleteMap(int mapID)
         {
             await _database.DeleteMapAsync(mapID);
             await RespondAsync("Map Deleted");
