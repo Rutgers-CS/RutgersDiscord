@@ -53,12 +53,13 @@ namespace RutgersDiscord.Handlers
         #region Players CRUD
         public async Task<int> AddPlayerAsync(PlayerInfo player)
         {
-            string query = $"INSERT INTO {playerTable} (DiscordID, Steam64ID, SteamID, Name, TeamID, Kills, Deaths) VALUES (@DiscordID, @Steam64ID, @SteamID, @Name, @TeamID, @Kills, @Deaths)";
+            //string query = $"INSERT INTO {playerTable} (DiscordID, Steam64ID, SteamID, Name, TeamID, Kills, Deaths) VALUES (@DiscordID, @Steam64ID, @SteamID, @Name, @TeamID, @Kills, @Deaths)";
             try
             {
                 using (var sqliteConnection = new SqliteConnection(databaseName))
                 {
-                    return await sqliteConnection.ExecuteAsync(query, player);
+                    //return await sqliteConnection.ExecuteAsync(query, player);
+                    return await sqliteConnection.InsertAsync(player);
                 }
             }
             catch (Exception ex)
@@ -200,12 +201,13 @@ namespace RutgersDiscord.Handlers
         #region Teams CRUD
         public async Task<int> AddTeamAsync(TeamInfo team)
         {
-            string query = "INSERT INTO teams (TeamID, TeamName, Player1, Player2, Wins, Losses) VALUES (@TeamID, @TeamName, @Player1, @Player2, @Wins, @Losses)";
+            //string query = "INSERT INTO teams (TeamID, TeamName, Player1, Player2, Wins, Losses) VALUES (@TeamID, @TeamName, @Player1, @Player2, @Wins, @Losses)";
             try
             {
                 using (var sqliteConnection = new SqliteConnection(databaseName))
                 {
-                    return await sqliteConnection.ExecuteAsync(query, team);
+                    //return await sqliteConnection.ExecuteAsync(query, team);
+                    return await sqliteConnection.InsertAsync(team);
                 }
             }
             catch

@@ -24,15 +24,15 @@ namespace RutgersDiscord.Modules
     {
         private readonly DiscordSocketClient _client;
         private readonly InteractivityService _interactivity;
-        private readonly IServiceProvider _services;
         private readonly DatabaseHandler _database;
+        private readonly RegistrationHandler _registrationHandler;
 
-        public InteractionModule(DiscordSocketClient client, InteractivityService interactivity, DatabaseHandler database, IServiceProvider services)
+        public InteractionModule(DiscordSocketClient client, InteractivityService interactivity, DatabaseHandler database, RegistrationHandler registrationHandler)
         {
             _client = client;
             _interactivity = interactivity;
             _database = database;
-            _services = services;
+            _registrationHandler = registrationHandler;
         }
 
         [SlashCommand("echo", "Echo an input", runMode: RunMode.Async)]
@@ -51,8 +51,8 @@ namespace RutgersDiscord.Modules
         [SlashCommand("register", "Provide required information to register for the event")]
         public async Task Register()
         {
-            RegisterCommand rc = new RegisterCommand(_client, Context, _database, _interactivity);
-            rc.RegistrationForm();
+            RegisterCommand rc = new RegisterCommand(_client, Context, _database, _interactivity, _registrationHandler);
+            await rc.RegistrationForm();
         }
 
         [SlashCommand("ready", "Set your team as ready for the match")]
