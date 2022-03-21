@@ -72,8 +72,8 @@ namespace RutgersDiscord.Commands.User
             Random r = new();
             int commandID = r.Next();
             ComponentBuilder component = new ComponentBuilder()
-                .WithButton("Accept Reschedule", $"reschedule_accept_{match.MatchID}_{commandID}")
-                .WithButton("Reject Reschedule", $"reschedule_reject_{match.MatchID}_{commandID}");
+                .WithButton("Accept Reschedule", $"reschedule_{match.MatchID}_{commandID}_accept")
+                .WithButton("Reject Reschedule", $"reschedule_{match.MatchID}_{commandID}_reject");
             EmbedBuilder embed = new EmbedBuilder()
                 .WithColor(Constants.EmbedColors.active)
                 .WithTitle($"{_context.User.Username} requested a reschedule")
@@ -84,8 +84,8 @@ namespace RutgersDiscord.Commands.User
 
             var response = await _interactivity.NextInteractionAsync(
                 s => (s.User.Id == (ulong)teamOpponent.Player1
-                && (((SocketMessageComponent)s).Data.CustomId == $"reschedule_accept_{match.MatchID}_{commandID}"
-                || ((SocketMessageComponent)s).Data.CustomId == $"reschedule_reject_{match.MatchID}_{commandID}")));
+                && ((SocketMessageComponent)s).Data.CustomId.StartsWith($"reschedule_{match.MatchID}_{commandID}")),
+                timeout:TimeSpan.FromHours(1));
 
             ComponentBuilder componentEmpty = new ComponentBuilder();
             await _context.Interaction.ModifyOriginalResponseAsync(m => m.Components = componentEmpty.Build());
@@ -97,13 +97,13 @@ namespace RutgersDiscord.Commands.User
                 return;
             }
 
-            if (((SocketMessageComponent)response.Value).Data.CustomId == $"reschedule_reject_{match.MatchID}_{commandID}")
+            if (((SocketMessageComponent)response.Value).Data.CustomId == $"reschedule_{match.MatchID}_{commandID}_reject")
             {
                 await _context.Interaction.ModifyOriginalResponseAsync(m => m.Embed = embed.WithColor(Constants.EmbedColors.reject).Build());
                 return;
             }
 
-            if(((SocketMessageComponent)response.Value).Data.CustomId == $"reschedule_reject_{match.MatchID}_{commandID}")
+            if(((SocketMessageComponent)response.Value).Data.CustomId == $"reschedule_{match.MatchID}_{commandID}_accept")
             {
                 await _context.Interaction.ModifyOriginalResponseAsync(m => m.Embed = embed.WithColor(Constants.EmbedColors.accept).Build());
                 match.MatchTime = date.Ticks;

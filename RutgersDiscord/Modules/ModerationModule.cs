@@ -258,6 +258,7 @@ namespace RutgersDiscord.Modules
         }
         #endregion
 
+
         [SlashCommand("test-data", "adds test data to database", runMode: RunMode.Async)]
         public async Task TestData()
         {
@@ -275,6 +276,18 @@ namespace RutgersDiscord.Modules
             await DeferAsync();
         }
 
+
+        [SlashCommand("resolve","resolves admin call",runMode: RunMode.Async)]
+        public async Task Resolve()
+        {
+            MatchInfo match = (await _database.GetMatchByAttribute(discordChannel: (long?)Context.Channel.Id)).FirstOrDefault();
+            if (match == null)
+            {
+                await Context.Interaction.RespondAsync("No match found", ephemeral: true);
+                return;
+            }
+
+        }
 
     }
 }
