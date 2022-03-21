@@ -88,7 +88,7 @@ namespace RutgersDiscord.Handlers
 
         public async Task RegisterFormHandler(SocketModal modal)
         {
-            if(!modal.Data.CustomId.StartsWith("register_form_"))
+            if(!modal.Data.CustomId.Equals("register_form"))
             {
                 return;
             }
@@ -102,7 +102,7 @@ namespace RutgersDiscord.Handlers
             string steamID = "";
             if (steamID64 == 0)
             {
-                await modal.RespondAsync("Registration Failed. Please verify the link to your steam profile and resubmit.");
+                await modal.RespondAsync("Registration Failed. Please verify the link to your steam profile and resubmit.", ephemeral: true);
             }
             else
             {
@@ -110,11 +110,17 @@ namespace RutgersDiscord.Handlers
             }
 
             PlayerInfo player = new((long)modal.User.Id, steamID64, steamID, playerName);
-            await _database.AddPlayerAsync(player);
+            int status = await _database.AddPlayerAsync(player);
 
-            await SendDMButtons(modal.User);
-
-            await modal.RespondAsync("Registration Succeeded. Please check your DMs to pick a team.");
+            if (status == 0)
+            {
+                await modal.RespondAsync("Registration Failed. You are already registered.", ephemeral: true);
+            }
+            else
+            {
+                await SendDMButtons(modal.User);
+                await modal.RespondAsync("Registration Succeeded. Please check your DMs to pick a team.", ephemeral: true);
+            }
         }
 
         private static async Task<long> GetSteamID64(string url)

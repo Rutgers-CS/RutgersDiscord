@@ -59,7 +59,14 @@ namespace RutgersDiscord.Handlers
                 using (var sqliteConnection = new SqliteConnection(databaseName))
                 {
                     //return await sqliteConnection.ExecuteAsync(query, player);
-                    return await sqliteConnection.InsertAsync(player);
+                    try
+                    {
+                        return await sqliteConnection.InsertAsync(player);
+                    }
+                    catch (SqliteException ex)
+                    {
+                        return 0;
+                    }
                 }
             }
             catch (Exception ex)
