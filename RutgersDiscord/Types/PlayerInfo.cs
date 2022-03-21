@@ -12,7 +12,7 @@ public class PlayerInfo
     public int? Deaths { get; set; }
 
     private PlayerInfo() { }
-    public PlayerInfo(long DiscordID, long Steam64ID, string SteamID, string Name, int? TeamID, int? Kills, int? Deaths)
+    public PlayerInfo(long DiscordID, long Steam64ID, string SteamID, string Name, int? TeamID = null, int? Kills = null, int? Deaths = null)
     {
         this.DiscordID = DiscordID;
         this.Steam64ID = Steam64ID;
