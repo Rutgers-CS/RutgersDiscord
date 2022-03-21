@@ -71,16 +71,17 @@ namespace RutgersDiscord.Handlers
 
             switch (component.Data.CustomId)
             {
-                case "register_create":
+                case "register_team_create":
                     //Create new team
                     await component.RespondWithModalAsync(newTeamModal.Build());
                     break;
-                case "register_join":
+                case "register_team_join":
                     //Pick existing team
                     await component.RespondAsync("Select a team", components: selectBuilder.Build());
                     break;
-                case "register_look":
+                case "register_team_look":
                     //Flag as looking for team
+                    await _client.GetGuild(Constants.guild).GetTextChannel(Constants.Channels.scGeneral).SendMessageAsync($"{component.User.Mention} has registed for Scarlet Classic Wingman 2V2 and is looking for a team.");
                     await component.RespondAsync("No team");
                     break;
             }
@@ -119,6 +120,7 @@ namespace RutgersDiscord.Handlers
             else
             {
                 await SendDMButtons(modal.User);
+                await (modal.User as IGuildUser).AddRoleAsync(Constants.Role.scarletClassic);
                 await modal.RespondAsync("Registration Succeeded. Please check your DMs to pick a team.", ephemeral: true);
             }
         }
