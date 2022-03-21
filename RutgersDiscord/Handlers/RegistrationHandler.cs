@@ -67,7 +67,6 @@ namespace RutgersDiscord.Handlers
                         .AddTextInput("Team Name", "new_team_name");
                     await component.RespondWithModalAsync(newTeamModal.Build());
                     break;
-
                 case "register_team_join":
                     //Pick existing team
 
@@ -93,9 +92,9 @@ namespace RutgersDiscord.Handlers
                         .WithSelectMenu(existingTeamSelect);
                     await component.RespondAsync("Select a team", components: selectBuilder.Build());
                     break;
-
                 case "register_team_look":
                     //Flag as looking for team
+                    await _client.GetGuild(Constants.guild).GetTextChannel(Constants.Channels.scGeneral).SendMessageAsync($"{component.User.Mention} has registed for Scarlet Classic Wingman 2V2 and is looking for a team.");
                     await component.RespondAsync("No team");
                     break;
             }
@@ -103,7 +102,7 @@ namespace RutgersDiscord.Handlers
 
         public async Task RegisterFormHandler(SocketModal modal)
         {
-            if(!modal.Data.CustomId.StartsWith("register_form"))
+            if(!modal.Data.CustomId.Equals("register_form"))
             {
                 return;
             }
@@ -117,7 +116,7 @@ namespace RutgersDiscord.Handlers
             string steamID = "";
             if (steamID64 == 0)
             {
-                await modal.RespondAsync("Registration Failed. Please verify the link to your steam profile and resubmit.");
+                await modal.RespondAsync("Registration Failed. Please verify the link to your steam profile and resubmit.", ephemeral: true);
             }
             else
             {
@@ -125,11 +124,18 @@ namespace RutgersDiscord.Handlers
             }
 
             PlayerInfo player = new((long)modal.User.Id, steamID64, steamID, playerName);
-            await _database.AddPlayerAsync(player);
+            int status = await _database.AddPlayerAsync(player);
 
-            await SendDMButtons(modal.User);
-
-            await modal.RespondAsync("Registration Succeeded. Please check your DMs to pick a team.");
+            if (status == 0)
+            {
+                await modal.RespondAsync("Registration Failed. You are already registered.", ephemeral: true);
+            }
+            else
+            {
+                await SendDMButtons(modal.User);
+                await (modal.User as IGuildUser).AddRoleAsync(Constants.Role.scarletClassic);
+                await modal.RespondAsync("Registration Succeeded. Please check your DMs to pick a team.", ephemeral: true);
+            }
         }
 
         public async Task RegisterTeamForm(SocketModal modal)
