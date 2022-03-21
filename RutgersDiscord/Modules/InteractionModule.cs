@@ -81,7 +81,7 @@ namespace RutgersDiscord.Modules
             //TODO
         }
 
-        [SlashCommand("teamselction", "Select or create a team")]
+        [SlashCommand("teamselection", "Select or create a team")]
         public async Task TeamSelection()
         {
             var builder = new ComponentBuilder()
