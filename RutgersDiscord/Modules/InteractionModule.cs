@@ -24,14 +24,14 @@ namespace RutgersDiscord.Modules
         private readonly DiscordSocketClient _client;
         private readonly InteractivityService _interactivity;
         private readonly DatabaseHandler _database;
-        private readonly IServiceProvider _services;
+        private readonly RegistrationHandler _registrationHandler;
 
-        public InteractionModule(DiscordSocketClient client, InteractivityService interactivity, DatabaseHandler database, IServiceProvider services)
+        public InteractionModule(DiscordSocketClient client, InteractivityService interactivity, DatabaseHandler database, RegistrationHandler registrationHandler)
         {
             _client = client;
             _interactivity = interactivity;
             _database = database;
-            _services = services;
+            _registrationHandler = registrationHandler;
         }
 
         [SlashCommand("echo", "Echo an input", runMode: RunMode.Async)]
@@ -51,14 +51,14 @@ namespace RutgersDiscord.Modules
         public async Task Veto()
         {
             VetoCommand v = new VetoCommand(_client, Context, _database, _interactivity);
-            await v.StartVeto();
+            await v.StartVetoAcknowledge();
         }
 
         [SlashCommand("register", "Provide required information to register for the event")]
         public async Task Register()
         {
-            RegisterCommand rc = new RegisterCommand(_client, Context, _database, _interactivity);
-            rc.RegistrationForm();
+            RegisterCommand rc = new RegisterCommand(_client, Context, _database, _interactivity, _registrationHandler);
+            await rc.RegistrationForm();
         }
 
         [SlashCommand("ready", "Set your team as ready for the match")]
@@ -103,59 +103,12 @@ namespace RutgersDiscord.Modules
             lc.GetHelp();
         }
 
-        [SlashCommand("teamselction", "Select or create a team")]
+        [SlashCommand("teamselection", "Select or create a team")]
         public async Task TeamSelection()
         {
-            var builder = new ComponentBuilder()
-                .WithButton("Create a new team", "new_team")
-                .WithButton("Join existing team", "join_team")
-                .WithButton("Looking for team", "no_team")
-                ;
 
-            await ReplyAsync("test", components: builder.Build());
-            _client.ButtonExecuted += TeamButtonHandler;
         }
 
-        public async Task TeamButtonHandler(SocketMessageComponent component)
-        {
-            List<string> current_teams = new List<string>();
-            current_teams.Add("test1");
-            current_teams.Add("test2");
-
-            var newTeamModal = new ModalBuilder()
-                .WithTitle("New Team")
-                .WithCustomId("new_team_modal")
-                .AddTextInput("Team Name", "new_team_name");
-
-            var existingTeamSelect = new SelectMenuBuilder()
-                .WithPlaceholder("Select a team")
-                .WithCustomId("existing_team_selection")
-                .WithMinValues(1)
-                .WithMaxValues(1);
-
-            foreach (string team in current_teams)
-            {
-                existingTeamSelect.AddOption(team.ToString(), team.ToString());
-            }
-
-            var selectBuilder = new ComponentBuilder()
-                .WithSelectMenu(existingTeamSelect);
-
-            switch(component.Data.CustomId)
-            {
-                case "new_team":
-                    //Create new team
-                    await component.RespondWithModalAsync(newTeamModal.Build());
-                    break;
-                case "join_team":
-                    //Pick existing team
-                    await component.RespondAsync("Select a team", components: selectBuilder.Build());
-                    break;
-                case "no_team":
-                    //Flag as looking for team
-                    await component.RespondAsync("No team");
-                    break;
-            }
-        }
+        
     }
 }

@@ -33,10 +33,14 @@ namespace RutgersDiscord
                 .AddSingleton(_interaction)
                 .AddSingleton<InteractionHandler>()
                 .AddSingleton<DatabaseHandler>()
+                .AddSingleton<ScheduleHandler>()
+                .AddSingleton<RegistrationHandler>()
                 .AddSingleton(s => new InteractivityService(_client, interactiveConfig))
                 .BuildServiceProvider();
 
             await _services.GetRequiredService<InteractionHandler>().InstallAsync();
+            await _services.GetRequiredService<ScheduleHandler>().AddRequiredJobsAsync();
+            _services.GetRequiredService<RegistrationHandler>().ListenDMButtons();
 
             _client.Ready += ClientReady;
 
