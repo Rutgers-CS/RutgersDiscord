@@ -18,17 +18,17 @@ namespace RutgersDiscord.Modules
     {
         private readonly DiscordSocketClient _client;
         private readonly InteractivityService _interactivity;
-        private readonly IServiceProvider _services;
         private readonly DatabaseHandler _database;
         private readonly ScheduleHandler _schedule;
+        private readonly RegistrationHandler _registrationHandler;
 
-        public ModerationModule(DiscordSocketClient client, InteractivityService interactivity, IServiceProvider services, DatabaseHandler database, ScheduleHandler schedule)
+        public ModerationModule(DiscordSocketClient client, InteractivityService interactivity, DatabaseHandler database, ScheduleHandler schedule, RegistrationHandler registrationHandler)
         {
             _client = client;
             _interactivity = interactivity;
-            _services = services;
             _database = database;
             _schedule = schedule;
+            _registrationHandler = registrationHandler;
         }
 
         [SlashCommand("database", "queries database.", runMode: RunMode.Async)]
@@ -267,25 +267,18 @@ namespace RutgersDiscord.Modules
         }
         #endregion
 
+        [SlashCommand("resolve", "resolves admin call", runMode: RunMode.Async)]
+        public async Task Resolve()
+        {
+            //TODO
+        }
+
+
 
         [SlashCommand("temp", "temp", runMode: RunMode.Async)]
         public async Task Temp()
         {
-            await (await _client.GetUser(Context.User.Id).CreateDMChannelAsync()).SendMessageAsync("hello");
+            await _registrationHandler.SendDMButtons(Context.User);
         }
-
-
-        [SlashCommand("resolve","resolves admin call",runMode: RunMode.Async)]
-        public async Task Resolve()
-        {
-            MatchInfo match = (await _database.GetMatchByAttribute(discordChannel: (long?)Context.Channel.Id)).FirstOrDefault();
-            if (match == null)
-            {
-                await Context.Interaction.RespondAsync("No match found", ephemeral: true);
-                return;
-            }
-
-        }
-
     }
 }

@@ -286,6 +286,37 @@ namespace RutgersDiscord.Handlers
             }
         }
 
+        public async Task<IEnumerable<TeamInfo>> GetTeamByAttribute(int? teamID = null, string teamName = null, long? player1 = null, long? player2 = null, int? wins = null, int? losses = null)
+        {
+            string filter = "true ";
+            if (teamID != null)
+            {
+                filter += $"AND TeamID = {teamID} ";
+            }
+            if (teamName != null)
+            {
+                filter += $"AND TeamName = \"{SanitizeString(teamName)}\" ";
+            }
+            if (player1 != null)
+            {
+                filter += $"AND Player1 = {player1} ";
+            }
+            if (player2 != null)
+            {
+                filter += $"AND Player2 = {player2} ";
+            }
+            if (wins != null)
+            {
+                filter += $"AND Wins = {wins} ";
+            }
+            if (losses != null)
+            {
+                filter += $"AND Losses = {losses} ";
+            }
+            
+            return await GetTableFromDBUsing<TeamInfo>($"SELECT * FROM {teamTable} WHERE {filter}");
+        }
+
         public async Task<IEnumerable<TeamInfo>> GetAllTeamsAsync()
         {
             string query = $"SELECT * FROM {teamTable}";
