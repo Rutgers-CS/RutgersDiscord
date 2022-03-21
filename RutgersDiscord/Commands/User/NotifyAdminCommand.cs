@@ -35,7 +35,7 @@ namespace RutgersDiscord.Commands.User
             ulong adminroleid = 670685962908598273; //change to admin role (mafioso)
             var chnl = _client.GetChannel(discid) as IMessageChannel;
             await chnl.SendMessageAsync("**Admin required** " + $"<@&{adminroleid}>" + "\n" + "Requested by: " + _context.User.Mention + $" in <#{_context.Channel.Id}>.");
-            await _context.Interaction.RespondAsync("Admins have been notified.");
+            await _context.Interaction.RespondAsync("Admins have been notified.", ephemeral: true);
 
         }
 
