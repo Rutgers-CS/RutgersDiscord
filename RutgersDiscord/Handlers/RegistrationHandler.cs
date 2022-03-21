@@ -29,6 +29,8 @@ namespace RutgersDiscord.Handlers
         {
             _client.ButtonExecuted += TeamButtonHandler;
             _client.ModalSubmitted += RegisterFormHandler;
+            _client.SelectMenuExecuted += DropdownTeamJoin;
+            _client.ButtonExecuted += ButtonTeamRequest;
         }
 
         public async Task SendDMButtons(SocketUser user)
@@ -48,38 +50,51 @@ namespace RutgersDiscord.Handlers
                 return;
             }
 
-            IEnumerable<TeamInfo> current_teams = await _database.GetAllTeamsAsync();
-
-            var newTeamModal = new ModalBuilder()
-                .WithTitle("New Team")
-                .WithCustomId("new_team_modal")
-                .AddTextInput("Team Name", "new_team_name");
-
-            var existingTeamSelect = new SelectMenuBuilder()
-                .WithPlaceholder("Select a team")
-                .WithCustomId("existing_team_selection")
-                .WithMinValues(1)
-                .WithMaxValues(1);
-
-            foreach (TeamInfo team in current_teams)
+            TeamInfo userTeam = await _database.GetTeamByDiscordIDAsync((long)component.User.Id);
+            if (userTeam != null)
             {
-                existingTeamSelect.AddOption(team.TeamName, $"register_modal_{team.TeamID}");
+                await component.RespondAsync("player already in team", ephemeral: true);
+                return;
             }
-
-            var selectBuilder = new ComponentBuilder()
-                .WithSelectMenu(existingTeamSelect);
 
             switch (component.Data.CustomId)
             {
-                case "register_create":
+                case "register_team_create":
                     //Create new team
+                    var newTeamModal = new ModalBuilder()
+                        .WithTitle("New Team")
+                        .WithCustomId("register_modal_teamcreate")
+                        .AddTextInput("Team Name", "new_team_name");
                     await component.RespondWithModalAsync(newTeamModal.Build());
                     break;
-                case "register_join":
+
+                case "register_team_join":
                     //Pick existing team
+
+                    IEnumerable<TeamInfo> current_teams = await _database.GetTeamByAttribute(player2: 0);
+                    List<SelectMenuOptionBuilder> selection = new();
+
+                    if(current_teams.Count() == 0)
+                    {
+                        await component.RespondAsync("No teams found", ephemeral: true);
+                        return;
+                    }
+
+                    foreach (TeamInfo team in current_teams)
+                    {
+                        selection.Add(new SelectMenuOptionBuilder(label: team.TeamName, value: $"register_dropdown_{team.TeamID}"));
+                    }
+                    SelectMenuBuilder existingTeamSelect = new SelectMenuBuilder()
+                        .WithPlaceholder("Select a team")
+                        .WithCustomId("register_dropdown_jointeam")
+                        .WithOptions(selection);
+
+                    ComponentBuilder selectBuilder = new ComponentBuilder()
+                        .WithSelectMenu(existingTeamSelect);
                     await component.RespondAsync("Select a team", components: selectBuilder.Build());
                     break;
-                case "register_look":
+
+                case "register_team_look":
                     //Flag as looking for team
                     await component.RespondAsync("No team");
                     break;
@@ -88,7 +103,7 @@ namespace RutgersDiscord.Handlers
 
         public async Task RegisterFormHandler(SocketModal modal)
         {
-            if(!modal.Data.CustomId.StartsWith("register_form_"))
+            if(!modal.Data.CustomId.StartsWith("register_form"))
             {
                 return;
             }
@@ -115,6 +130,57 @@ namespace RutgersDiscord.Handlers
             await SendDMButtons(modal.User);
 
             await modal.RespondAsync("Registration Succeeded. Please check your DMs to pick a team.");
+        }
+
+        public async Task RegisterTeamForm(SocketModal modal)
+        {
+            if (modal.Data.CustomId == "register_modal_teamcreate")
+            {
+                return;
+            }
+
+            List<SocketMessageComponentData> components = modal.Data.Components.ToList();
+            string teamName = components.First(x => x.CustomId == "new_team_name").Value;
+
+            if(teamName == "" || teamName == null)
+            {
+                await modal.RespondAsync("invalid team name", ephemeral: true);
+                return;
+            }
+
+            Random r = new();
+            TeamInfo team = new TeamInfo(r.Next(), teamName, (long)modal.User.Id, 0,null,null);
+            await _database.AddTeamAsync(team);
+            await modal.RespondAsync("team registered!");
+        }
+
+        public async Task DropdownTeamJoin(SocketMessageComponent component)
+        {
+            if(component.Data.CustomId != "register_dropdown_jointeam")
+            {
+                return;
+            }
+
+            await (await component.GetOriginalResponseAsync()).DeleteAsync();
+
+            int teamID = int.Parse(component.Data.Values.First().Replace("register_dropdown_", ""));
+            TeamInfo team = await _database.GetTeamAsync(teamID);
+
+            if(team.Player2 != 0)
+            {
+                await component.RespondAsync("team is already full", ephemeral: true);
+            }
+
+            var builder = new ComponentBuilder()
+                .WithButton("Accept", $"register_request_accept_{component.User.Id}")
+                .WithButton("Reject", $"register_request_reject_{component.User.Id}");
+
+            await (await _client.GetUser((ulong)team.Player1).CreateDMChannelAsync()).SendMessageAsync($"{component.User.Mention} requested to join your team");
+        }
+
+        public async Task ButtonTeamRequest(SocketMessageComponent component)
+        {
+            
         }
 
         private static async Task<long> GetSteamID64(string url)
