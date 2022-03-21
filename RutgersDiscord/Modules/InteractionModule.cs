@@ -84,56 +84,9 @@ namespace RutgersDiscord.Modules
         [SlashCommand("teamselection", "Select or create a team")]
         public async Task TeamSelection()
         {
-            var builder = new ComponentBuilder()
-                .WithButton("Create a new team", "new_team")
-                .WithButton("Join existing team", "join_team")
-                .WithButton("Looking for team", "no_team")
-                ;
 
-            await ReplyAsync("test", components: builder.Build());
-            _client.ButtonExecuted += TeamButtonHandler;
         }
 
-        public async Task TeamButtonHandler(SocketMessageComponent component)
-        {
-            List<string> current_teams = new List<string>();
-            current_teams.Add("test1");
-            current_teams.Add("test2");
-
-            var newTeamModal = new ModalBuilder()
-                .WithTitle("New Team")
-                .WithCustomId("new_team_modal")
-                .AddTextInput("Team Name", "new_team_name");
-
-            var existingTeamSelect = new SelectMenuBuilder()
-                .WithPlaceholder("Select a team")
-                .WithCustomId("existing_team_selection")
-                .WithMinValues(1)
-                .WithMaxValues(1);
-
-            foreach (string team in current_teams)
-            {
-                existingTeamSelect.AddOption(team.ToString(), team.ToString());
-            }
-
-            var selectBuilder = new ComponentBuilder()
-                .WithSelectMenu(existingTeamSelect);
-
-            switch(component.Data.CustomId)
-            {
-                case "new_team":
-                    //Create new team
-                    await component.RespondWithModalAsync(newTeamModal.Build());
-                    break;
-                case "join_team":
-                    //Pick existing team
-                    await component.RespondAsync("Select a team", components: selectBuilder.Build());
-                    break;
-                case "no_team":
-                    //Flag as looking for team
-                    await component.RespondAsync("No team");
-                    break;
-            }
-        }
+        
     }
 }
