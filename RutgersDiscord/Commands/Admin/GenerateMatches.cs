@@ -65,7 +65,10 @@ public class GenerateMatches
         //Create embed with info
         EmbedFieldBuilder commandList = new EmbedFieldBuilder()
             .WithName("Commands")
-            .WithValue("`/reschedule [month] [day] [hour] [minute]` to request a match\n" +
+            .WithValue("`/admin` pings admin \n" +
+                       "`/ready` (max 15 mins before)\n" +
+                       "`/reschedule [month] [day] [hour] [minute]` to request a reschedule\n" +
+                       "`/unready`\n" +
                        "`/veto` to start veto on the map");
         EmbedBuilder embed = new EmbedBuilder()
             .WithTitle($"{teamHome.TeamName} vs. {teamAway.TeamName}")
