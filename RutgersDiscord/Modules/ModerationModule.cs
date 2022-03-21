@@ -7,6 +7,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using FluentScheduler;
+using Discord.Rest;
 
 namespace RutgersDiscord.Modules
 {
@@ -18,13 +20,15 @@ namespace RutgersDiscord.Modules
         private readonly InteractivityService _interactivity;
         private readonly IServiceProvider _services;
         private readonly DatabaseHandler _database;
+        private readonly ScheduleHandler _schedule;
 
-        public ModerationModule(DiscordSocketClient client, InteractivityService interactivity, IServiceProvider services, DatabaseHandler database)
+        public ModerationModule(DiscordSocketClient client, InteractivityService interactivity, IServiceProvider services, DatabaseHandler database, ScheduleHandler schedule)
         {
             _client = client;
             _interactivity = interactivity;
             _services = services;
             _database = database;
+            _schedule = schedule;
         }
 
         [SlashCommand("database", "queries database.", runMode: RunMode.Async)]
@@ -35,10 +39,10 @@ namespace RutgersDiscord.Modules
         }
 
         [SlashCommand("creatematch", "Creates a match.", runMode: RunMode.Async)]
-        public async Task CreateMatch(long teamHomeID, long teamAwayID, int month, int day, int hour)
+        public async Task CreateMatch(int teamHomeID, int teamAwayID, int month, int day, int hour)
         {
             DateTime t = new DateTime(DateTime.Now.Year,month,day,hour,0,0);
-            GenerateMatches g = new(_client, Context, _database, _interactivity);
+            GenerateMatches g = new(_client, Context, _database, _interactivity,_schedule);
             await g.CreateMatch(teamHomeID, teamAwayID,t);
         }
 
@@ -124,7 +128,7 @@ namespace RutgersDiscord.Modules
         }
 
         [SlashCommand("read-team", "Reads a team", runMode: RunMode.Async)]
-        public async Task ReadTeam(long teamID)
+        public async Task ReadTeam(int teamID)
         {
             TeamInfo team = await _database.GetTeamAsync(teamID);
             EmbedBuilder embed = new EmbedBuilder()
@@ -142,7 +146,7 @@ namespace RutgersDiscord.Modules
         }
 
         [SlashCommand("delete-team", "Deletes a team", runMode: RunMode.Async)]
-        public async Task DeleteTeam(long teamID)
+        public async Task DeleteTeam(int teamID)
         {
             await _database.DeleteTeamAsync(teamID);
             await RespondAsync("Team Deleted");
@@ -217,7 +221,7 @@ namespace RutgersDiscord.Modules
         }
 
         [SlashCommand("read-map", "Reads a map", runMode: RunMode.Async)]
-        public async Task ReadMap(long mapID)
+        public async Task ReadMap(int mapID)
         {
             MapInfo map = await _database.GetMapAsync(mapID);
             EmbedBuilder embed = new EmbedBuilder()
@@ -235,7 +239,7 @@ namespace RutgersDiscord.Modules
         }
 
         [SlashCommand("delete-map", "Deletes a map", runMode: RunMode.Async)]
-        public async Task DeleteMap(long mapID)
+        public async Task DeleteMap(int mapID)
         {
             await _database.DeleteMapAsync(mapID);
             await RespondAsync("Map Deleted");
@@ -254,6 +258,7 @@ namespace RutgersDiscord.Modules
         }
         #endregion
 
+
         [SlashCommand("test-data", "adds test data to database", runMode: RunMode.Async)]
         public async Task TestData()
         {
@@ -263,12 +268,26 @@ namespace RutgersDiscord.Modules
         #endregion
 
 
-        /*        [SlashCommand("temp","temp",runMode:RunMode.Async)]
-                public async Task Temp()
-                {
-                    await Context.Interaction.RespondAsync(HelperMethods.RandomID().ToString(),ephemeral: true);
-                }*/
+        [SlashCommand("temp", "temp", runMode: RunMode.Async)]
+        public async Task Temp()
+        {
+            var a = _client.GetGuild(Constants.guild).GetTextChannel(Context.Channel.Id).SendMessageAsync("test");
+            //await channel.SendMessageAsync("test");
+            await DeferAsync();
+        }
 
+
+        [SlashCommand("resolve","resolves admin call",runMode: RunMode.Async)]
+        public async Task Resolve()
+        {
+            MatchInfo match = (await _database.GetMatchByAttribute(discordChannel: (long?)Context.Channel.Id)).FirstOrDefault();
+            if (match == null)
+            {
+                await Context.Interaction.RespondAsync("No match found", ephemeral: true);
+                return;
+            }
+
+        }
 
     }
 }

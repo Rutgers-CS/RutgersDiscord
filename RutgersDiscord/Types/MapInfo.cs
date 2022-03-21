@@ -1,13 +1,13 @@
 ﻿public class MapInfo
 {
-	public long MapID { get; set; }
+	public int MapID { get; set; }
 	public string MapName { get; set; }
 	public long? WorkshopID { get; set; }
 	public string OfficialID { get; set; }
 	public bool OfficialMap { get; set; }
 
 	private MapInfo() { }
-	public MapInfo(long mapID, string mapName, long? workshopID, string officialID, bool officialMap)
+	public MapInfo(int mapID, string mapName, long? workshopID, string officialID, bool officialMap)
     {
 		MapID = mapID;
 		MapName = mapName;

@@ -6,19 +6,33 @@ using System;
 public class MatchInfo
 {
 	[ExplicitKey]
-	public long MatchID { get; set; }
-	public long? TeamHomeID { get; set; }
-	public long? TeamAwayID { get; set; }
+	public int MatchID { get; set; }
+	public int? TeamHomeID { get; set; }
+	public int? TeamAwayID { get; set; }
 	public long? MatchTime { get; set; }
 	public int? ScoreHome { get; set; }
 	public int? ScoreAway { get; set; }
 	public bool? MatchFinished { get; set; }
 	public bool? HomeTeamWon { get; set; }
 	public long? DiscordChannel { get; set; }
-	public long? MapID { get; set; }
+	public int? MapID { get; set; }
+	public bool? TeamHomeReady { get; set; }
+	public bool? TeamAwayReady { get; set; }
 
 	[ComplexParameterCtor]
-	public MatchInfo(long id = 0, long? teamHomeID = null, long? teamAwayID = null, long? matchTime = null, int? scoreHome = null, int? scoreAway = null, bool? matchFinished = null, bool? homeTeamWon = null, long? mapID = null,string discordChannel = null)
+	public MatchInfo(
+		int id = 0, 
+		int? teamHomeID = null,
+		int? teamAwayID = null, 
+		long? matchTime = null, 
+		int? scoreHome = null, 
+		int? scoreAway = null, 
+		bool? matchFinished = null, 
+		bool? homeTeamWon = null,
+		int? mapID = null,
+		string discordChannel = null,
+		bool? teamHomeReady = null,
+		bool? teamAwayReady = null)
     {
 		Random r = new();
 		MatchID = r.Next(0, int.MaxValue);
@@ -38,7 +52,8 @@ public class MatchInfo
         {
 			DiscordChannel = null;
         }
-
+		TeamHomeReady = teamHomeReady;
+		TeamAwayReady = teamAwayReady;
     }
 
 	private MatchInfo()
@@ -60,6 +75,8 @@ public class MatchInfo
 		m.HomeTeamWon = newMatch.HomeTeamWon ?? oldMatch.HomeTeamWon;
 		m.MapID = newMatch.MapID ?? oldMatch.MapID;
 		m.DiscordChannel = newMatch.DiscordChannel ?? oldMatch.DiscordChannel;
+		m.TeamHomeReady = newMatch.TeamHomeReady ?? oldMatch.TeamHomeReady;
+		m.TeamAwayReady = newMatch.TeamAwayReady ?? oldMatch.TeamAwayReady;
 		return m;
 	}
 

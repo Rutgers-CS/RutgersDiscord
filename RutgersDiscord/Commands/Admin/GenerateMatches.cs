@@ -2,6 +2,7 @@
 using Discord.Interactions;
 using Discord.Rest;
 using Discord.WebSocket;
+using FluentScheduler;
 using Interactivity;
 using RutgersDiscord.Handlers;
 using System;
@@ -15,13 +16,15 @@ public class GenerateMatches
     private readonly SocketInteractionContext _context;
     private readonly DatabaseHandler _database;
     private readonly InteractivityService _interactivity;
+    private readonly ScheduleHandler _schedule;
 
-    public GenerateMatches(DiscordSocketClient client, SocketInteractionContext context, DatabaseHandler database, InteractivityService interactivity)
+    public GenerateMatches(DiscordSocketClient client, SocketInteractionContext context, DatabaseHandler database, InteractivityService interactivity, ScheduleHandler schedule)
     {
         _client = client;
         _context = context;
         _database = database;
         _interactivity = interactivity;
+        _schedule = schedule;
     }
 
     //test method
@@ -30,7 +33,7 @@ public class GenerateMatches
         await CreateMatchChannel(await GetUsersFromMatch(await _database.GetMatchAsync(1)),"test");
     }
 
-    public async Task CreateMatch(long teamHomeID, long teamAwayID, DateTime t)
+    public async Task CreateMatch(int teamHomeID, int teamAwayID, DateTime t)
     {
         //test if match exitst
         if ((await _database.GetMatchByAttribute(teamHomeID,teamAwayID,matchFinished: false)).Count() != 0)
@@ -62,7 +65,10 @@ public class GenerateMatches
         //Create embed with info
         EmbedFieldBuilder commandList = new EmbedFieldBuilder()
             .WithName("Commands")
-            .WithValue("`/reschedule [month] [day] [hour] [minute]` to request a match\n" +
+            .WithValue("`/admin` pings admin \n" +
+                       "`/ready` (max 15 mins before)\n" +
+                       "`/reschedule [month] [day] [hour] [minute]` to request a reschedule\n" +
+                       "`/unready`\n" +
                        "`/veto` to start veto on the map");
         EmbedBuilder embed = new EmbedBuilder()
             .WithTitle($"{teamHome.TeamName} vs. {teamAway.TeamName}")
@@ -70,6 +76,9 @@ public class GenerateMatches
 
         //Send Message
         await channel.SendMessageAsync(greetingMessage,embed: embed.Build());
+
+        //Add job 
+        JobManager.AddJob(async () => await _schedule.MentionUsers((ulong)match.DiscordChannel, playerList.Select(s => s.DiscordID).ToList()), s => s.WithName($"[match_{match.MatchID}]").ToRunOnceAt(new DateTime((long)match.MatchTime) - TimeSpan.FromMinutes(15)));
 
         //aknowledge the interaction
         await _context.Interaction.RespondAsync("Channel Created");
