@@ -1,6 +1,7 @@
 ﻿public enum OperationType
 {
-    add,
-    edit,
+    create,
+    read,
+    update,
     delete
 }
