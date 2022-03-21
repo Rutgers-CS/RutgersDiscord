@@ -271,9 +271,7 @@ namespace RutgersDiscord.Modules
         [SlashCommand("temp", "temp", runMode: RunMode.Async)]
         public async Task Temp()
         {
-            var a = _client.GetGuild(Constants.guild).GetTextChannel(Context.Channel.Id).SendMessageAsync("test");
-            //await channel.SendMessageAsync("test");
-            await DeferAsync();
+            await (await _client.GetUser(Context.User.Id).CreateDMChannelAsync()).SendMessageAsync("hello");
         }
 
 
