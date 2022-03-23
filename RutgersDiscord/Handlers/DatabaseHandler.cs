@@ -45,9 +45,21 @@ namespace RutgersDiscord.Handlers
 
         //TEMPORARY method. In the future we will only allow public methods here to output predefined types
         [Obsolete("Don't use it")]
-        public async Task<IEnumerable<T>> GetTable<T>(string strQuery, string databaseName = null)
+        public async Task<IEnumerable<dynamic>> GetTable<T>(string strQuery, string databaseName = databaseName)
         {
-            return await GetTableFromDBUsing<T>(strQuery, databaseName);
+            strQuery = SanitizeString(strQuery);
+            try
+            {
+                using (var sqliteConnection = new SqliteConnection(databaseName))
+                {
+                    return await sqliteConnection.QueryAsync(strQuery);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+                return default;
+            }
         }
 
         #region Players CRUD
