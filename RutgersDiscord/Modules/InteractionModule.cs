@@ -1,5 +1,4 @@
-﻿using CoreRCON;
-using Discord;
+﻿using Discord;
 using Interactivity;
 using Discord.Interactions;
 using Discord.WebSocket;
@@ -41,6 +40,13 @@ namespace RutgersDiscord.Modules
             await RespondAsync(input);
         }
 
+        [SlashCommand("announcement", "Posts announcement")]
+        public async Task PostAnnouncement()
+        {
+            PostAnnouncement pa = new PostAnnouncement(_client, Context, _database, _interactivity);
+            pa.GetAnnouncement();
+        }
+
         [SlashCommand("veto", "Starts veto process", runMode: RunMode.Async)]
         public async Task Veto()
         {
@@ -72,13 +78,29 @@ namespace RutgersDiscord.Modules
         [SlashCommand("admin", "Notify an admin")]
         public async Task NotifyAdmin()
         {
-            //Ping @guihori, @0p7day, @galifi in eboard or smth
+            NotifyAdminCommand nac = new NotifyAdminCommand(_client, Context, _database, _interactivity);
+            nac.CallAdmin();
+        }
+
+        [SlashCommand("stats", "Display the tournament's statistical leaders")]
+        public async Task FetchStats()
+        {
+            StatsCommand sc = new StatsCommand(_client, Context, _database, _interactivity);
+            sc.GetStats();
         }
 
         [SlashCommand("leaderboard", "Display the tournament leaderboard")]
         public async Task DisplayLeaderboard()
         {
-            //TODO
+            LeaderboardCommand lc = new LeaderboardCommand(_client, Context, _database, _interactivity);
+            lc.PullLeaderboard();
+        }
+
+        [SlashCommand("help", "Display all user commands")]
+        public async Task Help()
+        {
+            HelpCommand lc = new HelpCommand(_client, Context, _database, _interactivity);
+            lc.GetHelp();
         }
 
         [SlashCommand("teamselection", "Select or create a team")]
