@@ -293,7 +293,7 @@ namespace RutgersDiscord.Handlers
             }
         }
 
-        public async Task<IEnumerable<TeamInfo>> GetTeamByAttribute(int? teamID = null, string teamName = null, long? player1 = null, long? player2 = null, int? wins = null, int? losses = null)
+        public async Task<IEnumerable<TeamInfo>> GetTeamByAttribute(int? teamID = null, string teamName = null, long? player1 = null, long? player2 = null, int? wins = null, int? losses = null, int? roundWins = null, int? roundLosses = null)
         {
             string filter = "true ";
             if (teamID != null)
@@ -320,7 +320,15 @@ namespace RutgersDiscord.Handlers
             {
                 filter += $"AND Losses = {losses} ";
             }
-            
+            if (roundWins != null)
+            {
+                filter += $"AND RoundWins = {roundWins} ";
+            }
+            if (roundLosses != null)
+            {
+                filter += $"AND RoundLosses = {roundLosses} ";
+            }
+
             return await GetTableFromDBUsing<TeamInfo>($"SELECT * FROM {teamTable} WHERE {filter}");
         }
 

@@ -14,6 +14,34 @@ using Interactivity.Pagination;
 
 namespace RutgersDiscord.Commands.User
 {
+
+    public static class IsNullOrEmptyExtension
+    {
+        public static bool IsNullOrEmpty(this IEnumerable source)
+        {
+            if (source != null)
+            {
+                foreach (object obj in source)
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        public static bool IsNullOrEmpty<T>(this IEnumerable<T> source)
+        {
+            if (source != null)
+            {
+                foreach (T obj in source)
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+    }
+
     public class LeaderboardCommand
     {
         private readonly DiscordSocketClient _client;
@@ -21,19 +49,6 @@ namespace RutgersDiscord.Commands.User
         private readonly DatabaseHandler _database;
         private readonly InteractivityService _interactivity;
 
-        /*   private List<string> teams = new List<string> { "Team Gal", "Team Kenji", "Team August", "Team GtestBot", "Team Bozo" };   //5 items test
-           private List<string> records = new List<string> { "3-2", "5-0", "4-1", "0-5", "1-4" };
-           private List<string> diffs = new List<string> { "56-45", "62-38", "58-41", "14-60", "19-56" };
-           private List<string> kds = new List<string> { "1.12", "1.43", "1.08", "0.61", "0.67" };
-           private List<string> fmaps = new List<string> { "Inferno", "Ancient", "Dust2", "Vertigo", "Overpass" };*/
-
-        private List<string> teams = new List<string> { "Team Gal", "Team Kenji", "Team August", "Team GtestBot", "Team Bozo", "Team notGuihori" };   //6 items test
-        private List<string> records = new List<string> { "3-2", "5-0", "4-1", "0-5", "1-4", "55-0" };
-        private List<string> diffs = new List<string> { "56-45", "62-38", "58-41", "14-60", "19-56", "150-0"};
-        private List<string> kds = new List<string> { "1.12", "1.43", "1.08", "0.61", "0.67", "5.00" };
-        private List<string> fmaps = new List<string> { "Inferno", "Ancient", "Dust2", "Vertigo", "Overpass", "Hive" };
-
-        // TeamInfo f = new TeamInfo(); important for later
 
         public LeaderboardCommand(DiscordSocketClient client, SocketInteractionContext context, DatabaseHandler database, InteractivityService interactivity)
         {
@@ -45,6 +60,117 @@ namespace RutgersDiscord.Commands.User
 
         public async Task PullLeaderboard()
         {
+            List<string> teams = new List<string>();
+            List<string> records = new List<string>();
+            List<string> diffs = new List<string>();
+            List<string> kds = new List<string>();
+            List<string> fmaps = new List<string>();
+
+            IEnumerable <TeamInfo> datateams = await _database.GetAllTeamsAsync();
+            foreach (var team in datateams)
+            { 
+                teams.Add(team.TeamName);
+
+                var winc = team.Wins;
+                var losc = team.Losses;
+                if (team.Wins == null)
+                    winc = 0;
+                if (team.Losses == null)
+                    losc = 0;
+                records.Add(winc + "-" + losc);
+
+                var rwinc = team.RoundWins;
+                var rlosc = team.RoundLosses;
+                if (team.Wins == null)
+                    rwinc = 0;
+                if (team.Losses == null)
+                    rlosc = 0;
+                diffs.Add(rwinc + "-" + rlosc);
+
+                float p1k;
+                float p2k;
+                float p1d;
+                float p2d;
+                if (team.Player1 != 0)
+                {
+                    p1k = 0;
+                } else
+                {
+                    p1k = (float)(await _database.GetPlayerAsync(team.Player1)).Kills;
+                }
+
+                if (team.Player2 != 0)
+                {
+
+                    if (!((await _database.GetPlayerAsync(team.Player2)).Kills.HasValue))
+                    {
+                        p2k = 0;
+                    }
+                    else
+                    {
+                        p2k = (float)(await _database.GetPlayerAsync(team.Player2)).Kills;
+                    }
+                } else
+                {
+                    p2k = 0;
+                }
+
+                if (!((await _database.GetPlayerAsync(team.Player1)).Deaths.HasValue))
+                {
+                    p1d = 1;
+                }
+                else
+                {
+                    if ((await _database.GetPlayerAsync(team.Player1)).Deaths == 0)
+                    {
+                        p1d = 1;
+                    }
+                    else
+                    {
+                        p1d = (float)(await _database.GetPlayerAsync(team.Player1)).Deaths;
+                    }
+                }
+
+                if (team.Player2 != 0)
+                {
+
+                    if (!((await _database.GetPlayerAsync(team.Player2)).Deaths.HasValue))
+                    {
+                        p2d = 1;
+                    }
+                    else
+                    {
+                        if ((await _database.GetPlayerAsync(team.Player2)).Deaths == 0)
+                        {
+                            p2d = 1;
+                        }
+                        else
+                        {
+                            p2d = (float)(await _database.GetPlayerAsync(team.Player1)).Deaths;
+                        }
+                    }
+                } else
+                {
+                    p2d = 1;
+                }
+
+                float kd = (p1k/p1d + p2k/p2d) / 2;
+                kds.Add(kd.ToString("0.00"));
+
+                IEnumerable<MatchInfo> teamsmatches = await _database.GetMatchByAttribute(teamID1: team.TeamID, teamID2: team.TeamID);
+                if (teamsmatches.IsNullOrEmpty())
+                {
+                    fmaps.Add("None");
+                }
+                else
+                { 
+                var most = (from k in teamsmatches
+                            group k.MapID by k.MapID into grp
+                            orderby grp.Count() descending
+                            select grp.Key).First();
+                fmaps.Add((await _database.GetMapAsync((int)most)).MapName);
+                }
+            }
 
             List<PageBuilder> pages = new();
             Dictionary<IEmote, PaginatorAction> emotes = new Dictionary<IEmote, PaginatorAction>();
@@ -53,14 +179,26 @@ namespace RutgersDiscord.Commands.User
             emotes.Add(backwardemote, PaginatorAction.Backward); emotes.Add(forwardemote, PaginatorAction.Forward);
           
             var originalsize = teams.Count;
-            for (int i = 0; i <= (originalsize / 5); i++)
+            if (originalsize % 5 == 0)
             {
-                string l = GenerateLeaderboardPage(teams.Take(5).ToList(), records.Take(5).ToList(), diffs.Take(5).ToList(), kds.Take(5).ToList(), fmaps.Take(5).ToList()).Result;
-                pages.Add(new PageBuilder().WithTitle("Scarlet Classic's Leaderboard").WithDescription($"```{l}```").WithColor(new Color(102, 0, 0)).WithFooter("Rutgers CS:GO"));
-                teams.RemoveRange(0, Math.Min(5, teams.Count)); records.RemoveRange(0, Math.Min(5, records.Count)); diffs.RemoveRange(0, Math.Min(5, diffs.Count)); kds.RemoveRange(0, Math.Min(5, kds.Count)); fmaps.RemoveRange(0, Math.Min(5, fmaps.Count));
+                for (int i = 0; i < (originalsize / 5); i++)
+                {
+                    string l = GenerateLeaderboardPage(teams.Take(5).ToList(), records.Take(5).ToList(), diffs.Take(5).ToList(), kds.Take(5).ToList(), fmaps.Take(5).ToList()).Result;
+                    pages.Add(new PageBuilder().WithTitle("Scarlet Classic's Leaderboard").WithDescription($"```{l}```").WithColor(new Color(102, 0, 0)).WithFooter("Rutgers CS:GO"));
+                    teams.RemoveRange(0, Math.Min(5, teams.Count)); records.RemoveRange(0, Math.Min(5, records.Count)); diffs.RemoveRange(0, Math.Min(5, diffs.Count)); kds.RemoveRange(0, Math.Min(5, kds.Count)); fmaps.RemoveRange(0, Math.Min(5, fmaps.Count));
+                }
             }
-            var paginator = new StaticPaginatorBuilder().WithUsers(_context.User).WithPages(pages).WithFooter(PaginatorFooter.PageNumber | PaginatorFooter.Users).WithEmotes(emotes).Build();
+            else
+            {
+                for (int i = 0; i <= (originalsize / 5); i++)
+                {
+                    string l = GenerateLeaderboardPage(teams.Take(5).ToList(), records.Take(5).ToList(), diffs.Take(5).ToList(), kds.Take(5).ToList(), fmaps.Take(5).ToList()).Result;
+                    pages.Add(new PageBuilder().WithTitle("Scarlet Classic's Leaderboard").WithDescription($"```{l}```").WithColor(new Color(102, 0, 0)).WithFooter("Rutgers CS:GO"));
+                    teams.RemoveRange(0, Math.Min(5, teams.Count)); records.RemoveRange(0, Math.Min(5, records.Count)); diffs.RemoveRange(0, Math.Min(5, diffs.Count)); kds.RemoveRange(0, Math.Min(5, kds.Count)); fmaps.RemoveRange(0, Math.Min(5, fmaps.Count));
+                }
+            }
 
+            var paginator = new StaticPaginatorBuilder().WithUsers(_context.User).WithPages(pages).WithFooter(PaginatorFooter.PageNumber | PaginatorFooter.Users).WithEmotes(emotes).Build();
 
             await _context.Interaction.RespondAsync("retrieving leaderboard");
             var message = await _context.Interaction.GetOriginalResponseAsync();
