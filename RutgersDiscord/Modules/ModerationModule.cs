@@ -35,7 +35,20 @@ namespace RutgersDiscord.Modules
         public async Task Database(string query)
         {
             var response = await _database.GetTable<string>(query);
-            await RespondAsync(response.First());
+            string output = "";
+            int split = 0;
+            foreach (dynamic r in response)
+            {
+                output += r + "\n";
+                if (split == 9)
+                {
+                    await Context.Channel.SendMessageAsync(output);
+                    output = "";
+                    split = 0;
+                }
+                split++;
+            }
+            await RespondAsync(output);
         }
 
         [SlashCommand("creatematch", "Creates a match.", runMode: RunMode.Async)]
