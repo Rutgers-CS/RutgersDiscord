@@ -11,9 +11,11 @@ public class TeamInfo
 	public long Player2 { get; set; }
 	public int? Wins { get; set; }
 	public int? Losses { get; set; }
+	public int? RoundWins { get; set; }
+	public int? RoundLosses { get; set; }
 
 	private TeamInfo() { }
-	public TeamInfo(int teamID, string teamName, long player1, long player2, int? wins, int? losses)
+	public TeamInfo(int teamID, string teamName, long player1, long player2, int? wins = null, int? losses = null, int? roundWins = null, int? roundLosses = null)
     {
 		TeamID = teamID;
 		TeamName = teamName;
@@ -21,10 +23,12 @@ public class TeamInfo
 		Player2 = player2;
 		Wins = wins;
 		Losses = losses;
-    }
+		RoundWins = roundWins;
+		RoundLosses = roundLosses;
+	}
 
     public override string ToString()
     {
-        return $"Team Name: {TeamName}\nTeamID: {TeamID}\nPlayer 1: {Player1}\nPlayer 2: {Player2}\nWins: {Wins}\nLosses: {Losses}";
+        return $"Team Name: {TeamName}\nTeamID: {TeamID}\nPlayer 1: {Player1}\nPlayer 2: {Player2}\nWins: {Wins}\nLosses: {Losses}\nRoundWins: {RoundWins}\nRoundLosses: {RoundLosses}";
     }
 }
