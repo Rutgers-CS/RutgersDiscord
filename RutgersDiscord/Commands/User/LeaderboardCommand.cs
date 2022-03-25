@@ -183,7 +183,7 @@ namespace RutgersDiscord.Commands.User
             {
                 for (int i = 0; i < (originalsize / 5); i++)
                 {
-                    string l = GenerateLeaderboardPage(teams.Take(5).ToList(), records.Take(5).ToList(), diffs.Take(5).ToList(), kds.Take(5).ToList(), fmaps.Take(5).ToList()).Result;
+                    string l = GenerateLeaderboardPage(teams.Take(5).ToList(), records.Take(5).ToList(), diffs.Take(5).ToList(), kds.Take(5).ToList(), fmaps.Take(5).ToList());
                     pages.Add(new PageBuilder().WithTitle("Scarlet Classic's Leaderboard").WithDescription($"```{l}```").WithColor(new Color(102, 0, 0)).WithFooter("Rutgers CS:GO"));
                     teams.RemoveRange(0, Math.Min(5, teams.Count)); records.RemoveRange(0, Math.Min(5, records.Count)); diffs.RemoveRange(0, Math.Min(5, diffs.Count)); kds.RemoveRange(0, Math.Min(5, kds.Count)); fmaps.RemoveRange(0, Math.Min(5, fmaps.Count));
                 }
@@ -192,7 +192,7 @@ namespace RutgersDiscord.Commands.User
             {
                 for (int i = 0; i <= (originalsize / 5); i++)
                 {
-                    string l = GenerateLeaderboardPage(teams.Take(5).ToList(), records.Take(5).ToList(), diffs.Take(5).ToList(), kds.Take(5).ToList(), fmaps.Take(5).ToList()).Result;
+                    string l = GenerateLeaderboardPage(teams.Take(5).ToList(), records.Take(5).ToList(), diffs.Take(5).ToList(), kds.Take(5).ToList(), fmaps.Take(5).ToList());
                     pages.Add(new PageBuilder().WithTitle("Scarlet Classic's Leaderboard").WithDescription($"```{l}```").WithColor(new Color(102, 0, 0)).WithFooter("Rutgers CS:GO"));
                     teams.RemoveRange(0, Math.Min(5, teams.Count)); records.RemoveRange(0, Math.Min(5, records.Count)); diffs.RemoveRange(0, Math.Min(5, diffs.Count)); kds.RemoveRange(0, Math.Min(5, kds.Count)); fmaps.RemoveRange(0, Math.Min(5, fmaps.Count));
                 }
@@ -207,7 +207,7 @@ namespace RutgersDiscord.Commands.User
 
         }
 
-        public async Task<string> GenerateLeaderboardPage(List<string> teamlist, List<string> recordlist, List<string> difflist, List<string> kdlist, List<string> maplist)
+        public static string GenerateLeaderboardPage(List<string> teamlist, List<string> recordlist, List<string> difflist, List<string> kdlist, List<string> maplist)
         {
 
             int teamcolw = teamlist.Aggregate("", (max, cur) => max.Length > cur.Length ? max : cur).Length;

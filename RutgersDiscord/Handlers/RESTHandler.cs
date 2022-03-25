@@ -23,8 +23,11 @@ public class RESTHandler
     public void Listen()
     {
         HttpListener listener = new HttpListener();
-        listener.Prefixes.Add(Environment.GetEnvironmentVariable("IP"));
-
+#if DEBUG
+        listener.Prefixes.Add($"http://localhost:{Environment.GetEnvironmentVariable("port")}/api/");
+#else
+        listener.Prefixes.Add($"http://*:{Environment.GetEnvironmentVariable("port")}/api/");
+#endif
         listener.Start();
 
         while (true)
@@ -45,7 +48,7 @@ public class RESTHandler
         Console.WriteLine(line);
 
         var response = context.Response;
-        string responseString = "<HTML><BODY> Hello world!</BODY></HTML>";
+        string responseString = "202 Accepted";
         byte[] buffer = System.Text.Encoding.UTF8.GetBytes(responseString);
         // Get a response stream and write the response to it.
         response.ContentLength64 = buffer.Length;
@@ -56,7 +59,7 @@ public class RESTHandler
     }
 
 
-    #region REST
+#region REST
     public string LastResponse { protected set; get; }
 
     CookieContainer cookies = new CookieContainer();
@@ -203,5 +206,5 @@ public class RESTHandler
         }
         return response;
     }
-    #endregion
+#endregion
 }

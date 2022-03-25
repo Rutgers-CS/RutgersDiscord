@@ -58,7 +58,7 @@ namespace RutgersDiscord
         {
             
 #if DEBUG
-            ulong localDiscordServer = ulong.Parse(Environment.GetEnvironmentVariable("discordTestServer"));//ulong.Parse(Environment.GetEnvironmentVariable("discordTestServer"))
+            ulong localDiscordServer = ulong.Parse(Environment.GetEnvironmentVariable("discordServer"));
             await _interaction.RegisterCommandsToGuildAsync(localDiscordServer);
 #else
             await _interaction.RegisterCommandsGloballyAsync();

@@ -8,7 +8,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Interactivity;
 using RutgersDiscord.Handlers;
-using Discord;
 using System.Net.Http;
 using Newtonsoft.Json;
 using Microsoft.Extensions.DependencyInjection;
