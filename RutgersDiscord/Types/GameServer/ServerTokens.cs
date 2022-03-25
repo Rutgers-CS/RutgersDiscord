@@ -2,6 +2,7 @@
 [Table("servertokens")]
 public class ServerTokens
 {
+    [ExplicitKey]
     public int ID { get; set; }
     public string Token { get; set; }
     public string ServerID { get; set; }

@@ -2,7 +2,7 @@
 using Discord.Interactions;
 using System;
 
-[Table ("match_list")]
+[Table ("matches")]
 public class MatchInfo
 {
 	[ExplicitKey]
@@ -20,6 +20,7 @@ public class MatchInfo
 	public int? MapID { get; set; }
 	public bool? TeamHomeReady { get; set; }
 	public bool? TeamAwayReady { get; set; }
+	public bool? AdminCalled { get; set; }
 
 	[ComplexParameterCtor]
 	public MatchInfo(
@@ -36,7 +37,8 @@ public class MatchInfo
 		string discordChannel = null,
 		int? mapID = null,
 		bool? teamHomeReady = null,
-		bool? teamAwayReady = null)
+		bool? teamAwayReady = null,
+		bool? adminCalled = null)
     {
 		Random r = new();
 		MatchID = r.Next(0, int.MaxValue);
@@ -60,6 +62,7 @@ public class MatchInfo
         }
 		TeamHomeReady = teamHomeReady;
 		TeamAwayReady = teamAwayReady;
+		AdminCalled = adminCalled;
     }
 
 	private MatchInfo()
@@ -85,6 +88,7 @@ public class MatchInfo
 		m.DiscordChannel = newMatch.DiscordChannel ?? oldMatch.DiscordChannel;
 		m.TeamHomeReady = newMatch.TeamHomeReady ?? oldMatch.TeamHomeReady;
 		m.TeamAwayReady = newMatch.TeamAwayReady ?? oldMatch.TeamAwayReady;
+		m.AdminCalled = newMatch.AdminCalled ?? oldMatch.AdminCalled;
 		return m;
 	}
 

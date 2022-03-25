@@ -14,6 +14,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using Newtonsoft.Json;
 using System.IO;
+using RutgersDiscord.Commands.Admin;
 
 namespace RutgersDiscord.Modules
 {
@@ -36,6 +37,47 @@ namespace RutgersDiscord.Modules
             _schedule = schedule;
             _registrationHandler = registrationHandler;
             _datHostAPIService = datHostAPIService;
+        }
+
+        [SlashCommand("db-query", "queries database.", runMode: RunMode.Async)]
+        public async Task DBQuery(string query)
+        {
+            var response = await _database.GetTable<string>(query);
+            string output = "";
+            int split = 0;
+            foreach (dynamic r in response)
+            {
+                output += r + "\n";
+                if (split == 9)
+                {
+                    await Context.Channel.SendMessageAsync(output);
+                    output = "";
+                    split = 0;
+                }
+                split++;
+            }
+            await RespondAsync(output);
+        }
+
+        [SlashCommand("db-execute", "executes on database.", runMode: RunMode.Async)]
+        public async Task DBExecute(string query)
+        {
+            var response = await _database.GenExec(query);
+            await RespondAsync(response.ToString());
+        }
+
+        [SlashCommand("db-backup", "backs-up database. !!blocks other connections!!", runMode: RunMode.Async)]
+        public async Task DBBackup()
+        {
+            string filepath = await _database.BackupDatabase();
+            await RespondWithFileAsync(new FileAttachment($"./{filepath}"));
+        }
+
+        [SlashCommand("announcement", "Posts announcement", runMode: RunMode.Async)]
+        public async Task PostAnnouncement()
+        {
+            PostAnnouncement pa = new PostAnnouncement(_client, Context, _database, _interactivity);
+            await pa.GetAnnouncement();
         }
 
         [SlashCommand("database", "queries database.", runMode: RunMode.Async)]
@@ -90,7 +132,8 @@ namespace RutgersDiscord.Modules
                     break;
             }
         }
-
+        
+        
         #region Manual Database Commands
         #region Players
         [SlashCommand("create-player", "Creates a player", runMode: RunMode.Async)]
@@ -121,7 +164,8 @@ namespace RutgersDiscord.Modules
         [SlashCommand("delete-player", "Deletes a player", runMode: RunMode.Async)]
         public async Task DeletePlayer(long playerID)
         {
-            await _database.DeletePlayerAsync(playerID);
+            var player = await _database.GetPlayerAsync(playerID);
+            await _database.DeletePlayerAsync(player);
             await RespondAsync("Player Deleted");
         }
 
@@ -168,7 +212,8 @@ namespace RutgersDiscord.Modules
         [SlashCommand("delete-team", "Deletes a team", runMode: RunMode.Async)]
         public async Task DeleteTeam(int teamID)
         {
-            await _database.DeleteTeamAsync(teamID);
+            var team = await _database.GetTeamAsync(teamID);
+            await _database.DeleteTeamAsync(team);
             await RespondAsync("Team Deleted");
         }
 
@@ -288,9 +333,13 @@ namespace RutgersDiscord.Modules
         #endregion
 
         [SlashCommand("resolve", "resolves admin call", runMode: RunMode.Async)]
-        public async Task Resolve()
+        public async Task Resolve(string matchID)
         {
-            //TODO
+            //TODO switch to button in NotifyAdmin class
+            var match = await _database.GetMatchAsync(long.Parse(matchID));
+            match.AdminCalled = false;
+            await _database.UpdateMatchAsync(match);
+            await RespondAsync("Issue marked resolved");
         }
 
         [SlashCommand("create-server", "creates new server", runMode: RunMode.Async)]

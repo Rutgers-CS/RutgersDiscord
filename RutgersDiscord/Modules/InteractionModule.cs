@@ -36,31 +36,19 @@ namespace RutgersDiscord.Modules
             _datHostAPIHandler = datHostAPIHandler;
         }
 
+        //TODO Clean up these commands
         [SlashCommand("echo", "Echo an input", runMode: RunMode.Async)]
         public async Task Echo(string input)
         {
             await RespondAsync(input);
         }
 
-        [SlashCommand("announcement", "Posts announcement")]
-        public async Task PostAnnouncement()
-        {
-            PostAnnouncement pa = new PostAnnouncement(_client, Context, _database, _interactivity);
-            await pa.GetAnnouncement();
-        }
 
         [SlashCommand("veto", "Starts veto process", runMode: RunMode.Async)]
         public async Task Veto()
         {
             VetoCommand v = new VetoCommand(_client, Context, _database, _interactivity);
             await v.StartVetoAcknowledge();
-        }
-
-        [SlashCommand("register", "Provide required information to register for the event")]
-        public async Task Register()
-        {
-            RegisterCommand rc = new RegisterCommand(_client, Context, _database, _interactivity, _registrationHandler);
-            await rc.RegistrationForm();
         }
 
         [SlashCommand("ready", "Set your team as ready for the match")]
@@ -104,13 +92,5 @@ namespace RutgersDiscord.Modules
             HelpCommand lc = new HelpCommand(_client, Context, _database, _interactivity);
             await lc.GetHelp();
         }
-
-        [SlashCommand("teamselection", "Select or create a team")]
-        public async Task TeamSelection()
-        {
-
-        }
-
-        
     }
 }

@@ -1,6 +1,6 @@
 ﻿using Dapper.Contrib.Extensions;
 
-[Table ("team_list")]
+[Table ("teams")]
 public class TeamInfo
 {
 	[ExplicitKey]

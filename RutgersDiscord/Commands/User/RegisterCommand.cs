@@ -1,4 +1,4 @@
-﻿using Discord.WebSocket;
+﻿/*using Discord.WebSocket;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -45,3 +45,4 @@ namespace RutgersDiscord.Commands.User
         }
     }
 }
+*/

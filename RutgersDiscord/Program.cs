@@ -30,6 +30,7 @@ namespace RutgersDiscord
             };
 
             _client = new DiscordSocketClient(config);
+            _client.Log += Log;
             _interaction = new InteractionService(_client.Rest);
             _services = new ServiceCollection()
                 .AddSingleton(_client)
@@ -46,7 +47,8 @@ namespace RutgersDiscord
 
             await _services.GetRequiredService<InteractionHandler>().InstallAsync();
             await _services.GetRequiredService<ScheduleHandler>().AddRequiredJobsAsync();
-            _services.GetRequiredService<RegistrationHandler>().ListenDMButtons();
+            _services.GetRequiredService<RegistrationHandler>().SubscribeHandlers();
+            //TODO IMPORTANT RestHandler blocks entire program (nothing else runs)
             //_services.GetRequiredService<RESTHandler>().Listen();
 
             _client.Ready += ClientReady;
@@ -60,13 +62,18 @@ namespace RutgersDiscord
 
         static public async Task ClientReady()
         {
-            
 #if DEBUG
             ulong localDiscordServer = ulong.Parse(Environment.GetEnvironmentVariable("discordServer"));
-            await _interaction.RegisterCommandsToGuildAsync(localDiscordServer);
+            await _interaction.RegisterCommandsToGuildAsync(localDiscordServer, deleteMissing: true);
 #else
-            await _interaction.RegisterCommandsGloballyAsync();
+            await _interaction.RegisterCommandsGloballyAsync(deleteMissing: true);
 #endif
+        }
+
+        private static Task Log(LogMessage msg)
+        {
+            Console.WriteLine(msg.ToString());
+            return Task.CompletedTask;
         }
     }
 }

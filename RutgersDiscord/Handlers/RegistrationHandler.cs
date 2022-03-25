@@ -25,88 +25,46 @@ namespace RutgersDiscord.Handlers
             _interactivity = interactivity;
         }
 
-        public void ListenDMButtons()
+        public void SubscribeHandlers()
         {
-            _client.ButtonExecuted += TeamButtonHandler;
-            _client.ModalSubmitted += RegisterFormHandler;
-            _client.SelectMenuExecuted += DropdownTeamJoin;
-            _client.ButtonExecuted += ButtonTeamRequest;
+            _client.ButtonExecuted += RegistrationButtonHandler;
+            _client.ButtonExecuted += TeamOptionsButtonsHandler;
+            _client.ModalSubmitted += RegistrationFormHandler;
+            _client.SelectMenuExecuted += JoinTeamFormHandler;
+            _client.ButtonExecuted += JoinRequestHandler;
+            _client.ModalSubmitted += CreateTeamFormHandler;
         }
 
-        public async Task SendDMButtons(SocketUser user)
+        public async Task RegistrationButtonHandler(SocketMessageComponent component)
         {
-            var builder = new ComponentBuilder()
-                .WithButton("Create a new team", "register_team_create")
-                .WithButton("Join existing team", "register_team_join")
-                .WithButton("Looking for team", "register_team_look");
-
-            await (await user.CreateDMChannelAsync()).SendMessageAsync("test", components: builder.Build());
-        }
-
-        public async Task TeamButtonHandler(SocketMessageComponent component)
-        {
-            if(!component.Data.CustomId.StartsWith("register_team_"))
+            if (component.Data.CustomId != "spawn_registration_form")
             {
                 return;
             }
 
-            TeamInfo userTeam = await _database.GetTeamByDiscordIDAsync((long)component.User.Id);
-            if (userTeam != null)
-            {
-                await component.RespondAsync("player already in team", ephemeral: true);
-                return;
-            }
+            var modalBuilder = new ModalBuilder()
+                .WithTitle("Event Registration")
+                .WithCustomId("register_form")
+                .AddTextInput("Your Name:", "player_name", required: true, placeholder: "Gabe Newell", style: TextInputStyle.Short, minLength: 3, maxLength: 40)
+                .AddTextInput("Link to Steam profile:", "steam_url", required: true, placeholder: "https://steamcommunity.com/id/gaben", style: TextInputStyle.Short, minLength: 22)
+                ;
 
-            switch (component.Data.CustomId)
-            {
-                case "register_team_create":
-                    //Create new team
-                    var newTeamModal = new ModalBuilder()
-                        .WithTitle("New Team")
-                        .WithCustomId("register_modal_teamcreate")
-                        .AddTextInput("Team Name", "new_team_name");
-                    await component.RespondWithModalAsync(newTeamModal.Build());
-                    break;
-                case "register_team_join":
-                    //Pick existing team
-
-                    IEnumerable<TeamInfo> current_teams = await _database.GetTeamByAttribute(player2: 0);
-                    List<SelectMenuOptionBuilder> selection = new();
-
-                    if(current_teams.Count() == 0)
-                    {
-                        await component.RespondAsync("No teams found", ephemeral: true);
-                        return;
-                    }
-
-                    foreach (TeamInfo team in current_teams)
-                    {
-                        selection.Add(new SelectMenuOptionBuilder(label: team.TeamName, value: $"register_dropdown_{team.TeamID}"));
-                    }
-                    SelectMenuBuilder existingTeamSelect = new SelectMenuBuilder()
-                        .WithPlaceholder("Select a team")
-                        .WithCustomId("register_dropdown_jointeam")
-                        .WithOptions(selection);
-
-                    ComponentBuilder selectBuilder = new ComponentBuilder()
-                        .WithSelectMenu(existingTeamSelect);
-                    await component.RespondAsync("Select a team", components: selectBuilder.Build());
-                    break;
-                case "register_team_look":
-                    //Flag as looking for team
-                    await _client.GetGuild(Constants.guild).GetTextChannel(Constants.Channels.scGeneral).SendMessageAsync($"{component.User.Mention} has registed for Scarlet Classic Wingman 2V2 and is looking for a team.");
-                    await component.RespondAsync("No team");
-                    break;
-            }
+            await component.RespondWithModalAsync(modalBuilder.Build());
         }
 
-        public async Task RegisterFormHandler(SocketModal modal)
+        public async Task RegistrationFormHandler(SocketModal modal)
         {
-            if(!modal.Data.CustomId.Equals("register_form"))
+            if (!modal.Data.CustomId.Equals("register_form"))
             {
                 return;
             }
-            
+
+            if (await _database.GetPlayerAsync((long)modal.User.Id) != null)
+            {
+                await modal.RespondAsync("You are already registered. Check your DMs to pick a team.", ephemeral: true);
+                return;
+            }
+
             List<SocketMessageComponentData> components = modal.Data.Components.ToList();
 
             string playerName = components.First(x => x.CustomId == "player_name").Value;
@@ -117,6 +75,7 @@ namespace RutgersDiscord.Handlers
             if (steamID64 == 0)
             {
                 await modal.RespondAsync("Registration Failed. Please verify the link to your steam profile and resubmit.", ephemeral: true);
+                return;
             }
             else
             {
@@ -132,15 +91,80 @@ namespace RutgersDiscord.Handlers
             }
             else
             {
-                await SendDMButtons(modal.User);
+                await TeamOptionsButtons(modal.User);
                 await (modal.User as IGuildUser).AddRoleAsync(Constants.Role.scarletClassic);
                 await modal.RespondAsync("Registration Succeeded. Please check your DMs to pick a team.", ephemeral: true);
             }
         }
 
-        public async Task RegisterTeamForm(SocketModal modal)
+        public async Task TeamOptionsButtons(SocketUser user)
         {
-            if (modal.Data.CustomId == "register_modal_teamcreate")
+            var builder = new ComponentBuilder()
+                .WithButton("Create a New Team", "team_options_create", emote: new Emoji("\U0001F4DD"))
+                .WithButton("Join Existing Team", "team_options_join", emote: new Emoji("\U0001F4F2"))
+                .WithButton("Looking for Team", "team_options_look", emote: new Emoji("\U0001F50E"));
+
+            await (await user.CreateDMChannelAsync()).SendMessageAsync($"Click a Button Below To Finish Your Registration, Reach out to one of us ({_client.GetUser(Constants.Users.galifi).Mention}, {_client.GetUser(Constants.Users.open).Mention}, {_client.GetUser(Constants.Users.kenji).Mention}) if you have any issues.", components: builder.Build());
+        }
+
+        public async Task TeamOptionsButtonsHandler(SocketMessageComponent component)
+        {
+            if (!component.Data.CustomId.StartsWith("team_options"))
+            {
+                return;
+            }
+
+            TeamInfo userTeam = await _database.GetTeamByDiscordIDAsync((long)component.User.Id);
+            if (userTeam != null)
+            {
+                await component.RespondAsync("You are already on a team.", ephemeral: true);
+                return;
+            }
+
+            switch (component.Data.CustomId)
+            {
+                case "team_options_create":
+                    var newTeamCreateModal = new ModalBuilder()
+                        .WithTitle("Create a New Team")
+                        .WithCustomId("modal_team_create")
+                        .AddTextInput("Team Name", "new_team_name", TextInputStyle.Short, "Kenji Peek", 4, 32, true);
+                    await component.RespondWithModalAsync(newTeamCreateModal.Build());
+                    break;
+                case "team_options_join":
+                    IEnumerable<TeamInfo> current_teams = await _database.GetTeamByAttribute(player2: 0);
+                    List<SelectMenuOptionBuilder> selection = new();
+
+                    if (current_teams.Count() == 0)
+                    {
+                        await component.RespondAsync("No teams created yet. Why don't you make one?", ephemeral: true);
+                        return;
+                    }
+
+                    foreach (TeamInfo team in current_teams)
+                    {
+                        selection.Add(new SelectMenuOptionBuilder(team.TeamName, $"teams_dropdown_{team.TeamID}", $"{_client.GetUser((ulong)team.Player1).Username}"));
+                    }
+                    SelectMenuBuilder existingTeamSelect = new SelectMenuBuilder()
+                        .WithPlaceholder("Select a Team")
+                        .WithCustomId("teams_dropdown_jointeam")
+                        .WithOptions(selection);
+
+                    ComponentBuilder selectBuilder = new ComponentBuilder()
+                        .WithSelectMenu(existingTeamSelect);
+
+                    await component.RespondAsync("Select a Team", components: selectBuilder.Build());
+                    break;
+                case "team_options_look":
+                    await _client.GetGuild(Constants.guild).GetTextChannel(Constants.Channels.scGeneral).SendMessageAsync($"{component.User.Mention} has registed for Scarlet Classic Wingman 2V2 and is looking for a team.");
+                    await component.RespondAsync($"We've marked you as looking for a team. Try asking around in sc-general or dm {_client.GetUser(Constants.Users.galifi).Mention} for help finding a partner.");
+                    break;
+            }
+        }
+
+        //Form to create team
+        public async Task CreateTeamFormHandler(SocketModal modal)
+        {
+            if (modal.Data.CustomId != "modal_team_create")
             {
                 return;
             }
@@ -148,45 +172,101 @@ namespace RutgersDiscord.Handlers
             List<SocketMessageComponentData> components = modal.Data.Components.ToList();
             string teamName = components.First(x => x.CustomId == "new_team_name").Value;
 
-            if(teamName == "" || teamName == null)
+            teamName = teamName.Trim();
+
+            if (teamName == "" || teamName == null)
             {
-                await modal.RespondAsync("invalid team name", ephemeral: true);
+                await modal.RespondAsync("Invalid team name. Try again.", ephemeral: true);
+                return;
+            }
+
+            //Horrible but we should check for duplicates
+            IEnumerable<TeamInfo> currentTeams = await _database.GetAllTeamsAsync();
+            List<string> teamNames = new List<string>();
+            foreach (TeamInfo t in currentTeams)
+            {
+                StringBuilder sb = new StringBuilder();
+                foreach (var c in t.TeamName.ToLower())
+                {
+                    if ((c >= 'a' && c <= 'z') || (c >= '0' && c <= '9'))
+                        sb.Append(c);
+                }
+                teamNames.Add(sb.ToString());
+            }
+
+            StringBuilder sb2 = new StringBuilder();
+            foreach (var c in teamName.ToLower())
+            {
+                if ((c >= 'a' && c <= 'z') || (c >= '0' && c <= '9'))
+                    sb2.Append(c);
+            }
+            string cmp = sb2.ToString();
+
+            if (teamNames.Contains(cmp))
+            {
+                await modal.RespondAsync("Team name already exists.", ephemeral: true);
                 return;
             }
 
             Random r = new();
-            TeamInfo team = new TeamInfo(r.Next(), teamName, (long)modal.User.Id, 0,null,null);
+            TeamInfo team = new TeamInfo(r.Next(), teamName, (long)modal.User.Id, 0, null, null);
             await _database.AddTeamAsync(team);
-            await modal.RespondAsync("team registered!");
+            await modal.RespondAsync($"{team.TeamName} created. Now have your partner join.");
         }
 
-        public async Task DropdownTeamJoin(SocketMessageComponent component)
+        //Selection to join team
+        public async Task JoinTeamFormHandler(SocketMessageComponent component)
         {
-            if(component.Data.CustomId != "register_dropdown_jointeam")
+            if (component.Data.CustomId != "teams_dropdown_jointeam")
             {
                 return;
             }
 
-            await (await component.GetOriginalResponseAsync()).DeleteAsync();
-
-            int teamID = int.Parse(component.Data.Values.First().Replace("register_dropdown_", ""));
+            int teamID = int.Parse(component.Data.Values.First().Replace("teams_dropdown_", ""));
             TeamInfo team = await _database.GetTeamAsync(teamID);
 
-            if(team.Player2 != 0)
+            if (team.Player2 != 0)
             {
-                await component.RespondAsync("team is already full", ephemeral: true);
+                await component.RespondAsync("Team already has two players.", ephemeral: true);
+                return;
             }
 
             var builder = new ComponentBuilder()
-                .WithButton("Accept", $"register_request_accept_{component.User.Id}")
-                .WithButton("Reject", $"register_request_reject_{component.User.Id}");
+            .WithButton("Accept", $"teams_request_accept_{component.User.Id}", ButtonStyle.Success)
+            .WithButton("Reject", $"teams_request_reject_{component.User.Id}", ButtonStyle.Danger);
 
-            await (await _client.GetUser((ulong)team.Player1).CreateDMChannelAsync()).SendMessageAsync($"{component.User.Mention} requested to join your team");
+            await (await _client.GetUser((ulong)team.Player1).CreateDMChannelAsync()).SendMessageAsync($"{component.User.Mention} has requested to join your team.", components: builder.Build());
+            await component.UpdateAsync(x => { x.Content = $"We've sent a request to join {team.TeamName} to {_client.GetUser((ulong)team.Player1).Mention}"; x.Components = new ComponentBuilder().Build(); });
+
         }
 
-        public async Task ButtonTeamRequest(SocketMessageComponent component)
+        public async Task JoinRequestHandler(SocketMessageComponent component)
         {
-            
+            if (!component.Data.CustomId.StartsWith("teams_request_"))
+            {
+                return;
+            }
+
+            if (component.Data.CustomId.StartsWith("teams_request_accept_"))
+            {
+                ulong userID = ulong.Parse(component.Data.CustomId.Replace("teams_request_accept_", ""));
+                TeamInfo team = (await _database.GetTeamByAttribute(player1: (long?)component.User.Id)).First();
+                if (team.Player2 != 0)
+                {
+                    await component.RespondAsync("Your team is already full.", ephemeral: true);
+                    return;
+                }
+                team.Player2 = (long)userID;
+                await _database.UpdateTeamAsync(team);
+                await (await _client.GetUser(userID).CreateDMChannelAsync()).SendMessageAsync($"You have been accepted into {team.TeamName}");
+                await component.UpdateAsync(x => { x.Content = $"{_client.GetUser(userID).Mention} has been accepted onto team {team.TeamName}."; x.Components = new ComponentBuilder().Build(); });
+            }
+            else
+            {
+                ulong userID = ulong.Parse(component.Data.CustomId.Replace("teams_request_reject_", ""));
+                TeamInfo team = (await _database.GetTeamByAttribute(player1: (long?)component.User.Id)).First();
+                await component.UpdateAsync(x => { x.Content = $"You have rejected {_client.GetUser(userID).Mention}"; x.Components = new ComponentBuilder().Build(); });
+            }
         }
 
         private static async Task<long> GetSteamID64(string url)
