@@ -44,7 +44,7 @@ namespace RutgersDiscord.Modules
         public async Task PostAnnouncement()
         {
             PostAnnouncement pa = new PostAnnouncement(_client, Context, _database, _interactivity);
-            pa.GetAnnouncement();
+            await pa.GetAnnouncement();
         }
 
         [SlashCommand("veto", "Starts veto process", runMode: RunMode.Async)]
@@ -65,42 +65,42 @@ namespace RutgersDiscord.Modules
         public async Task TeamReady()
         {
             ReadyCommand rc = new ReadyCommand(_client, Context, _database, _interactivity);
-            rc.Ready();
+            await rc.Ready();
         }
 
         [SlashCommand("unready", "Set your team as not ready for the match")]
         public async Task TeamUnReady()
         {
             UnReadyCommand urc = new UnReadyCommand(_client, Context, _database, _interactivity);
-            urc.UnReady();
+            await urc.UnReady();
         }
 
         [SlashCommand("admin", "Notify an admin")]
         public async Task NotifyAdmin()
         {
             NotifyAdminCommand nac = new NotifyAdminCommand(_client, Context, _database, _interactivity);
-            nac.CallAdmin();
+            await nac.CallAdmin();
         }
 
         [SlashCommand("stats", "Display the tournament's statistical leaders")]
         public async Task FetchStats()
         {
             StatsCommand sc = new StatsCommand(_client, Context, _database, _interactivity);
-            sc.GetStats();
+            await sc.GetStats();
         }
 
         [SlashCommand("leaderboard", "Display the tournament leaderboard")]
         public async Task DisplayLeaderboard()
         {
             LeaderboardCommand lc = new LeaderboardCommand(_client, Context, _database, _interactivity);
-            lc.PullLeaderboard();
+            await lc.PullLeaderboard();
         }
 
         [SlashCommand("help", "Display all user commands")]
         public async Task Help()
         {
             HelpCommand lc = new HelpCommand(_client, Context, _database, _interactivity);
-            lc.GetHelp();
+            await lc.GetHelp();
         }
 
         [SlashCommand("teamselection", "Select or create a team")]

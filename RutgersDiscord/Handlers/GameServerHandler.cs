@@ -26,6 +26,7 @@ namespace RutgersDiscord.Handlers
         {
             _restHandler = restHandler;
         }
+
         public async Task CreateServer()
         {
             string requestURL = "http://dathost.net/api/0.1/game-servers/ScarletClassicBase/sync-files";
@@ -35,6 +36,21 @@ namespace RutgersDiscord.Handlers
             requestURL = "http://dathost.net/api/0.1/game-servers/ScarletClassicBase";
             string data = "{ \"csgo_settings.steam_game_server_login_token\":\"\" }";
             _restHandler.SendPOSTRequest(requestURL, data, "aseiple678@gmail.com", "s!MYMzLZnnjhx2b", true);
+        }
+
+        private async Task UpdateServerToken(string serverID)
+        {
+
+        }
+
+        public async Task CreateMatch(MatchSettings matchSettings)
+        {
+
+        }
+
+        public async Task DeleteServer(string serverID)
+        {
+
         }
 
         public class Team1Stats

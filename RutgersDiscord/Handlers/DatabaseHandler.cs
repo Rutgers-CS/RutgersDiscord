@@ -77,7 +77,8 @@ namespace RutgersDiscord.Handlers
                     }
                     catch (SqliteException ex)
                     {
-                        return 0;
+                        Console.WriteLine(ex);
+                        return default;
                     }
                 }
             }

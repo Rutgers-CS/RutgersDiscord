@@ -1,4 +1,6 @@
-﻿public class MapInfo
+﻿using Dapper.Contrib.Extensions;
+[Table("maps")]
+public class MapInfo
 {
 	public int MapID { get; set; }
 	public string MapName { get; set; }
@@ -18,6 +20,8 @@
 
     public override string ToString()
     {
-        return $"Map Name: {MapName}\nMap ID: {MapID}\nWorkshop ID: {WorkshopID}\nOfficial ID: {OfficialID}\nOfficial Map: {OfficialMap}";
+		string str = $"ID:{MapID} {MapName} ";
+		str += OfficialMap ? OfficialID : WorkshopID;
+		return str;
     }
 }
