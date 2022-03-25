@@ -20,9 +20,21 @@ namespace RutgersDiscord.Handlers
         private readonly DatabaseHandler _database;
         private readonly InteractivityService _interactivity;
 
+        private readonly RESTHandler _restHandler;
+
+        public GameServerHandler(RESTHandler restHandler)
+        {
+            _restHandler = restHandler;
+        }
         public async Task CreateServer()
         {
-            MatchSettings ms = new MatchSettings();
+            string requestURL = "http://dathost.net/api/0.1/game-servers/ScarletClassicBase/sync-files";
+            _restHandler.SendPOSTRequest(requestURL, null, "aseiple678@gmail.com", "s!MYMzLZnnjhx2b", true);
+            requestURL = "http://dathost.net/api/0.1/game-servers/ScarletClassicBase/duplicate";
+            _restHandler.SendPOSTRequest(requestURL, null, "aseiple678@gmail.com", "s!MYMzLZnnjhx2b", true);
+            requestURL = "http://dathost.net/api/0.1/game-servers/ScarletClassicBase";
+            string data = "{ \"csgo_settings.steam_game_server_login_token\":\"\" }";
+            _restHandler.SendPOSTRequest(requestURL, data, "aseiple678@gmail.com", "s!MYMzLZnnjhx2b", true);
         }
 
         public class Team1Stats
