@@ -1,4 +1,5 @@
-﻿using Discord.Interactions;
+﻿using Discord;
+using Discord.Interactions;
 using Discord.WebSocket;
 using Interactivity;
 using RutgersDiscord.Handlers;
@@ -16,13 +17,15 @@ namespace RutgersDiscord.Commands
         private readonly SocketInteractionContext _context;
         private readonly DatabaseHandler _database;
         private readonly InteractivityService _interactivity;
+        private readonly DatHostAPIHandler _datHostAPIHandler;
 
-        public ReadyCommand(DiscordSocketClient client, SocketInteractionContext context, DatabaseHandler database, InteractivityService interactivity)
+        public ReadyCommand(DiscordSocketClient client, SocketInteractionContext context, DatabaseHandler database, InteractivityService interactivity, DatHostAPIHandler datHostAPIHandler)
         {
             _client = client;
             _context = context;
             _database = database;
             _interactivity = interactivity;
+            _datHostAPIHandler = datHostAPIHandler;
         }
 
         public async Task Ready()
@@ -93,8 +96,28 @@ namespace RutgersDiscord.Commands
             }
 
             //Start match (generate match)
-            await _context.Channel.SendMessageAsync("routine finished");
+            var newServer = await _datHostAPIHandler.CreateNewServer();
+            
+            ServerTokens newToken = await _database.GetUnusedToken();
+            newToken.ServerID = newServer.ServerID;
+            await _database.UpdateToken(newToken);
+            await _datHostAPIHandler.UpdateServerToken(newServer.ServerID, newToken.Token);
 
+            TeamInfo homeTeam = await _database.GetTeamAsync((int)match.TeamHomeID);
+            PlayerInfo hP1 = await _database.GetPlayerAsync((int)homeTeam.Player1);
+            PlayerInfo hP2 = await _database.GetPlayerAsync((int)homeTeam.Player2);
+            TeamInfo awayTeam = await _database.GetTeamAsync((int)match.TeamAwayID);
+            PlayerInfo aP1 = await _database.GetPlayerAsync((int)awayTeam.Player1);
+            PlayerInfo aP2 = await _database.GetPlayerAsync((int)awayTeam.Player2);
+            MapInfo map = await _database.GetMapAsync((int)match.MapID);
+            MatchSettings ms = new MatchSettings(map, homeTeam, hP1, hP2, awayTeam, aP1, aP2, newServer.ServerID);
+            
+            await _datHostAPIHandler.CreateMatch(ms);
+
+            var builder = new ComponentBuilder()
+                .WithButton("Connect", "connect_btn", style: ButtonStyle.Link, url: $"connect {newServer.IP}:{newServer.Port}");
+
+            await _context.Channel.SendMessageAsync(components: builder.Build());
         }
     }
 }

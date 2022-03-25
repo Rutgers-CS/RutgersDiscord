@@ -1,5 +1,4 @@
-﻿using RutgersDiscord.Commands.Utils;
-using Discord;
+﻿using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
 using Interactivity;
@@ -10,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using System.Net.Http;
 
 namespace RutgersDiscord.Handlers
 {
@@ -25,32 +25,6 @@ namespace RutgersDiscord.Handlers
         public GameServerHandler(RESTHandler restHandler)
         {
             _restHandler = restHandler;
-        }
-
-        public async Task CreateServer()
-        {
-            string requestURL = "http://dathost.net/api/0.1/game-servers/ScarletClassicBase/sync-files";
-            _restHandler.SendPOSTRequest(requestURL, null, "aseiple678@gmail.com", "s!MYMzLZnnjhx2b", true);
-            requestURL = "http://dathost.net/api/0.1/game-servers/ScarletClassicBase/duplicate";
-            _restHandler.SendPOSTRequest(requestURL, null, "aseiple678@gmail.com", "s!MYMzLZnnjhx2b", true);
-            requestURL = "http://dathost.net/api/0.1/game-servers/ScarletClassicBase";
-            string data = "{ \"csgo_settings.steam_game_server_login_token\":\"\" }";
-            _restHandler.SendPOSTRequest(requestURL, data, "aseiple678@gmail.com", "s!MYMzLZnnjhx2b", true);
-        }
-
-        private async Task UpdateServerToken(string serverID)
-        {
-
-        }
-
-        public async Task CreateMatch(MatchSettings matchSettings)
-        {
-
-        }
-
-        public async Task DeleteServer(string serverID)
-        {
-
         }
 
         public class Team1Stats

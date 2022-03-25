@@ -17,6 +17,7 @@ namespace RutgersDiscord.Handlers
         const string playerTable = "players";
         const string teamTable = "teams";
         const string mapTable = "maps";
+        const string tokenTable = "servertokens";
 
         const string databaseName = "Data Source=database.db";
 
@@ -607,6 +608,37 @@ namespace RutgersDiscord.Handlers
             }
         }
         #endregion
+
+        public async Task<ServerTokens> GetUnusedToken()
+        {
+            string query = $"SELECT * FROM {tokenTable} WHERE ServerID = null";
+            try
+            {
+                using (var sqliteConnection = new SqliteConnection(databaseName))
+                {
+                    return (await sqliteConnection.QueryAsync<ServerTokens>(query)).FirstOrDefault();
+                }
+            }
+            catch
+            {
+                return default;
+            }
+        }
+
+        public async Task<bool> UpdateToken(ServerTokens token)
+        {
+            try
+            {
+                using (var sqliteConnection = new SqliteConnection(databaseName))
+                {
+                    return await sqliteConnection.UpdateAsync<ServerTokens>(token);
+                }
+            }
+            catch
+            {
+                return default;
+            }
+        }
 
         private async Task<IEnumerable<T>> GetTableFromDBUsing<T>(string strQuery, string databaseName = databaseName)
         {

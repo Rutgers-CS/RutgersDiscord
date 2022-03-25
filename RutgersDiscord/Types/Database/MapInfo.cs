@@ -7,15 +7,17 @@ public class MapInfo
 	public long? WorkshopID { get; set; }
 	public string OfficialID { get; set; }
 	public bool OfficialMap { get; set; }
+	public string MapImage { get; set; }
 
 	private MapInfo() { }
-	public MapInfo(int mapID, string mapName, long? workshopID, string officialID, bool officialMap)
+	public MapInfo(int mapID, string mapName, long? workshopID, string officialID, bool officialMap, string mapImage)
     {
 		MapID = mapID;
 		MapName = mapName;
 		WorkshopID = workshopID;
 		OfficialID = officialID;
 		OfficialMap = officialMap;
+		MapImage = mapImage;
     }
 
     public override string ToString()

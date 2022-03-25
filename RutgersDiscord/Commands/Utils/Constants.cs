@@ -1,4 +1,5 @@
 ﻿using Discord;
+using System;
 using System.Collections.Generic;
 
 public static class Constants
@@ -34,6 +35,7 @@ public static class Constants
         public static readonly Color accept = new Color(20, 184, 37);
     }
 
+    [Obsolete("Switch to database for image links.")]
     public static readonly Dictionary<string, string> ImgurAlbum = new()
     {
         { "Pithead", "https://i.imgur.com/5dZFoBw.jpg" },
