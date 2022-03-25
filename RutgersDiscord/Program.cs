@@ -36,17 +36,19 @@ namespace RutgersDiscord
                 .AddSingleton<DatabaseHandler>()
                 .AddSingleton<ScheduleHandler>()
                 .AddSingleton<RegistrationHandler>()
+                .AddSingleton<RESTHandler>()
                 .AddSingleton(s => new InteractivityService(_client, interactiveConfig))
                 .BuildServiceProvider();
 
             await _services.GetRequiredService<InteractionHandler>().InstallAsync();
             await _services.GetRequiredService<ScheduleHandler>().AddRequiredJobsAsync();
             _services.GetRequiredService<RegistrationHandler>().ListenDMButtons();
+            _services.GetRequiredService<RESTHandler>().Listen()
 
             _client.Ready += ClientReady;
 
             string token = Environment.GetEnvironmentVariable("botToken"); //DBPass
-            await _client.LoginAsync(TokenType.Bot, "NjcwNjgyOTY2OTEyOTI1NzE4.Xix8Lw.CxPFLuz_zDmLooDKCypTorRNrBU");//token
+            await _client.LoginAsync(TokenType.Bot, token);//token
             await _client.StartAsync();
             await Task.Delay(-1);
 
@@ -56,7 +58,7 @@ namespace RutgersDiscord
         {
             
 #if DEBUG
-            ulong localDiscordServer = 670683408057237547;//ulong.Parse(Environment.GetEnvironmentVariable("discordTestServer"))
+            ulong localDiscordServer = ulong.Parse(Environment.GetEnvironmentVariable("discordTestServer"));//ulong.Parse(Environment.GetEnvironmentVariable("discordTestServer"))
             await _interaction.RegisterCommandsToGuildAsync(localDiscordServer);
 #else
             await _interaction.RegisterCommandsGloballyAsync();

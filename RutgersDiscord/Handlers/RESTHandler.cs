@@ -3,9 +3,48 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Net;
 using System.IO;
+using Discord.WebSocket;
+using RutgersDiscord.Handlers;
+using Interactivity;
 
 public class RESTHandler
 {
+    private readonly DiscordSocketClient _client;
+    private readonly DatabaseHandler _database;
+    private readonly InteractivityService _interactivity;
+
+    public RESTHandler(DiscordSocketClient client, DatabaseHandler database, InteractivityService interactivity)
+    {
+        _client = client;
+        _database = database;
+        _interactivity = interactivity;
+    }
+
+    public void Listen()
+    {
+        HttpListener listener = new HttpListener();
+        listener.Prefixes.Add(Environment.GetEnvironmentVariable("IP"));
+
+        listener.Start();
+
+        while (true)
+        {
+            HttpListenerContext context = listener.GetContext();
+            HttpListenerRequest request = context.Request;
+            StreamReader sr = new(request.InputStream, request.ContentEncoding);
+            string line = sr.ReadToEnd();
+            MatchFinished(line).Start();
+        }
+    }
+
+    public async Task MatchFinished(string line)
+    {
+        Console.WriteLine(line);
+        return;
+    }
+
+
+    #region REST
     public string LastResponse { protected set; get; }
 
     CookieContainer cookies = new CookieContainer();
@@ -152,5 +191,5 @@ public class RESTHandler
         }
         return response;
     }
-
+    #endregion
 }
