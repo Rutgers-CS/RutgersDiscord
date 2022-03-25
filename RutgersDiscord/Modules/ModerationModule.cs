@@ -9,6 +9,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using FluentScheduler;
 using Discord.Rest;
+using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using Newtonsoft.Json;
+using System.IO;
 
 namespace RutgersDiscord.Modules
 {
@@ -284,14 +289,6 @@ namespace RutgersDiscord.Modules
         public async Task Resolve()
         {
             //TODO
-        }
-
-
-
-        [SlashCommand("temp", "temp", runMode: RunMode.Async)]
-        public async Task Temp()
-        {
-            await _registrationHandler.SendDMButtons(Context.User);
         }
     }
 }
