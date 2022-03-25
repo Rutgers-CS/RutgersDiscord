@@ -43,7 +43,7 @@ namespace RutgersDiscord
             await _services.GetRequiredService<InteractionHandler>().InstallAsync();
             await _services.GetRequiredService<ScheduleHandler>().AddRequiredJobsAsync();
             _services.GetRequiredService<RegistrationHandler>().ListenDMButtons();
-            _services.GetRequiredService<RESTHandler>().Listen()
+            _services.GetRequiredService<RESTHandler>().Listen();
 
             _client.Ready += ClientReady;
 

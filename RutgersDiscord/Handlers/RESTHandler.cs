@@ -27,20 +27,22 @@ public class RESTHandler
 
         listener.Start();
 
+        IAsyncResult result = listener.BeginGetContext(new AsyncCallback(ListenerCallback), listener);
         while (true)
         {
-            HttpListenerContext context = listener.GetContext();
-            HttpListenerRequest request = context.Request;
-            StreamReader sr = new(request.InputStream, request.ContentEncoding);
-            string line = sr.ReadToEnd();
-            MatchFinished(line).Start();
+            result.AsyncWaitHandle.WaitOne();
         }
     }
 
-    public async Task MatchFinished(string line)
+    public static void ListenerCallback(IAsyncResult result)
     {
-        Console.WriteLine(line);
-        return;
+        HttpListener listener = (HttpListener)result.AsyncState;
+        // Call EndGetContext to complete the asynchronous operation.
+        HttpListenerContext context = listener.EndGetContext(result);
+        HttpListenerRequest request = context.Request;
+        StreamReader sr = new(request.InputStream, request.ContentEncoding);
+        string line = sr.ReadToEnd();
+        //TODO: ADD GALIFI STUFF HERE
     }
 
 
