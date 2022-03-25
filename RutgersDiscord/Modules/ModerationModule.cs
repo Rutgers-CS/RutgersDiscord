@@ -329,7 +329,7 @@ namespace RutgersDiscord.Modules
             // Read and display lines from the file until the end of
             // the file is reached.
             line = sr.ReadToEnd();
-
+            Console.WriteLine(line);
 
 
             string responseString = "<HTML><BODY> Hello world!</BODY></HTML>";
