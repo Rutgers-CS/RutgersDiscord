@@ -26,14 +26,16 @@ namespace RutgersDiscord.Modules
         private readonly DatabaseHandler _database;
         private readonly ScheduleHandler _schedule;
         private readonly RegistrationHandler _registrationHandler;
+        private readonly DatHostAPIHandler _datHostAPIService;
 
-        public ModerationModule(DiscordSocketClient client, InteractivityService interactivity, DatabaseHandler database, ScheduleHandler schedule, RegistrationHandler registrationHandler)
+        public ModerationModule(DiscordSocketClient client, InteractivityService interactivity, DatabaseHandler database, ScheduleHandler schedule, RegistrationHandler registrationHandler, DatHostAPIHandler datHostAPIService)
         {
             _client = client;
             _interactivity = interactivity;
             _database = database;
             _schedule = schedule;
             _registrationHandler = registrationHandler;
+            _datHostAPIService = datHostAPIService;
         }
 
         [SlashCommand("database", "queries database.", runMode: RunMode.Async)]
@@ -83,7 +85,7 @@ namespace RutgersDiscord.Modules
                     await RespondAsync($"match deleted");
                     break;
                 case OperationType.update:
-                    await _database.UpdateMatchAsync(MatchInfo.Merge(_database.GetMatchAsync(match.MatchID).Result, match));
+                    await _database.UpdateMatchAsync(MatchInfo.Merge((await _database.GetMatchAsync(match.MatchID)), match));
                     await RespondAsync($"match edited");
                     break;
             }
@@ -289,6 +291,13 @@ namespace RutgersDiscord.Modules
         public async Task Resolve()
         {
             //TODO
+        }
+
+        [SlashCommand("create-server", "creates new server", runMode: RunMode.Async)]
+        public async Task CreateServer()
+        {
+            string rs = (await _datHostAPIService.CreateNewServer()).ToString();
+            await RespondAsync(rs);
         }
     }
 }

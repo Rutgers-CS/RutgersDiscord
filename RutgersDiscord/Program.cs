@@ -7,6 +7,8 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Threading.Tasks;
 using RutgersDiscord.Handlers;
 using System.Web.Http;
+using System.Net.Http;
+using System.Text;
 
 namespace RutgersDiscord
 {
@@ -36,14 +38,16 @@ namespace RutgersDiscord
                 .AddSingleton<DatabaseHandler>()
                 .AddSingleton<ScheduleHandler>()
                 .AddSingleton<RegistrationHandler>()
-                .AddSingleton<RESTHandler>()
+                //.AddSingleton<RESTHandler>()
+                .AddHttpClient()
+                .AddTransient<DatHostAPIHandler>()
                 .AddSingleton(s => new InteractivityService(_client, interactiveConfig))
                 .BuildServiceProvider();
 
             await _services.GetRequiredService<InteractionHandler>().InstallAsync();
             await _services.GetRequiredService<ScheduleHandler>().AddRequiredJobsAsync();
             _services.GetRequiredService<RegistrationHandler>().ListenDMButtons();
-            _services.GetRequiredService<RESTHandler>().Listen();
+            //_services.GetRequiredService<RESTHandler>().Listen();
 
             _client.Ready += ClientReady;
 

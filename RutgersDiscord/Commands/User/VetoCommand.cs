@@ -69,7 +69,7 @@ public class VetoCommand
         if(team.TeamID == match.TeamHomeID)
         {
             teamHome = team;
-            teamAway = _database.GetTeamAsync((int)match.TeamAwayID).Result;
+            teamAway = await _database.GetTeamAsync((int)match.TeamAwayID);
             var temp = await _interactivity.NextButtonAsync(u => (long)u.User.Id == teamAway.Player1
                 && ((SocketMessageComponent)u).Data.CustomId == $"veto_accept_{match.MatchID}");
             await temp.Value.DeferAsync();
@@ -77,7 +77,7 @@ public class VetoCommand
         else
         {
             teamAway = team;
-            teamHome = _database.GetTeamAsync((int)match.TeamHomeID).Result;
+            teamHome = await _database.GetTeamAsync((int)match.TeamHomeID);
             var temp = await _interactivity.NextButtonAsync(u => (long)u.User.Id == teamAway.Player1
                 && ((SocketMessageComponent)u).Data.CustomId == $"veto_accept_{match.MatchID}");
             await temp.Value.DeferAsync();
@@ -92,7 +92,7 @@ public class VetoCommand
         await message.ModifyAsync(m => { m.Embed = embed.Build(); m.Components = emptyComponent.Build(); });
 
         //Start veto
-        List<MapInfo> mapPool = _database.GetAllMapsAsync().Result.ToList();
+        List<MapInfo> mapPool = (await _database.GetAllMapsAsync()).ToList();
         var currentTurn = captainHome;
         int mapsRemaining = mapPool.Count;
         bool[] banCaptainHome = new bool[mapPool.Count];
