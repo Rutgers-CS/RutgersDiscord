@@ -4,6 +4,7 @@
     public string IP { get; }
     public int Port { get; }
 
+    private ServerInfo() { }
     public ServerInfo(string serverID, string ip, int port)
     {
         ServerID = serverID;

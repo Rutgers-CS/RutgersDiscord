@@ -44,6 +44,22 @@ namespace RutgersDiscord.Handlers
             //await AddMatchAsync(match);
         }
 
+        public async Task<string> BackupDatabase()
+        {
+            string timestamp = DateTime.Now.ToString("MM-dd-HH-mm-ss");
+            var fileName = $"{timestamp}.db";
+
+            using (var sqliteConnection = new SqliteConnection(databaseName))
+            {
+                sqliteConnection.Open();
+                using (var bckcon = new SqliteConnection($"Data Source={fileName}"))
+                {
+                    sqliteConnection.BackupDatabase(bckcon);
+                    return fileName;
+                }
+            }
+        }
+
         //TEMPORARY method. In the future we will only allow public methods here to output predefined types
         [Obsolete("Don't use it")]
         public async Task<IEnumerable<dynamic>> GetTable<T>(string strQuery, string databaseName = databaseName)
@@ -93,6 +109,7 @@ namespace RutgersDiscord.Handlers
         public async Task<PlayerInfo> GetPlayerAsync(long discordID)
         {
             string query = $"SELECT * FROM {playerTable} WHERE DiscordID = {discordID}";
+            query = SanitizeString(query);
             try
             {
                 using (var sqliteConnection = new SqliteConnection(databaseName))
@@ -106,14 +123,13 @@ namespace RutgersDiscord.Handlers
             }
         }
 
-        public async Task<int> UpdatePlayerAsync(PlayerInfo player)
+        public async Task<bool> UpdatePlayerAsync(PlayerInfo player)
         {
-            string query = $"UPDATE {playerTable} SET Steam64ID=@Steam64ID, SteamID=@SteamID, Name=@Name, TeamID=@TeamID, Kills=@Kills, Deaths=@Deaths WHERE DiscordID=@DiscordID";
             try
             {
                 using (var sqliteConnection = new SqliteConnection(databaseName))
                 {
-                    return await sqliteConnection.ExecuteAsync(query, player);
+                    return await sqliteConnection.UpdateAsync(player);
                 }
             }
             catch
@@ -122,14 +138,13 @@ namespace RutgersDiscord.Handlers
             }
         }
 
-        public async Task<int> DeletePlayerAsync(long discordID)
+        public async Task<bool> DeletePlayerAsync(PlayerInfo player)
         {
-            string query = $"DELETE from {playerTable} WHERE DiscordID = {discordID}";
             try
             {
                 using (var sqliteConnection = new SqliteConnection(databaseName))
                 {
-                    return await sqliteConnection.ExecuteAsync(query);
+                    return await sqliteConnection.DeleteAsync(player);
                 }
             }
             catch
@@ -222,12 +237,10 @@ namespace RutgersDiscord.Handlers
         #region Teams CRUD
         public async Task<int> AddTeamAsync(TeamInfo team)
         {
-            //string query = "INSERT INTO teams (TeamID, TeamName, Player1, Player2, Wins, Losses) VALUES (@TeamID, @TeamName, @Player1, @Player2, @Wins, @Losses)";
             try
             {
                 using (var sqliteConnection = new SqliteConnection(databaseName))
                 {
-                    //return await sqliteConnection.ExecuteAsync(query, team);
                     return await sqliteConnection.InsertAsync(team);
                 }
             }
@@ -240,6 +253,7 @@ namespace RutgersDiscord.Handlers
         public async Task<TeamInfo> GetTeamAsync(int teamID)
         {
             string query = $"SELECT * FROM {teamTable} WHERE TeamID = {teamID}";
+            query = SanitizeString(query);
             try
             {
                 using (var sqliteConnection = new SqliteConnection(databaseName))
@@ -253,14 +267,13 @@ namespace RutgersDiscord.Handlers
             }
         }
 
-        public async Task<int> UpdateTeamAsync(TeamInfo team)
+        public async Task<bool> UpdateTeamAsync(TeamInfo team)
         {
-            string query = $"UPDATE {teamTable} SET TeamName=@TeamName, Player1=@Player1, Player2=@Player2, Wins=@Wins, Losses=@Losses WHERE TeamID=@TeamID";
             try
             {
                 using (var sqliteConnection = new SqliteConnection(databaseName))
                 {
-                    return await sqliteConnection.ExecuteAsync(query, team);
+                    return await sqliteConnection.UpdateAsync(team);
                 }
             }
             catch
@@ -269,14 +282,13 @@ namespace RutgersDiscord.Handlers
             }
         }
 
-        public async Task<int> DeleteTeamAsync(int teamID)
+        public async Task<bool> DeleteTeamAsync(TeamInfo team)
         {
-            string query = $"DELETE from {teamTable} WHERE TeamID = {teamID}";
             try
             {
                 using (var sqliteConnection = new SqliteConnection(databaseName))
                 {
-                    return await sqliteConnection.ExecuteAsync(query);
+                    return await sqliteConnection.DeleteAsync(team);
                 }
             }
             catch
@@ -649,6 +661,42 @@ namespace RutgersDiscord.Handlers
                 using (var sqliteConnection = new SqliteConnection(databaseName))
                 {
                     return await sqliteConnection.QueryAsync<T>(strQuery);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+                return default;
+            }
+        }
+
+        public async Task<IEnumerable<T>> GenQuery<T>(string query)
+        {
+            query = SanitizeString(query);
+
+            try
+            {
+                using (var sqliteConnection = new SqliteConnection(databaseName))
+                {
+                    return await sqliteConnection.QueryAsync<T>(query);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+                return default;
+            }
+        }
+
+        public async Task<int> GenExec(string query)
+        {
+            query = SanitizeString(query);
+
+            try
+            {
+                using (var sqliteConnection = new SqliteConnection(databaseName))
+                {
+                    return await sqliteConnection.ExecuteAsync(query);
                 }
             }
             catch (Exception ex)

@@ -2,6 +2,7 @@
 [Table("maps")]
 public class MapInfo
 {
+	[ExplicitKey]
 	public int MapID { get; set; }
 	public string MapName { get; set; }
 	public long? WorkshopID { get; set; }
