@@ -92,8 +92,9 @@ namespace RutgersDiscord.Commands
                 await _context.Channel.SendMessageAsync("Starting Match");
             }
 
-            //Start match
+            //Start match (generate match)
             await _context.Channel.SendMessageAsync("routine finished");
+
         }
     }
 }

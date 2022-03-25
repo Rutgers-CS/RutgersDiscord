@@ -13,7 +13,7 @@ namespace RutgersDiscord.Commands.Utils
         private bool enable_knife_round { get; set; } = true;
         private bool enable_pause { get; set; } = true;
         private bool enable_playwin { get; set; } = false; //Requires payment
-        private bool enable_ready { get; set; } = false;
+        private bool enable_ready { get; set; } = true;
         private bool enable_tech_pause { get; set; } = true;
         private string game_server_id { get; set; }
         private string map { get; set; }
