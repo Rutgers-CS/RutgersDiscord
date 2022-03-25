@@ -7,6 +7,8 @@ public class MatchInfo
 {
 	[ExplicitKey]
 	public int MatchID { get; set; }
+	public string DatMatchID { get; set; }
+	public string ServerID { get; set; }
 	public int? TeamHomeID { get; set; }
 	public int? TeamAwayID { get; set; }
 	public long? MatchTime { get; set; }
@@ -21,21 +23,25 @@ public class MatchInfo
 
 	[ComplexParameterCtor]
 	public MatchInfo(
-		int id = 0, 
+		int id = 0,
+		string datMatchID = null,
+		string serverID = null,
 		int? teamHomeID = null,
-		int? teamAwayID = null, 
+		int? teamAwayID = null,
 		long? matchTime = null, 
 		int? scoreHome = null, 
 		int? scoreAway = null, 
 		bool? matchFinished = null, 
 		bool? homeTeamWon = null,
-		int? mapID = null,
 		string discordChannel = null,
+		int? mapID = null,
 		bool? teamHomeReady = null,
 		bool? teamAwayReady = null)
     {
 		Random r = new();
 		MatchID = r.Next(0, int.MaxValue);
+		DatMatchID = datMatchID;
+		ServerID = serverID;
 		TeamHomeID = teamHomeID;
 		TeamAwayID = teamAwayID;
 		MatchTime = matchTime;
@@ -66,6 +72,8 @@ public class MatchInfo
     {
 		MatchInfo m = new();
         m.MatchID = newMatch.MatchID;
+		m.DatMatchID = newMatch.DatMatchID ?? oldMatch.DatMatchID;
+		m.ServerID = newMatch.ServerID ?? oldMatch.ServerID;
 		m.TeamHomeID = newMatch.TeamHomeID ?? oldMatch.TeamHomeID;
 		m.TeamAwayID = newMatch.TeamAwayID ?? oldMatch.TeamAwayID;
 		m.MatchTime = newMatch.MatchTime ?? oldMatch.MatchTime;
