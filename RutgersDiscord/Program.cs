@@ -6,6 +6,7 @@ using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
 using System.Threading.Tasks;
 using RutgersDiscord.Handlers;
+using System.Web.Http;
 
 namespace RutgersDiscord
 {
@@ -45,7 +46,7 @@ namespace RutgersDiscord
             _client.Ready += ClientReady;
 
             string token = Environment.GetEnvironmentVariable("botToken"); //DBPass
-            await _client.LoginAsync(TokenType.Bot, token);
+            await _client.LoginAsync(TokenType.Bot, "NjcwNjgyOTY2OTEyOTI1NzE4.Xix8Lw.CxPFLuz_zDmLooDKCypTorRNrBU");//token
             await _client.StartAsync();
             await Task.Delay(-1);
 
@@ -53,8 +54,9 @@ namespace RutgersDiscord
 
         static public async Task ClientReady()
         {
+            
 #if DEBUG
-            ulong localDiscordServer = ulong.Parse(Environment.GetEnvironmentVariable("discordTestServer"));
+            ulong localDiscordServer = 670683408057237547;//ulong.Parse(Environment.GetEnvironmentVariable("discordTestServer"))
             await _interaction.RegisterCommandsToGuildAsync(localDiscordServer);
 #else
             await _interaction.RegisterCommandsGloballyAsync();
