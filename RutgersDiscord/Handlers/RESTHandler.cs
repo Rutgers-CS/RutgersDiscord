@@ -27,9 +27,9 @@ public class RESTHandler
 
         listener.Start();
 
-        IAsyncResult result = listener.BeginGetContext(new AsyncCallback(ListenerCallback), listener);
         while (true)
         {
+            IAsyncResult result = listener.BeginGetContext(new AsyncCallback(ListenerCallback), listener);
             result.AsyncWaitHandle.WaitOne();
         }
     }
@@ -42,6 +42,16 @@ public class RESTHandler
         HttpListenerRequest request = context.Request;
         StreamReader sr = new(request.InputStream, request.ContentEncoding);
         string line = sr.ReadToEnd();
+        Console.WriteLine(line);
+
+        var response = context.Response;
+        string responseString = "<HTML><BODY> Hello world!</BODY></HTML>";
+        byte[] buffer = System.Text.Encoding.UTF8.GetBytes(responseString);
+        // Get a response stream and write the response to it.
+        response.ContentLength64 = buffer.Length;
+        System.IO.Stream output = response.OutputStream;
+        output.Write(buffer, 0, buffer.Length);
+        output.Close();
         //TODO: ADD GALIFI STUFF HERE
     }
 
