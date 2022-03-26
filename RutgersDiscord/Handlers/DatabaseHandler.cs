@@ -491,11 +491,11 @@ namespace RutgersDiscord.Handlers
             }
             if (datMatchID != null)
             {
-                filter += $"AND DatMatchID = {datMatchID} ";
+                filter += $"AND DatMatchID = \"{datMatchID}\" ";
             }
             if (serverID != null)
             {
-                filter += $"AND ServerID = {serverID} ";
+                filter += $"AND ServerID = \"{serverID}\" ";
             }
             return await GetTableFromDBUsing<MatchInfo>($"SELECT * FROM {matchTable} WHERE {filter}");
         }
