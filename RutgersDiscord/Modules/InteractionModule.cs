@@ -25,13 +25,15 @@ namespace RutgersDiscord.Modules
         private readonly InteractivityService _interactivity;
         private readonly DatabaseHandler _database;
         private readonly RegistrationHandler _registrationHandler;
+        private readonly GameServerHandler _gameServerHandler;
 
-        public InteractionModule(DiscordSocketClient client, InteractivityService interactivity, DatabaseHandler database, RegistrationHandler registrationHandler)
+        public InteractionModule(DiscordSocketClient client, InteractivityService interactivity, DatabaseHandler database, RegistrationHandler registrationHandler, GameServerHandler gameServerHandler)
         {
             _client = client;
             _interactivity = interactivity;
             _database = database;
             _registrationHandler = registrationHandler;
+            _gameServerHandler = gameServerHandler;
         }
 
         [SlashCommand("echo", "Echo an input", runMode: RunMode.Async)]
@@ -64,7 +66,7 @@ namespace RutgersDiscord.Modules
         [SlashCommand("ready", "Set your team as ready for the match")]
         public async Task TeamReady()
         {
-            ReadyCommand rc = new ReadyCommand(_client, Context, _database, _interactivity);
+            ReadyCommand rc = new ReadyCommand(_client, Context, _database, _interactivity,_gameServerHandler);
             rc.Ready();
         }
 
