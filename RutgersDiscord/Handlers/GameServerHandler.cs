@@ -13,7 +13,7 @@ using System.Net.Http;
 
 namespace RutgersDiscord.Handlers
 {
-    internal class GameServerHandler
+    public class GameServerHandler
     {
         private readonly DiscordSocketClient _client;
         private readonly SocketInteractionContext _context;
@@ -90,34 +90,17 @@ namespace RutgersDiscord.Handlers
 
         public async Task UpdateDatabase(string json)
         {
-           
             Root generaljson = JsonConvert.DeserializeObject<Root>(json);
        
-
             Team1Stats team1 = generaljson.team1_stats;
             Team2Stats team2 = generaljson.team2_stats;
 
-            List<PlayerStat> players = generaljson.player_stats;
 
-            //update player in database
-            foreach (PlayerStat player in players)
-            {
-
-                long playersteamid = long.Parse(player.steam_id);
-                var cplayer = (await _database.GetPlayerByAttribute(playersteamid)).First();
-
-                cplayer.Kills += player.kills;
-                cplayer.Deaths += player.deaths;
-
-                await _database.UpdatePlayerAsync(cplayer);
-
-            }
-
+            //update match in database
             string matchid = generaljson.id;
             string serverid = generaljson.game_server_id;
 
-            //update match in database
-            var cmatch = (await _database.GetMatchByAttribute(datMatchID:matchid)).First();
+            var cmatch = (await _database.GetMatchByAttribute(datMatchID: matchid)).First();
             cmatch.DatMatchID = matchid;
             cmatch.ServerID = serverid;
             await _database.UpdateMatchAsync(cmatch);
@@ -131,7 +114,7 @@ namespace RutgersDiscord.Handlers
             {
                 cteam1.Wins += 1;
                 cteam2.Losses += 1;
-            } 
+            }
             else
             {
                 cteam1.Losses += 1;
@@ -145,6 +128,30 @@ namespace RutgersDiscord.Handlers
 
             await _database.UpdateTeamAsync(cteam1);
             await _database.UpdateTeamAsync(cteam2);
+
+
+            //Get Channel
+            SocketGuild guild = _client.GetGuild(Constants.guild);
+            SocketTextChannel channel = guild.GetTextChannel((ulong)cmatch.DiscordChannel);
+
+            List<PlayerStat> players = generaljson.player_stats;
+
+            //update player in database and channel permissions
+            foreach (PlayerStat player in players)
+            {
+
+                long playersteamid = long.Parse(player.steam_id);
+                var cplayer = (await _database.GetPlayerByAttribute(playersteamid)).First();
+
+                cplayer.Kills += player.kills;
+                cplayer.Deaths += player.deaths;
+
+                await _database.UpdatePlayerAsync(cplayer);
+
+                //update channel permissions
+                await channel.AddPermissionOverwriteAsync(guild.GetUser((ulong)cplayer.DiscordID), new OverwritePermissions(sendMessages:PermValue.Deny));
+            }
+
         }
 
 

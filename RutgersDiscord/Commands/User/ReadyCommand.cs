@@ -18,14 +18,16 @@ namespace RutgersDiscord.Commands
         private readonly DatabaseHandler _database;
         private readonly InteractivityService _interactivity;
         private readonly DatHostAPIHandler _datHostAPIHandler;
+        private readonly GameServerHandler _gameServerHandler;
 
-        public ReadyCommand(DiscordSocketClient client, SocketInteractionContext context, DatabaseHandler database, InteractivityService interactivity, DatHostAPIHandler datHostAPIHandler)
+        public ReadyCommand(DiscordSocketClient client, SocketInteractionContext context, DatabaseHandler database, InteractivityService interactivity, GameServerHandler gameServerHandler, DatHostAPIHandler datHostAPIHandler)
         {
             _client = client;
             _context = context;
             _database = database;
             _interactivity = interactivity;
             _datHostAPIHandler = datHostAPIHandler;
+            _gameServerHandler = gameServerHandler;
         }
 
         public async Task Ready()
