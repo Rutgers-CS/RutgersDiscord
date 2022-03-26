@@ -43,6 +43,15 @@ namespace RutgersDiscord.Handlers
             }
         }
 
+        public async Task<string> SyncFiles(string serverID)
+        {
+            var response = await _httpClient.PostAsync($"game-servers/{templateServerID}/sync-files", null);
+            using (HttpContent content = response.Content)
+            {
+                return await response.Content.ReadAsStringAsync();
+            }
+        }
+
         public async Task<string> UpdateServerToken(string serverID, string serverName, string token)
         {
             var req = new FormUrlEncodedContent(new[]
