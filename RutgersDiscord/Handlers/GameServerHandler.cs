@@ -20,11 +20,10 @@ namespace RutgersDiscord.Handlers
         private readonly DatabaseHandler _database;
         private readonly InteractivityService _interactivity;
 
-        private readonly RESTHandler _restHandler;
 
-        public GameServerHandler(RESTHandler restHandler)
+        public GameServerHandler(DatabaseHandler database)
         {
-            _restHandler = restHandler;
+            _database = database;
         }
 
         public class Team1Stats

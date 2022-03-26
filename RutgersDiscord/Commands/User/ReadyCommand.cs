@@ -40,9 +40,10 @@ namespace RutgersDiscord.Commands
             }
 
             DateTime t = new DateTime().AddTicks((long)match.MatchTime);
-            if(DateTime.UtcNow - t > TimeSpan.FromMinutes(15))
+            if(DateTime.Now - t > TimeSpan.FromMinutes(15))
             {
                 await _context.Interaction.RespondAsync("Cannot ready more than 15 mins before match", ephemeral: true);
+                Console.WriteLine(t.AddMinutes(16).Ticks);
                 return;
             }
 
@@ -66,6 +67,7 @@ namespace RutgersDiscord.Commands
                     match.TeamHomeReady = true;
                     await _database.UpdateMatchAsync(match);
                     await _context.Interaction.RespondAsync($"{team.TeamName} is now ready!");
+                    return;
                 }
             }
             else
@@ -81,6 +83,7 @@ namespace RutgersDiscord.Commands
                     match.TeamAwayReady = true;
                     await _database.UpdateMatchAsync(match);
                     await _context.Interaction.RespondAsync($"{team.TeamName} is now ready!");
+                    return;
                 }
             }
 
@@ -103,23 +106,19 @@ namespace RutgersDiscord.Commands
             ServerTokens newToken = await _database.GetUnusedToken();
             newToken.ServerID = newServer.ServerID;
             await _database.UpdateToken(newToken);
-            await _datHostAPIHandler.UpdateServerToken(newServer.ServerID, newToken.Token);
-
+            await _datHostAPIHandler.UpdateServerToken(newServer.ServerID, _context.Channel.Name, newToken.Token);
             TeamInfo homeTeam = await _database.GetTeamAsync((int)match.TeamHomeID);
-            PlayerInfo hP1 = await _database.GetPlayerAsync((int)homeTeam.Player1);
-            PlayerInfo hP2 = await _database.GetPlayerAsync((int)homeTeam.Player2);
+            PlayerInfo hP1 = await _database.GetPlayerAsync((long)homeTeam.Player1);
+            PlayerInfo hP2 = await _database.GetPlayerAsync((long)homeTeam.Player2);
             TeamInfo awayTeam = await _database.GetTeamAsync((int)match.TeamAwayID);
-            PlayerInfo aP1 = await _database.GetPlayerAsync((int)awayTeam.Player1);
-            PlayerInfo aP2 = await _database.GetPlayerAsync((int)awayTeam.Player2);
+            PlayerInfo aP1 = await _database.GetPlayerAsync((long)awayTeam.Player1);
+            PlayerInfo aP2 = await _database.GetPlayerAsync((long)awayTeam.Player2);
             MapInfo map = await _database.GetMapAsync((int)match.MapID);
             MatchSettings ms = new MatchSettings(map, homeTeam, hP1, hP2, awayTeam, aP1, aP2, newServer.ServerID);
             
-            await _datHostAPIHandler.CreateMatch(ms);
-
-            var builder = new ComponentBuilder()
-                .WithButton("Connect", "connect_btn", style: ButtonStyle.Link, url: $"steam://rungame/730/76561202255233023/+connect%20{newServer.IP}:{newServer.Port}");
-
-            await _context.Channel.SendMessageAsync(components: builder.Build());
+            var st = await _datHostAPIHandler.CreateMatch(ms);
+            Console.WriteLine(st);
+            await _context.Channel.SendMessageAsync($"`connect {newServer.IP}:{newServer.Port}`");
         }
     }
 }

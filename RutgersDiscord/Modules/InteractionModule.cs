@@ -27,7 +27,7 @@ namespace RutgersDiscord.Modules
         private readonly RegistrationHandler _registrationHandler;
         private readonly DatHostAPIHandler _datHostAPIHandler;
         private readonly GameServerHandler _gameServerHandler;
-
+        //FIX Assign teamID
         public InteractionModule(DiscordSocketClient client, InteractivityService interactivity, DatabaseHandler database, RegistrationHandler registrationHandler, DatHostAPIHandler datHostAPIHandler, GameServerHandler gameServerHandler)
         {
             _client = client;
@@ -93,6 +93,14 @@ namespace RutgersDiscord.Modules
         {
             HelpCommand lc = new HelpCommand(_client, Context, _database, _interactivity);
             await lc.GetHelp();
+        }
+
+        [SlashCommand("resched", "reschedule")]
+        public async Task Resched(int month, int day, int hour, int min)
+        {
+            RescheduleCommand rc = new RescheduleCommand(_client, Context, _database, _interactivity);
+            DateTime t = new DateTime(DateTime.Now.Year, month, day, hour, min, 0);
+            await rc.RescheduleMatch(t);
         }
     }
 }

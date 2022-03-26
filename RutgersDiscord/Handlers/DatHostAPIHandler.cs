@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -42,10 +43,13 @@ namespace RutgersDiscord.Handlers
             }
         }
 
-        public async Task<string> UpdateServerToken(string serverID, string token)
+        public async Task<string> UpdateServerToken(string serverID, string serverName, string token)
         {
-            var ServerSettings = new ServerSettings(cssettings: new CSGO_Settings(logintoken: token));
-            var req = new StringContent(JObject.FromObject(ServerSettings).ToString());
+            var req = new FormUrlEncodedContent(new[]
+            {
+                new KeyValuePair<string, string>("name", serverName),
+                new KeyValuePair<string, string>("csgo_settings.steam_game_server_login_token", token)
+            });
 
             var response = await _httpClient.PutAsync($"game-servers/{serverID}", req);
             using (HttpContent content = response.Content)
@@ -56,7 +60,7 @@ namespace RutgersDiscord.Handlers
 
         public async Task<string> CreateMatch(MatchSettings ms)
         {
-            var req = new StringContent(ms.ToJson(), Encoding.UTF8, "application/json");
+            var req = ms.ToForm();
             var response =  await _httpClient.PostAsync("matches", req);
             using (HttpContent content = response.Content)
             {
