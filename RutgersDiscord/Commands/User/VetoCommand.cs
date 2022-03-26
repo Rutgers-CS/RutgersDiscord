@@ -28,6 +28,7 @@ public class VetoCommand
     {
         await _context.Interaction.DeferAsync();
         await StartVeto();
+        await _context.Interaction.DeleteOriginalResponseAsync();
     }
 
     public async Task StartVeto()

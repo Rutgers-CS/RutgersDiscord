@@ -144,6 +144,8 @@ namespace RutgersDiscord.Commands
             {
                 await _context.Channel.SendMessageAsync("Server already assigned");
             }
+
+            await _context.Interaction.DeleteOriginalResponseAsync();
         }
     }
 }
