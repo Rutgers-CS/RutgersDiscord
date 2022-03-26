@@ -18,7 +18,7 @@ namespace RutgersDiscord.Handlers
         {
             _httpClient = httpClient;
 
-            templateServerID = Environment.GetEnvironmentVariable("templateServerID");
+            templateServerID = "623ed1db4581bf34d0ed1b3f";//Environment.GetEnvironmentVariable("templateServerID");
             string datHostEmail = Environment.GetEnvironmentVariable("datHostEmail");
             string datHostPassword = Environment.GetEnvironmentVariable("datHostPassword");
 
@@ -30,10 +30,12 @@ namespace RutgersDiscord.Handlers
 
         public async Task<ServerInfo> CreateNewServer()
         {
+            Console.WriteLine(templateServerID);
             var response = await _httpClient.PostAsync($"game-servers/{templateServerID}/duplicate", null);
             using (HttpContent content = response.Content)
             {
                 var jsonString = await response.Content.ReadAsStringAsync();
+                Console.WriteLine(jsonString);
                 JObject json = JObject.Parse(jsonString);
                 return new ServerInfo(
                     (string)json.SelectToken("id"),
