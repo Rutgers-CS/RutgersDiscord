@@ -12,12 +12,14 @@ public class RESTHandler
     private readonly DiscordSocketClient _client;
     private readonly DatabaseHandler _database;
     private readonly InteractivityService _interactivity;
+    private readonly GameServerHandler _gameServerHandler;
 
-    public RESTHandler(DiscordSocketClient client, DatabaseHandler database, InteractivityService interactivity)
+    public RESTHandler(DiscordSocketClient client, DatabaseHandler database, InteractivityService interactivity, GameServerHandler gameServerHandler)
     {
         _client = client;
         _database = database;
         _interactivity = interactivity;
+        _gameServerHandler = gameServerHandler;
     }
 
     public void Listen()
@@ -29,12 +31,12 @@ public class RESTHandler
 
         while (true)
         {
-            IAsyncResult result = listener.BeginGetContext(new AsyncCallback(ListenerCallback), listener);
+            IAsyncResult result = listener.BeginGetContext(new AsyncCallback(ListenerCallbackAsync), listener);
             result.AsyncWaitHandle.WaitOne();
         }
     }
 
-    public static void ListenerCallback(IAsyncResult result)
+    public async void ListenerCallbackAsync(IAsyncResult result)
     {
         HttpListener listener = (HttpListener)result.AsyncState;
         // Call EndGetContext to complete the asynchronous operation.
@@ -52,7 +54,8 @@ public class RESTHandler
         System.IO.Stream output = response.OutputStream;
         output.Write(buffer, 0, buffer.Length);
         output.Close();
-        //TODO: ADD GALIFI STUFF HERE
+
+        await _gameServerHandler.UpdateDatabase(line);
     }
 
 
