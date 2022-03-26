@@ -129,7 +129,7 @@ namespace RutgersDiscord.Handlers
             {
                 using (var sqliteConnection = new SqliteConnection(databaseName))
                 {
-                    return await sqliteConnection.UpdateAsync(player);
+                    return await sqliteConnection.UpdateAsync<PlayerInfo>(player);
                 }
             }
             catch
@@ -273,7 +273,7 @@ namespace RutgersDiscord.Handlers
             {
                 using (var sqliteConnection = new SqliteConnection(databaseName))
                 {
-                    return await sqliteConnection.UpdateAsync(team);
+                    return await sqliteConnection.UpdateAsync<TeamInfo>(team);
                 }
             }
             catch
@@ -414,7 +414,7 @@ namespace RutgersDiscord.Handlers
             {
                 using (var sqliteConnection = new SqliteConnection(databaseName))
                 {
-                    return await sqliteConnection.UpdateAsync(match);
+                    return await sqliteConnection.UpdateAsync<MatchInfo>(match);
                 }
             }
             catch
@@ -718,7 +718,7 @@ namespace RutgersDiscord.Handlers
             if (s == null) return null;
             string str = new((from c in s where char.IsWhiteSpace(c) 
                                      || char.IsLetterOrDigit(c)
-                                     || c == '_' || c == '*' || c == '=' || c == '(' || c == ')' || c == '\\' || c == '"' select c)
+                                     || c == '_' || c == '*' || c == '=' || c == '(' || c == ')' || c == '\\' || c == '"' || c == ':' select c)
                                      .ToArray());
             return str;
         }
