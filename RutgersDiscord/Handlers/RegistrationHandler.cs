@@ -211,6 +211,9 @@ namespace RutgersDiscord.Handlers
             Random r = new();
             TeamInfo team = new TeamInfo(r.Next(), teamName, (long)modal.User.Id, 0, null, null);
             await _database.AddTeamAsync(team);
+            PlayerInfo player = await _database.GetPlayerAsync((long)modal.User.Id);
+            player.TeamID = team.TeamID;
+            await _database.UpdatePlayerAsync(player);
             await modal.RespondAsync($"{team.TeamName} created. Now have your partner join.");
         }
 
@@ -257,6 +260,9 @@ namespace RutgersDiscord.Handlers
                     return;
                 }
                 team.Player2 = (long)userID;
+                PlayerInfo player = await _database.GetPlayerAsync((long)userID);
+                player.TeamID = team.TeamID;
+                await _database.UpdatePlayerAsync(player);
                 await _database.UpdateTeamAsync(team);
                 await (await _client.GetUser(userID).CreateDMChannelAsync()).SendMessageAsync($"You have been accepted into {team.TeamName}");
                 await component.UpdateAsync(x => { x.Content = $"{_client.GetUser(userID).Mention} has been accepted onto team {team.TeamName}."; x.Components = new ComponentBuilder().Build(); });
