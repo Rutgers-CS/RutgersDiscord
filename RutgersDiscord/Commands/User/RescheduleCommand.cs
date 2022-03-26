@@ -109,7 +109,10 @@ namespace RutgersDiscord.Commands.User
                 await _context.Interaction.ModifyOriginalResponseAsync(m => m.Embed = embed.WithColor(Constants.EmbedColors.accept).Build());
                 match.MatchTime = date.Ticks;
                 await _database.UpdateMatchAsync(match);
-                JobManager.GetSchedule($"[match_{match.MatchID}]").ToRunOnceAt(date);
+                if(date - TimeSpan.FromMinutes(15) > DateTime.Now)
+                {
+                    JobManager.GetSchedule($"[match_{match.MatchID}]").ToRunOnceAt(date - TimeSpan.FromMinutes(15));
+                }
                 return;
             }
             //Code shouldn't reach here
