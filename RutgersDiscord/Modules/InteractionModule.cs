@@ -56,7 +56,7 @@ namespace RutgersDiscord.Modules
         [SlashCommand("ready", "Set your team as ready for the match")]
         public async Task TeamReady()
         {
-            ReadyCommand rc = new ReadyCommand(_client, Context, _database, _interactivity, _datHostAPIHandler, _gameServerHandler);
+            ReadyCommand rc = new ReadyCommand(_client, Context, _database, _interactivity, _gameServerHandler, _datHostAPIHandler);
             await rc.Ready();
         }
 
