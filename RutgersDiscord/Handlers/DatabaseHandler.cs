@@ -391,9 +391,10 @@ namespace RutgersDiscord.Handlers
             }
         }
 
-        public async Task<MatchInfo> GetMatchAsync(long matchID)
+        public async Task<MatchInfo> GetMatchAsync(int matchID)
         {
             string query = $"SELECT * FROM {matchTable} WHERE TeamID = {matchID}";
+            query = SanitizeString(query);
             try
             {
                 using (var sqliteConnection = new SqliteConnection(databaseName))
@@ -625,7 +626,15 @@ namespace RutgersDiscord.Handlers
             {
                 using (var sqliteConnection = new SqliteConnection(databaseName))
                 {
-                    return (await sqliteConnection.QueryAsync<ServerTokens>(query)).FirstOrDefault();
+                    var res = (await sqliteConnection.QueryAsync<ServerTokens>(query)).FirstOrDefault();
+                    if (res != null)
+                    {
+                        return res;
+                    }
+                    else
+                    {
+                        return null;
+                    }
                 }
             }
             catch

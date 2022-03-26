@@ -152,9 +152,9 @@ namespace RutgersDiscord.Modules
         }
 
         [SlashCommand("read-player", "Reads a player", runMode: RunMode.Async)]
-        public async Task ReadPlayer(long playerID)
+        public async Task ReadPlayer(string playerID)
         {
-            PlayerInfo player = await _database.GetPlayerAsync(playerID);
+            PlayerInfo player = await _database.GetPlayerAsync(long.Parse(playerID));
             EmbedBuilder embed = new EmbedBuilder()
                 .WithColor(Color.Red)
                 .WithDescription(player.ToString());
@@ -248,7 +248,7 @@ namespace RutgersDiscord.Modules
         }
 
         [SlashCommand("read-match", "Reads a match", runMode: RunMode.Async)]
-        public async Task ReadMatch(long matchID)
+        public async Task ReadMatch(int matchID)
         {
             MatchInfo match = await _database.GetMatchAsync(matchID);
             EmbedBuilder embed = new EmbedBuilder()
@@ -344,7 +344,7 @@ namespace RutgersDiscord.Modules
         public async Task Resolve(string matchID)
         {
             //TODO switch to button in NotifyAdmin class
-            var match = await _database.GetMatchAsync(long.Parse(matchID));
+            var match = await _database.GetMatchAsync(int.Parse(matchID));
             match.AdminCalled = false;
             await _database.UpdateMatchAsync(match);
             await RespondAsync("Issue marked resolved");

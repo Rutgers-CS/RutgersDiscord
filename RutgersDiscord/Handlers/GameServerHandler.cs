@@ -19,11 +19,13 @@ namespace RutgersDiscord.Handlers
         private readonly SocketInteractionContext _context;
         private readonly DatabaseHandler _database;
         private readonly InteractivityService _interactivity;
+        private readonly DatHostAPIHandler _datHostAPIHandler;
 
 
-        public GameServerHandler(DatabaseHandler database)
+        public GameServerHandler(DatabaseHandler database, DatHostAPIHandler datHostAPIHandler)
         {
             _database = database;
+            _datHostAPIHandler = datHostAPIHandler;
         }
 
         public class Team1Stats
@@ -149,7 +151,10 @@ namespace RutgersDiscord.Handlers
 
                 //update channel permissions
                 await channel.AddPermissionOverwriteAsync(guild.GetUser((ulong)cplayer.DiscordID), new OverwritePermissions(sendMessages:PermValue.Deny));
+               
             }
+
+            await _datHostAPIHandler.DeleteServer(serverid);
 
         }
 
