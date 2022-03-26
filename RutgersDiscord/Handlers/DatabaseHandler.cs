@@ -164,7 +164,7 @@ namespace RutgersDiscord.Handlers
             }
             if (steamID != null)
             {
-                filter += $"AND SteamID = {steamID} ";
+                filter += $"AND SteamID = \"{steamID}\" ";
             }
             if (name != null)
             {

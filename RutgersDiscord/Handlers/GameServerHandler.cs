@@ -22,8 +22,9 @@ namespace RutgersDiscord.Handlers
         private readonly DatHostAPIHandler _datHostAPIHandler;
 
 
-        public GameServerHandler(DatabaseHandler database, DatHostAPIHandler datHostAPIHandler)
+        public GameServerHandler(DiscordSocketClient client, DatabaseHandler database, DatHostAPIHandler datHostAPIHandler)
         {
+            _client = client;
             _database = database;
             _datHostAPIHandler = datHostAPIHandler;
         }
@@ -91,8 +92,9 @@ namespace RutgersDiscord.Handlers
 
         public async Task UpdateDatabase(string json)
         {
+            Console.WriteLine(json);
             ServerReply result = JsonConvert.DeserializeObject<ServerReply>(json);
-       
+
             Team1Stats team1 = result.team1_stats;
             Team2Stats team2 = result.team2_stats;
 
@@ -125,7 +127,6 @@ namespace RutgersDiscord.Handlers
                 return;
             }
 
-
             var cteam1 = (await _database.GetTeamByAttribute(cmatch.TeamHomeID)).First();
             var cteam2 = (await _database.GetTeamByAttribute(cmatch.TeamAwayID)).First();
 
@@ -155,8 +156,7 @@ namespace RutgersDiscord.Handlers
             //update player in database and channel permissions
             foreach (PlayerStat player in players)
             {
-                long playersteamid = long.Parse(player.steam_id);
-                var cplayer = (await _database.GetPlayerByAttribute(playersteamid)).First();
+                var cplayer = (await _database.GetPlayerByAttribute(steamID: player.steam_id)).First();
 
                 cplayer.Kills += player.kills;
                 cplayer.Deaths += player.deaths;
@@ -164,7 +164,7 @@ namespace RutgersDiscord.Handlers
                 await _database.UpdatePlayerAsync(cplayer);
 
                 //update channel permissions
-                await channel.AddPermissionOverwriteAsync(guild.GetUser((ulong)cplayer.DiscordID), new OverwritePermissions(sendMessages:PermValue.Deny));
+                await channel.AddPermissionOverwriteAsync(guild.GetUser((ulong)cplayer.DiscordID), new OverwritePermissions(sendMessages: PermValue.Deny));
             }
 
             cmatch.MatchFinished = true;
