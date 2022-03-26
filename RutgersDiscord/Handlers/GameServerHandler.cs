@@ -170,6 +170,7 @@ namespace RutgersDiscord.Handlers
             cmatch.MatchFinished = true;
             cmatch.ScoreHome = team1.score;
             cmatch.ScoreAway = team2.score;
+            Console.WriteLine(cmatch.ToString());
             await _database.UpdateMatchAsync(cmatch);
 
 
