@@ -58,7 +58,6 @@ public class RESTHandler
         output.Write(buffer, 0, buffer.Length);
         output.Close();
 
-        Console.WriteLine(line);
         await _gameServerHandler.UpdateDatabase(line);
     }
 }
