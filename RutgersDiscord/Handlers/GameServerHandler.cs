@@ -95,8 +95,8 @@ namespace RutgersDiscord.Handlers
             Console.WriteLine(json);
             ServerReply result = JsonConvert.DeserializeObject<ServerReply>(json);
 
-            Team1Stats team1 = result.team1_stats;
-            Team2Stats team2 = result.team2_stats;
+            Team1Stats homeTeam = result.team1_stats;
+            Team2Stats awayTeam = result.team2_stats;
 
             //update match in database
             string matchid = result.id;
@@ -127,28 +127,44 @@ namespace RutgersDiscord.Handlers
                 return;
             }
 
-            var cteam1 = (await _database.GetTeamByAttribute(cmatch.TeamHomeID)).First();
-            var cteam2 = (await _database.GetTeamByAttribute(cmatch.TeamAwayID)).First();
+            var currentHomeTeam = (await _database.GetTeamByAttribute(cmatch.TeamHomeID)).First();
+            //TODO Change To Kenji Init Method
+            if (currentHomeTeam.Wins == null) currentHomeTeam.Wins = 0;
+            if (currentHomeTeam.Losses == null) currentHomeTeam.Losses = 0;
+            if (currentHomeTeam.RoundWins == null) currentHomeTeam.RoundWins = 0;
+            if (currentHomeTeam.RoundLosses == null) currentHomeTeam.RoundLosses = 0;
+            
+            var currentAwayTeam = (await _database.GetTeamByAttribute(cmatch.TeamAwayID)).First();
+            //TODO Change To Kenji Init Method
+            if (currentAwayTeam.Wins == null) currentAwayTeam.Wins = 0;
+            if (currentAwayTeam.Losses == null) currentAwayTeam.Losses = 0;
+            if (currentAwayTeam.RoundWins == null) currentAwayTeam.RoundWins = 0;
+            if (currentAwayTeam.RoundLosses == null) currentAwayTeam.RoundLosses = 0;
 
             //update team in database
-            if (team1.score > team2.score)
+            if (homeTeam.score > awayTeam.score)
             {
-                cteam1.Wins += 1;
-                cteam2.Losses += 1;
+                currentHomeTeam.Wins += 1;
+                currentAwayTeam.Losses += 1;
+                cmatch.HomeTeamWon = true;
             }
             else
             {
-                cteam1.Losses += 1;
-                cteam2.Wins += 1;
+                currentHomeTeam.Losses += 1;
+                currentAwayTeam.Wins += 1;
+                cmatch.HomeTeamWon = false;
             }
-            cteam1.RoundWins += team1.score;
-            cteam1.RoundLosses += team2.score;
 
-            cteam2.RoundWins += team2.score;
-            cteam2.RoundLosses += team1.score;
+            currentHomeTeam.RoundWins += homeTeam.score;
+            currentHomeTeam.RoundLosses += awayTeam.score;
 
-            await _database.UpdateTeamAsync(cteam1);
-            await _database.UpdateTeamAsync(cteam2);
+            currentAwayTeam.RoundWins += awayTeam.score;
+            currentAwayTeam.RoundLosses += homeTeam.score;
+
+            Console.WriteLine(currentHomeTeam);
+
+            await _database.UpdateTeamAsync(currentHomeTeam);
+            await _database.UpdateTeamAsync(currentAwayTeam);
 
 
             List<PlayerStat> players = result.player_stats;
@@ -156,7 +172,11 @@ namespace RutgersDiscord.Handlers
             //update player in database and channel permissions
             foreach (PlayerStat player in players)
             {
-                var cplayer = (await _database.GetPlayerByAttribute(steamID: player.steam_id)).First();
+                var cplayer = (await _database.GetPlayerByAttribute(steamID: player.steam_id)).FirstOrDefault();
+
+                //TODO Change to kenji init method
+                if (cplayer.Kills == null) cplayer.Kills = 0;
+                if (cplayer.Deaths == null) cplayer.Deaths = 0;
 
                 cplayer.Kills += player.kills;
                 cplayer.Deaths += player.deaths;
@@ -168,9 +188,8 @@ namespace RutgersDiscord.Handlers
             }
 
             cmatch.MatchFinished = true;
-            cmatch.ScoreHome = team1.score;
-            cmatch.ScoreAway = team2.score;
-            Console.WriteLine(cmatch.ToString());
+            cmatch.ScoreHome = homeTeam.score;
+            cmatch.ScoreAway = awayTeam.score;
             await _database.UpdateMatchAsync(cmatch);
 
 
