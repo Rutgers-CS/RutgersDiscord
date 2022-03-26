@@ -87,6 +87,10 @@ namespace RutgersDiscord.Commands
                 }
             }
 
+            match.TeamAwayReady = true;
+            await _database.UpdateMatchAsync(match);
+
+
             //Test if veto was done and do it if not
             await _context.Interaction.DeferAsync();
             if(match.MapID == null)
