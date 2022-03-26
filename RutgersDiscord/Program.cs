@@ -48,6 +48,7 @@ namespace RutgersDiscord
             await _services.GetRequiredService<InteractionHandler>().InstallAsync();
             await _services.GetRequiredService<ScheduleHandler>().AddRequiredJobsAsync();
             _services.GetRequiredService<RegistrationHandler>().SubscribeHandlers();
+
             new Task(() => _services.GetRequiredService<RESTHandler>().Listen()).Start();
 
             _client.Ready += ClientReady;
