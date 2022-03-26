@@ -82,7 +82,7 @@ namespace RutgersDiscord.Handlers
                 steamID = SteamID64ToSteamID(steamID64);
             }
 
-            PlayerInfo player = new((long)modal.User.Id, steamID64, steamID, playerName);
+            PlayerInfo player = new((long)modal.User.Id, steamID64, steamID, playerName,null,0,0);
             int status = await _database.AddPlayerAsync(player);
 
             if (status == 0)
@@ -209,7 +209,7 @@ namespace RutgersDiscord.Handlers
             }
 
             Random r = new();
-            TeamInfo team = new TeamInfo(r.Next(), teamName, (long)modal.User.Id, 0, null, null);
+            TeamInfo team = new TeamInfo(r.Next(), teamName, (long)modal.User.Id,0,0,0,0,0);
             await _database.AddTeamAsync(team);
             PlayerInfo player = await _database.GetPlayerAsync((long)modal.User.Id);
             player.TeamID = team.TeamID;

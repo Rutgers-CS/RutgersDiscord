@@ -356,5 +356,43 @@ namespace RutgersDiscord.Modules
             string rs = (await _datHostAPIService.CreateNewServer()).ToString();
             await RespondAsync(rs);
         }
+
+        [SlashCommand("fixDb","RUN ONCE", runMode: RunMode.Async)]
+        public async Task FixDB()
+        {
+            IEnumerable<PlayerInfo> players = await _database.GetAllPlayersAsync();
+            foreach(PlayerInfo p in players)
+            {
+                if(p.Kills == null)
+                {
+                    p.Kills = 0;
+                }
+                if (p.Deaths == null)
+                {
+                    p.Deaths = 0;
+                }
+                await _database.UpdatePlayerAsync(p);
+            }
+            IEnumerable<TeamInfo> teams = await _database.GetAllTeamsAsync();
+            foreach(TeamInfo t in teams)
+            {
+                if(t.Losses == null)
+                {
+                    t.Losses = 0;
+                }
+                if(t.Wins == null)
+                {
+                    t.Wins = 0;
+                }
+                if(t.RoundLosses == null)
+                {
+                    t.RoundLosses = 0;
+                }
+                if(t.RoundWins == null)
+                {
+                    t.RoundWins = 0;
+                }
+            }
+        }
     }
 }
