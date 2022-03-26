@@ -28,10 +28,13 @@ public class ScheduleHandler
 		IEnumerable<TeamInfo> allTeams = await _database.GetAllTeamsAsync();
 		foreach(MatchInfo match in futureMatches)
 		{
-			IEnumerable<TeamInfo> teams = allTeams.Where(s => (s.TeamID == match.TeamHomeID || s.TeamID == match.TeamAwayID));
-			List<long> players = teams.Select(t => t.Player1).ToList();
-			players.AddRange(teams.Select(t => t.Player2));
-			JobManager.AddJob(async () => await MentionUsers((ulong)match.DiscordChannel,players),s => s.WithName($"[match_{match.MatchID}]").ToRunOnceAt(new DateTime((long)match.MatchTime) - TimeSpan.FromMinutes(15)));
+			if(match.MatchTime > DateTime.Now.AddMinutes(16).Ticks)
+            {
+				IEnumerable<TeamInfo> teams = allTeams.Where(s => (s.TeamID == match.TeamHomeID || s.TeamID == match.TeamAwayID));
+				List<long> players = teams.Select(t => t.Player1).ToList();
+				players.AddRange(teams.Select(t => t.Player2));
+				JobManager.AddJob(async () => await MentionUsers((ulong)match.DiscordChannel, players), s => s.WithName($"[match_{match.MatchID}]").ToRunOnceAt(new DateTime((long)match.MatchTime) - TimeSpan.FromMinutes(15)));
+			}
         }
     }
 
@@ -43,7 +46,7 @@ public class ScheduleHandler
 			message += $"<@{player}> ";
         }
 		message += "there are 15 mins until match starts!";
-		//await _client.GetGuild(Constants.guild).GetTextChannel(channel).SendMessageAsync(message);
+		await _client.GetGuild(Constants.guild).GetTextChannel(channel).SendMessageAsync(message);
 	}
 
 	
