@@ -5,13 +5,13 @@ public class MapInfo
 	[ExplicitKey]
 	public int MapID { get; set; }
 	public string MapName { get; set; }
-	public long? WorkshopID { get; set; }
+	public string WorkshopID { get; set; }
 	public string OfficialID { get; set; }
 	public bool OfficialMap { get; set; }
 	public string MapImage { get; set; }
 
 	private MapInfo() { }
-	public MapInfo(int mapID, string mapName, long? workshopID, string officialID, bool officialMap, string mapImage)
+	public MapInfo(int mapID, string mapName, string workshopID, string officialID, bool officialMap, string mapImage)
     {
 		MapID = mapID;
 		MapName = mapName;

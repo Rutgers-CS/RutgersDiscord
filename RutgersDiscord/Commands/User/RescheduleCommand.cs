@@ -80,7 +80,7 @@ namespace RutgersDiscord.Commands.User
                 .AddField("Original Time", $"<t:{originalDateSpan.TotalMinutes}:f>")
                 .AddField("Proposed Time", $"<t:{dateSpan.TotalMinutes}:f>");
 
-            await _context.Interaction.RespondAsync($"<@{teamOpponent.Player1}", embed: embed.Build(), components: component.Build());
+            await _context.Interaction.RespondAsync($"<@{teamOpponent.Player1}>", embed: embed.Build(), components: component.Build());
 
             var response = await _interactivity.NextInteractionAsync(
                 s => (s.User.Id == (ulong)teamOpponent.Player1

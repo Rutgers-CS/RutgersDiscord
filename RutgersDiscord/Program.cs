@@ -40,6 +40,7 @@ namespace RutgersDiscord
                 .AddSingleton<ScheduleHandler>()
                 .AddSingleton<RegistrationHandler>()
                 .AddSingleton<RESTHandler>()
+                .AddSingleton<GameServerHandler>()
                 .AddHttpClient()
                 .AddTransient<DatHostAPIHandler>()
                 .AddSingleton(s => new InteractivityService(_client, interactiveConfig))
@@ -53,7 +54,7 @@ namespace RutgersDiscord
 
             _client.Ready += ClientReady;
 
-            string token = Environment.GetEnvironmentVariable("botToken"); //DBPass
+            string token = "NjcwNjgyOTY2OTEyOTI1NzE4.Xix8Lw.CxPFLuz_zDmLooDKCypTorRNrBU"; //DBPass
             await _client.LoginAsync(TokenType.Bot, token);//token
             await _client.StartAsync();
             await Task.Delay(-1);
@@ -62,12 +63,9 @@ namespace RutgersDiscord
 
         static public async Task ClientReady()
         {
-#if DEBUG
-            ulong localDiscordServer = ulong.Parse(Environment.GetEnvironmentVariable("discordServer"));
+            ulong localDiscordServer = 670683408057237547;
             await _interaction.RegisterCommandsToGuildAsync(localDiscordServer, deleteMissing: true);
-#else
-            await _interaction.RegisterCommandsGloballyAsync(deleteMissing: true);
-#endif
+            //await _interaction.RegisterCommandsGloballyAsync(deleteMissing: true);
         }
 
         private static Task Log(LogMessage msg)

@@ -172,7 +172,7 @@ namespace RutgersDiscord.Handlers
             }
             if (teamID != null)
             {
-                filter += $"AND TeamID = {teamID}";
+                filter += $"AND TeamID = {teamID} ";
             }
             if (kills != null)
             {
@@ -378,12 +378,11 @@ namespace RutgersDiscord.Handlers
         #region Matches CRUD
         public async Task<int> AddMatchAsync(MatchInfo match)
         {
-            string query = $"INSERT INTO {matchTable} (MatchID, TeamHomeID, TeamAwayID, ScoreHome, ScoreAway, MatchFinished, MapID, DiscordChannel) VALUES (@MatchID, @TeamHomeID, @TeamAwayID, @ScoreHome, @ScoreAway, @MatchFinished, @MapID, @DiscordChannel)";
             try
             {
                 using (var sqliteConnection = new SqliteConnection(databaseName))
                 {
-                    return await sqliteConnection.ExecuteAsync(query, match);
+                    return await sqliteConnection.InsertAsync<MatchInfo>(match);
                 }
             }
             catch
@@ -408,14 +407,13 @@ namespace RutgersDiscord.Handlers
             }
         }
 
-        public async Task<int> UpdateMatchAsync(MatchInfo match)
+        public async Task<bool> UpdateMatchAsync(MatchInfo match)
         {
-            string query = $"UPDATE {matchTable} SET TeamHomeID=@TeamHomeID, TeamAwayID=@TeamAwayID, ScoreHome=@ScoreHome, ScoreAway=@ScoreAway, MatchFinished=@MatchFinished, MapID=@MapID, DiscordChannel=@DiscordChannel WHERE MatchID=@MatchID";
             try
             {
                 using (var sqliteConnection = new SqliteConnection(databaseName))
                 {
-                    return await sqliteConnection.ExecuteAsync(query, match);
+                    return await sqliteConnection.UpdateAsync(match);
                 }
             }
             catch
@@ -424,14 +422,13 @@ namespace RutgersDiscord.Handlers
             }
         }
 
-        public async Task<int> DeleteMatchAsync(long matchID)
+        public async Task<bool> DeleteMatchAsync(MatchInfo match)
         {
-            string query = $"DELETE from {matchTable} WHERE TeamID = {matchID}";
             try
             {
                 using (var sqliteConnection = new SqliteConnection(databaseName))
                 {
-                    return await sqliteConnection.ExecuteAsync(query);
+                    return await sqliteConnection.DeleteAsync(match);
                 }
             }
             catch
@@ -623,7 +620,7 @@ namespace RutgersDiscord.Handlers
 
         public async Task<ServerTokens> GetUnusedToken()
         {
-            string query = $"SELECT * FROM {tokenTable} WHERE ServerID = null";
+            string query = $"SELECT * FROM {tokenTable} WHERE ServerID IS null";
             try
             {
                 using (var sqliteConnection = new SqliteConnection(databaseName))

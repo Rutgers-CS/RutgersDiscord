@@ -48,7 +48,7 @@ public class GenerateMatches
 
 
         //Create match and channel;
-        MatchInfo match = new(0,teamHomeID: teamHomeID,teamAwayID: teamAwayID,matchTime: t.Ticks,matchFinished: false);
+        MatchInfo match = new(0,teamHomeID: teamHomeID,teamAwayID: teamAwayID,matchTime: t.Ticks,matchFinished: false, teamHomeReady: false, teamAwayReady: false );
         List<PlayerInfo> playerList = await GetUsersFromMatch(match);
         RestTextChannel channel = await CreateMatchChannel(playerList, $"{teamHome.TeamName}_vs_{teamAway.TeamName}");
         match.DiscordChannel = (long?)channel.Id;

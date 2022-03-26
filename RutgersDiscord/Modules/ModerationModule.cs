@@ -108,7 +108,7 @@ namespace RutgersDiscord.Modules
             await g.CreateMatch(teamHomeID, teamAwayID,t);
         }
 
-        [SlashCommand("match", "edits matches.", runMode: RunMode.Async)]
+        /*[SlashCommand("match", "edits matches.", runMode: RunMode.Async)]
         public async Task Match(OperationType op, [ComplexParameter] MatchInfo match)
         {
             switch (op)
@@ -131,9 +131,17 @@ namespace RutgersDiscord.Modules
                     await RespondAsync($"match edited");
                     break;
             }
+        }*/
+
+        [SlashCommand("regisbutton", "creates a reg button", runMode: RunMode.Async)]
+        public async Task RegButton()
+        {
+            var builder = new ComponentBuilder()
+                .WithButton("Register Today", "spawn_registration_form", emote: new Emoji("▶"), style: ButtonStyle.Success);
+            await RespondAsync(components: builder.Build());
         }
-        
-        
+
+
         #region Manual Database Commands
         #region Players
         [SlashCommand("create-player", "Creates a player", runMode: RunMode.Async)]
@@ -258,9 +266,9 @@ namespace RutgersDiscord.Modules
         }
 
         [SlashCommand("delete-match", "Deletes a match", runMode: RunMode.Async)]
-        public async Task DeleteMatch(long matchID)
+        public async Task DeleteMatch([ComplexParameter] MatchInfo match)
         {
-            await _database.DeleteMatchAsync(matchID);
+            await _database.DeleteMatchAsync(match);
             await RespondAsync("Match Deleted");
         }
 

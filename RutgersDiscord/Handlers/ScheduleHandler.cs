@@ -43,7 +43,7 @@ public class ScheduleHandler
 			message += $"<@{player}> ";
         }
 		message += "there are 15 mins until match starts!";
-		await _client.GetGuild(Constants.guild).GetTextChannel(channel).SendMessageAsync(message);
+		//await _client.GetGuild(Constants.guild).GetTextChannel(channel).SendMessageAsync(message);
 	}
 
 	
