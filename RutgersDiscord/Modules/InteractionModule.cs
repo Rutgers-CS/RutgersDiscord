@@ -26,14 +26,16 @@ namespace RutgersDiscord.Modules
         private readonly DatabaseHandler _database;
         private readonly RegistrationHandler _registrationHandler;
         private readonly DatHostAPIHandler _datHostAPIHandler;
+        private readonly GameServerHandler _gameServerHandler;
 
-        public InteractionModule(DiscordSocketClient client, InteractivityService interactivity, DatabaseHandler database, RegistrationHandler registrationHandler, DatHostAPIHandler datHostAPIHandler)
+        public InteractionModule(DiscordSocketClient client, InteractivityService interactivity, DatabaseHandler database, RegistrationHandler registrationHandler, DatHostAPIHandler datHostAPIHandler, GameServerHandler gameServerHandler)
         {
             _client = client;
             _interactivity = interactivity;
             _database = database;
             _registrationHandler = registrationHandler;
             _datHostAPIHandler = datHostAPIHandler;
+            _gameServerHandler = gameServerHandler;
         }
 
         //TODO Clean up these commands
@@ -54,7 +56,7 @@ namespace RutgersDiscord.Modules
         [SlashCommand("ready", "Set your team as ready for the match")]
         public async Task TeamReady()
         {
-            ReadyCommand rc = new ReadyCommand(_client, Context, _database, _interactivity, _datHostAPIHandler);
+            ReadyCommand rc = new ReadyCommand(_client, Context, _database, _interactivity, _datHostAPIHandler, _gameServerHandler);
             await rc.Ready();
         }
 
