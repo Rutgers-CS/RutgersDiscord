@@ -17,7 +17,7 @@ public class MatchSettings
     private string match_end_webhook_url { get; set; } = $"http://{Environment.GetEnvironmentVariable("publicIP")}:{Environment.GetEnvironmentVariable("port")}/api";
     private string message_prefix { get; set; } = "Scarlet Classic";
     private string playwin_result_webhook_url { get; set; }
-    private int ready_min_players { get; set; } = 1;
+    private int ready_min_players { get; set; } = 2;
     private string round_end_webhook_url { get; set; }
     private string spectator_steam_ids { get; set; }
     private string team1_coach_steam_id { get; set; }
