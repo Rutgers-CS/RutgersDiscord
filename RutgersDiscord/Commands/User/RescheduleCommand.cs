@@ -52,8 +52,9 @@ namespace RutgersDiscord.Commands.User
                 return;
             }
 
-            TimeSpan originalDateSpan = new((long)match.MatchTime);
-            TimeSpan dateSpan = new(date.Ticks);
+            DateTime discordEpoch = new DateTime(1970, 1, 1);
+            double originalDateSpan = (new DateTime((long)match.MatchTime) - discordEpoch).TotalSeconds;
+            double dateSpan = (date.ToUniversalTime() - discordEpoch).TotalSeconds;
             TeamInfo teamOpponent;
             if (match.TeamHomeID == team.TeamID)
             {
@@ -77,8 +78,8 @@ namespace RutgersDiscord.Commands.User
             EmbedBuilder embed = new EmbedBuilder()
                 .WithColor(Constants.EmbedColors.active)
                 .WithTitle($"{_context.User.Username} requested a reschedule")
-                .AddField("Original Time", $"<t:{originalDateSpan.TotalMinutes}:f>")
-                .AddField("Proposed Time", $"<t:{dateSpan.TotalMinutes}:f>");
+                .AddField("Original Time", $"<t:{originalDateSpan}:f>")
+                .AddField("Proposed Time", $"<t:{dateSpan}:f>");
 
             await _context.Interaction.RespondAsync($"<@{teamOpponent.Player1}>", embed: embed.Build(), components: component.Build());
 
