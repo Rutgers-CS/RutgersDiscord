@@ -16,13 +16,15 @@ namespace RutgersDiscord.Commands
         private readonly SocketInteractionContext _context;
         private readonly DatabaseHandler _database;
         private readonly InteractivityService _interactivity;
+        private readonly GameServerHandler _gameServerHandler;
 
-        public ReadyCommand(DiscordSocketClient client, SocketInteractionContext context, DatabaseHandler database, InteractivityService interactivity)
+        public ReadyCommand(DiscordSocketClient client, SocketInteractionContext context, DatabaseHandler database, InteractivityService interactivity, GameServerHandler gameServerHandler)
         {
             _client = client;
             _context = context;
             _database = database;
             _interactivity = interactivity;
+            _gameServerHandler = gameServerHandler;
         }
 
         public async Task Ready()
@@ -87,14 +89,9 @@ namespace RutgersDiscord.Commands
                 VetoCommand v = new(_client,_context,_database,_interactivity);
                 await v.StartVeto();
             }
-            else
-            {
-                await _context.Channel.SendMessageAsync("Starting Match");
-            }
 
-            //Start match (generate match)
-            await _context.Channel.SendMessageAsync("routine finished");
-
+            await _context.Channel.SendMessageAsync("Starting Match");
+            await _gameServerHandler.CreateServer();
         }
     }
 }
