@@ -115,7 +115,7 @@ namespace RutgersDiscord.Commands
             await _datHostAPIHandler.CreateMatch(ms);
 
             var builder = new ComponentBuilder()
-                .WithButton("Connect", "connect_btn", style: ButtonStyle.Link, url: $"connect {newServer.IP}:{newServer.Port}");
+                .WithButton("Connect", "connect_btn", style: ButtonStyle.Link, url: $"steam://rungame/730/76561202255233023/+connect%20{newServer.IP}:{newServer.Port}");
 
             await _context.Channel.SendMessageAsync(components: builder.Build());
         }

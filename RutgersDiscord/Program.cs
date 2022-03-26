@@ -39,7 +39,7 @@ namespace RutgersDiscord
                 .AddSingleton<DatabaseHandler>()
                 .AddSingleton<ScheduleHandler>()
                 .AddSingleton<RegistrationHandler>()
-                //.AddSingleton<RESTHandler>()
+                .AddSingleton<RESTHandler>()
                 .AddHttpClient()
                 .AddTransient<DatHostAPIHandler>()
                 .AddSingleton(s => new InteractivityService(_client, interactiveConfig))
@@ -48,8 +48,7 @@ namespace RutgersDiscord
             await _services.GetRequiredService<InteractionHandler>().InstallAsync();
             await _services.GetRequiredService<ScheduleHandler>().AddRequiredJobsAsync();
             _services.GetRequiredService<RegistrationHandler>().SubscribeHandlers();
-            //TODO IMPORTANT RestHandler blocks entire program (nothing else runs)
-            //_services.GetRequiredService<RESTHandler>().Listen();
+            new Task(() => _services.GetRequiredService<RESTHandler>().Listen()).Start();
 
             _client.Ready += ClientReady;
 
