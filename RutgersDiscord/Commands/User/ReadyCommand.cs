@@ -133,7 +133,6 @@ namespace RutgersDiscord.Commands
 
                         var st = await _datHostAPIHandler.CreateMatch(ms);
                         PreGameJson preGameJson = JsonConvert.DeserializeObject<PreGameJson>(st);
-                        Console.WriteLine(st);
                         await _context.Channel.SendMessageAsync($"Paste in csgo console: `connect {newServer.IP}:{newServer.Port}`");
                         await _context.Channel.SendMessageAsync($"If you can't connect try again in a few seconds the server might still be booting up");
 

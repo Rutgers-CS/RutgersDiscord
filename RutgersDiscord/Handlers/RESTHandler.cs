@@ -47,7 +47,6 @@ public class RESTHandler
         HttpListenerRequest request = context.Request;
         StreamReader sr = new(request.InputStream, request.ContentEncoding);
         string line = sr.ReadToEnd();
-        Console.WriteLine(line);
 
         var response = context.Response;
         string responseString = "202 Accepted";
@@ -58,6 +57,7 @@ public class RESTHandler
         output.Write(buffer, 0, buffer.Length);
         output.Close();
 
+        Console.WriteLine("Calling webhook parser");
         await _gameServerHandler.UpdateDatabase(line);
     }
 }
