@@ -100,25 +100,46 @@ namespace RutgersDiscord.Commands
                 await _context.Channel.SendMessageAsync("Starting Match");
             }
 
-            //Start match (generate match)
-            var newServer = await _datHostAPIHandler.CreateNewServer();
-            
-            ServerTokens newToken = await _database.GetUnusedToken();
-            newToken.ServerID = newServer.ServerID;
-            await _database.UpdateToken(newToken);
-            await _datHostAPIHandler.UpdateServerToken(newServer.ServerID, _context.Channel.Name, newToken.Token);
-            TeamInfo homeTeam = await _database.GetTeamAsync((int)match.TeamHomeID);
-            PlayerInfo hP1 = await _database.GetPlayerAsync((long)homeTeam.Player1);
-            PlayerInfo hP2 = await _database.GetPlayerAsync((long)homeTeam.Player2);
-            TeamInfo awayTeam = await _database.GetTeamAsync((int)match.TeamAwayID);
-            PlayerInfo aP1 = await _database.GetPlayerAsync((long)awayTeam.Player1);
-            PlayerInfo aP2 = await _database.GetPlayerAsync((long)awayTeam.Player2);
-            MapInfo map = await _database.GetMapAsync((int)match.MapID);
-            MatchSettings ms = new MatchSettings(map, homeTeam, hP1, hP2, awayTeam, aP1, aP2, newServer.ServerID);
-            
-            var st = await _datHostAPIHandler.CreateMatch(ms);
-            Console.WriteLine(st);
-            await _context.Channel.SendMessageAsync($"`connect {newServer.IP}:{newServer.Port}`");
+            match = (await _database.GetMatchByAttribute(discordChannel: (long?)_context.Channel.Id)).FirstOrDefault();
+
+            if (match.ServerID == null)
+            {
+                //Start match (generate match)
+                var newServer = await _datHostAPIHandler.CreateNewServer();
+
+                ServerTokens newToken = await _database.GetUnusedToken();
+                if (newToken != null)
+                {
+                    newToken.ServerID = newServer.ServerID;
+                    await _database.UpdateToken(newToken);
+                    await _datHostAPIHandler.UpdateServerToken(newServer.ServerID, _context.Channel.Name, newToken.Token);
+
+                    TeamInfo homeTeam = await _database.GetTeamAsync((int)match.TeamHomeID);
+                    PlayerInfo hP1 = await _database.GetPlayerAsync((long)homeTeam.Player1);
+                    PlayerInfo hP2 = await _database.GetPlayerAsync((long)homeTeam.Player2);
+                    TeamInfo awayTeam = await _database.GetTeamAsync((int)match.TeamAwayID);
+                    PlayerInfo aP1 = await _database.GetPlayerAsync((long)awayTeam.Player1);
+                    PlayerInfo aP2 = await _database.GetPlayerAsync((long)awayTeam.Player2);
+                    MapInfo map = await _database.GetMapAsync((int)match.MapID);
+                    MatchSettings ms = new MatchSettings(map, homeTeam, hP1, hP2, awayTeam, aP1, aP2, newServer.ServerID);
+
+                    var st = await _datHostAPIHandler.CreateMatch(ms);
+                    Console.WriteLine(st);
+                    await _context.Channel.SendMessageAsync($"Paste in csgo console: `connect {newServer.IP}:{newServer.Port}`");
+                    await _context.Channel.SendMessageAsync($"If you can't connect try again in a few seconds the server might still be booting up");
+
+                    match.ServerID = newServer.ServerID;
+                    await _database.UpdateMatchAsync(match);
+                }
+                else
+                {
+                    await _context.Channel.SendMessageAsync("No free servers availible");
+                }
+            }
+            else
+            {
+                await _context.Channel.SendMessageAsync("Server already assigned");
+            }
         }
     }
 }
