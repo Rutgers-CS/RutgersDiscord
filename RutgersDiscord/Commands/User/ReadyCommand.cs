@@ -159,68 +159,98 @@ namespace RutgersDiscord.Commands
             await _context.Interaction.DeleteOriginalResponseAsync();
         }
 
-        public class PlayerStat
+        public class Ports
         {
-            public int assists { get; set; }
-            public int deaths { get; set; }
-            public int kills { get; set; }
-            public string steam_id { get; set; }
+            public int game { get; set; }
+            public int gotv { get; set; }
+            public object gotv_secondary { get; set; }
+            public object query { get; set; }
         }
 
-        public class PlaywinResult
+        public class CsgoSettings
         {
-        }
-
-        public class Team1Stats
-        {
-            public int score { get; set; }
-        }
-
-        public class Team2Stats
-        {
-            public int score { get; set; }
+            public int slots { get; set; }
+            public string steam_game_server_login_token { get; set; }
+            public string rcon { get; set; }
+            public string password { get; set; }
+            public string maps_source { get; set; }
+            public string mapgroup { get; set; }
+            public string mapgroup_start_map { get; set; }
+            public string workshop_id { get; set; }
+            public string workshop_start_map_id { get; set; }
+            public string workshop_authkey { get; set; }
+            public List<object> autoload_configs { get; set; }
+            public string sourcemod_admins { get; set; }
+            public List<object> sourcemod_plugins { get; set; }
+            public bool enable_gotv { get; set; }
+            public bool enable_gotv_secondary { get; set; }
+            public bool enable_sourcemod { get; set; }
+            public bool enable_csay_plugin { get; set; }
+            public string game_mode { get; set; }
+            public double tickrate { get; set; }
+            public bool pure_server { get; set; }
+            public bool insecure { get; set; }
+            public bool disable_bots { get; set; }
+            public bool private_server { get; set; }
+            public bool disable_1v1_warmup_arenas { get; set; }
         }
 
         public class PreGameJson
         {
-            public string cancel_reason { get; set; }
-            public int connect_time { get; set; }
-            public bool enable_knife_round { get; set; }
-            public bool enable_pause { get; set; }
-            public bool enable_playwin { get; set; }
-            public bool enable_ready { get; set; }
-            public bool enable_tech_pause { get; set; }
-            public bool finished { get; set; }
-            public string game_server_id { get; set; }
             public string id { get; set; }
-            public string map { get; set; }
-            public string match_end_webhook_url { get; set; }
-            public string match_series_id { get; set; }
-            public string message_prefix { get; set; }
-            public List<PlayerStat> player_stats { get; set; }
-            public PlaywinResult playwin_result { get; set; }
-            public string playwin_result_webhook_url { get; set; }
-            public int ready_min_players { get; set; }
-            public string round_end_webhook_url { get; set; }
-            public int rounds_played { get; set; }
-            public List<string> spectator_steam_ids { get; set; }
-            public bool started { get; set; }
-            public string team1_coach_steam_id { get; set; }
-            public string team1_flag { get; set; }
-            public string team1_name { get; set; }
-            public bool team1_start_ct { get; set; }
-            public Team1Stats team1_stats { get; set; }
-            public List<string> team1_steam_ids { get; set; }
-            public string team2_coach_steam_id { get; set; }
-            public string team2_flag { get; set; }
-            public string team2_name { get; set; }
-            public Team2Stats team2_stats { get; set; }
-            public List<string> team2_steam_ids { get; set; }
-            public int team_size { get; set; }
-            public bool wait_for_coaches { get; set; }
-            public bool wait_for_gotv_before_nextmap { get; set; }
-            public bool wait_for_spectators { get; set; }
-            public int warmup_time { get; set; }
+            public string name { get; set; }
+            public object user_data { get; set; }
+            public string game { get; set; }
+            public string location { get; set; }
+            public int players_online { get; set; }
+            public List<object> status { get; set; }
+            public bool booting { get; set; }
+            public object server_error { get; set; }
+            public string ip { get; set; }
+            public string raw_ip { get; set; }
+            public object private_ip { get; set; }
+            public object match_id { get; set; }
+            public bool on { get; set; }
+            public Ports ports { get; set; }
+            public bool confirmed { get; set; }
+            public int max_disk_usage_gb { get; set; }
+            public double cost_per_hour { get; set; }
+            public double max_cost_per_hour { get; set; }
+            public double month_credits { get; set; }
+            public int month_reset_at { get; set; }
+            public double max_cost_per_month { get; set; }
+            public int subscription_cycle_months { get; set; }
+            public string subscription_state { get; set; }
+            public int subscription_renewal_failed_attempts { get; set; }
+            public object subscription_renewal_next_attempt_at { get; set; }
+            public int cycle_months_1_discount_percentage { get; set; }
+            public int cycle_months_3_discount_percentage { get; set; }
+            public int cycle_months_12_discount_percentage { get; set; }
+            public int first_month_discount_percentage { get; set; }
+            public bool enable_mysql { get; set; }
+            public bool autostop { get; set; }
+            public int autostop_minutes { get; set; }
+            public bool enable_core_dump { get; set; }
+            public bool prefer_dedicated { get; set; }
+            public bool enable_syntropy { get; set; }
+            public string server_image { get; set; }
+            public bool reboot_on_crash { get; set; }
+            public object manual_sort_order { get; set; }
+            public string mysql_username { get; set; }
+            public string mysql_password { get; set; }
+            public string ftp_password { get; set; }
+            public object disk_usage_bytes { get; set; }
+            public object default_file_locations { get; set; }
+            public string custom_domain { get; set; }
+            public List<object> scheduled_commands { get; set; }
+            public object added_voice_server { get; set; }
+            public string duplicate_source_server { get; set; }
+            public CsgoSettings csgo_settings { get; set; }
+            public object mumble_settings { get; set; }
+            public object teamfortress2_settings { get; set; }
+            public object teamspeak3_settings { get; set; }
+            public object valheim_settings { get; set; }
         }
+
     }
 }
