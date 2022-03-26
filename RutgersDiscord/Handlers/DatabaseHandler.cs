@@ -168,7 +168,7 @@ namespace RutgersDiscord.Handlers
             }
             if (name != null)
             {
-                filter += $"AND Name = {name} ";
+                filter += $"AND Name = \"{name}\" ";
             }
             if (teamID != null)
             {
@@ -202,7 +202,7 @@ namespace RutgersDiscord.Handlers
 
         public async Task<PlayerInfo> GetPlayerBySteamIDAsync(string steamID)
         {
-            string query = $"SELECT * FROM {playerTable} WHERE SteamID = {steamID}";
+            string query = $"SELECT * FROM {playerTable} WHERE SteamID = \"{steamID}\"";
             try
             {
                 using (var sqliteConnection = new SqliteConnection(databaseName))
