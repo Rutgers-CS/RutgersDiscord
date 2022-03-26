@@ -108,12 +108,15 @@ namespace RutgersDiscord.Commands
 
             if (match.ServerID == null)
             {
+                Console.WriteLine("Creating server");
                 //Start match (generate match)
                 var newServer = await _datHostAPIHandler.CreateNewServer();
+                Console.WriteLine(newServer.ServerID);
 
                 ServerTokens newToken = await _database.GetUnusedToken();
                 if (newToken != null)
                 {
+                    Console.WriteLine(newToken.Token);
                     newToken.ServerID = newServer.ServerID;
                     await _database.UpdateToken(newToken);
                     await _datHostAPIHandler.UpdateServerToken(newServer.ServerID, _context.Channel.Name, newToken.Token);
