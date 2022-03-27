@@ -63,13 +63,18 @@ public class GenerateMatches
         greetingMessage += " to the match page";
 
         //Create embed with info
+        EmbedFieldBuilder defaultTime = new EmbedFieldBuilder()
+            .WithName("Default Time")
+            .WithValue($"<t:{(new DateTime((long)match.MatchTime) - new DateTime(1970, 1, 1)).TotalSeconds}:f>")
+            .WithIsInline(false);
         EmbedFieldBuilder commandList = new EmbedFieldBuilder()
             .WithName("Commands")
             .WithValue("`/admin` pings admin \n" +
                        "`/ready` (max 15 mins before)\n" +
                        "`/reschedule [month] [day] [hour] [minute]` to request a reschedule\n" +
                        "`/unready`\n" +
-                       "`/veto` to start veto on the map");
+                       "`/veto` to start veto on the map")
+            .WithIsInline(false);
         EmbedBuilder embed = new EmbedBuilder()
             .WithTitle($"{teamHome.TeamName} vs. {teamAway.TeamName}")
             .AddField(commandList);
