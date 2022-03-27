@@ -2,6 +2,7 @@
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
@@ -86,6 +87,16 @@ namespace RutgersDiscord.Handlers
             using (HttpContent content = response.Content)
             {
                 return await response.Content.ReadAsStringAsync();
+            }
+        }
+
+        public async Task GetDemo(string serverID, string matchID)
+        {
+            if (serverID == templateServerID) return;
+            var response = await _httpClient.GetAsync($"game-server/{serverID}/files/{matchID}.dem");
+            using (var fs = new FileStream($"./demo_{matchID}.dem", FileMode.CreateNew))
+            {
+                await response.Content.CopyToAsync(fs);
             }
         }
     }

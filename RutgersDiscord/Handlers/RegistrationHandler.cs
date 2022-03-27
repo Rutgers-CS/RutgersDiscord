@@ -17,6 +17,7 @@ namespace RutgersDiscord.Handlers
         private readonly DiscordSocketClient _client;
         private readonly DatabaseHandler _database;
         private readonly InteractivityService _interactivity;
+        private readonly bool registrationOpen = false;
 
         public RegistrationHandler(DiscordSocketClient client, DatabaseHandler database, InteractivityService interactivity)
         {
@@ -41,6 +42,11 @@ namespace RutgersDiscord.Handlers
             {
                 return;
             }
+            if(!registrationOpen)
+            {
+                await component.RespondAsync("Registration closed", ephemeral: true);
+                return;
+            }
 
             var modalBuilder = new ModalBuilder()
                 .WithTitle("Event Registration")
@@ -56,6 +62,11 @@ namespace RutgersDiscord.Handlers
         {
             if (!modal.Data.CustomId.Equals("register_form"))
             {
+                return;
+            }
+            if (!registrationOpen)
+            {
+                await modal.RespondAsync("Registration closed", ephemeral: true);
                 return;
             }
 
@@ -113,6 +124,11 @@ namespace RutgersDiscord.Handlers
             {
                 return;
             }
+            if (!registrationOpen)
+            {
+                await component.RespondAsync("Registration closed", ephemeral: true);
+                return;
+            }
 
             TeamInfo userTeam = await _database.GetTeamByDiscordIDAsync((long)component.User.Id);
             if (userTeam != null)
@@ -166,6 +182,11 @@ namespace RutgersDiscord.Handlers
         {
             if (modal.Data.CustomId != "modal_team_create")
             {
+                return;
+            }
+            if (!registrationOpen)
+            {
+                await modal.RespondAsync("Registration closed",ephemeral:true);
                 return;
             }
 
@@ -224,6 +245,11 @@ namespace RutgersDiscord.Handlers
             {
                 return;
             }
+            if (!registrationOpen)
+            {
+                await component.RespondAsync("Registration closed");
+                return;
+            }
 
             int teamID = int.Parse(component.Data.Values.First().Replace("teams_dropdown_", ""));
             TeamInfo team = await _database.GetTeamAsync(teamID);
@@ -247,6 +273,11 @@ namespace RutgersDiscord.Handlers
         {
             if (!component.Data.CustomId.StartsWith("teams_request_"))
             {
+                return;
+            }
+            if (!registrationOpen)
+            {
+                await component.RespondAsync("Registration closed");
                 return;
             }
 

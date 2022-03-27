@@ -131,9 +131,18 @@ namespace RutgersDiscord.Handlers
             cmatch.ScoreAway = awayTeam.score;
             await _database.UpdateMatchAsync(cmatch);
 
+            //Fetch Demo
+            new Task(async () =>
+            {
+                //wait 30 sec for match to finish processing
+                System.Threading.Thread.Sleep(3000);
+                await _datHostAPIHandler.GetDemo(serverid, matchid);
+            });
+
             //Delete the server in 5 mins
             new Task(async () =>
             {
+                //5 min
                 System.Threading.Thread.Sleep(300000);
                 await _datHostAPIHandler.DeleteServer(serverid);
             }).Start();

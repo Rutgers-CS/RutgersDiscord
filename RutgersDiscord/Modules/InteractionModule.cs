@@ -41,11 +41,11 @@ namespace RutgersDiscord.Modules
         }
 
         //TODO Clean up these commands
-        [SlashCommand("echo", "Echo an input", runMode: RunMode.Async)]
+/*        [SlashCommand("echo", "Echo an input", runMode: RunMode.Async)]
         public async Task Echo(string input)
         {
             await RespondAsync(input);
-        }
+        }*/
 
 
         [SlashCommand("veto", "Starts veto process", runMode: RunMode.Async)]
@@ -97,7 +97,7 @@ namespace RutgersDiscord.Modules
             await lc.GetHelp();
         }
 
-        [SlashCommand("resched", "reschedule")]
+        [SlashCommand("reschedule", "Requests a reschedule")]
         public async Task Resched(int month, int day, int hour, int min)
         {
             RescheduleCommand rc = new RescheduleCommand(_client, Context, _database, _interactivity,_schedule);
