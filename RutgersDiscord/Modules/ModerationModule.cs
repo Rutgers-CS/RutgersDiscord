@@ -50,7 +50,7 @@ namespace RutgersDiscord.Modules
             foreach (dynamic r in response)
             {
                 output += r + "\n";
-                if (split == 5)
+                if (split == 4)
                 {
                     await Context.Channel.SendMessageAsync(output);
                     output = "";
