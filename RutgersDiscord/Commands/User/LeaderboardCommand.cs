@@ -99,9 +99,10 @@ namespace RutgersDiscord.Commands.User
                 }
                 else
                 {
-                    if (((await _database.GetPlayerAsync(team.Player1)).Kills.HasValue))
+                    var player1 = await _database.GetPlayerAsync(team.Player1);
+                    if (player1.Kills.HasValue)
                     {
-                        p1k = (float)(await _database.GetPlayerAsync(team.Player1)).Kills;
+                        p1k = (float) player1.Kills;
 
                     }
                     else
@@ -109,15 +110,15 @@ namespace RutgersDiscord.Commands.User
                         p1k = 0f;
                     }
 
-                    if (((await _database.GetPlayerAsync(team.Player1)).Deaths.HasValue))
+                    if (player1.Deaths.HasValue)
                     {
-                        if ((await _database.GetPlayerAsync(team.Player1)).Deaths == 0)
+                        if (player1.Deaths == 0)
                         {
                             p1d = 1f;
                         }
                         else
                         {
-                            p1d = (float)(await _database.GetPlayerAsync(team.Player1)).Deaths;
+                            p1d = (float) player1.Deaths;
                         }
 
                     }
@@ -135,9 +136,10 @@ namespace RutgersDiscord.Commands.User
                 }
                 else
                 {
-                    if (((await _database.GetPlayerAsync(team.Player2)).Kills.HasValue))
+                    var player2 = await _database.GetPlayerAsync(team.Player2);
+                    if (player2.Kills.HasValue)
                     {
-                        p2k = (float)(await _database.GetPlayerAsync(team.Player2)).Kills;
+                        p2k = (float) player2.Kills;
 
                     }
                     else
@@ -145,15 +147,15 @@ namespace RutgersDiscord.Commands.User
                         p2k = 0f;
                     }
 
-                    if (((await _database.GetPlayerAsync(team.Player2)).Deaths.HasValue))
+                    if (player2.Deaths.HasValue)
                     {
-                        if ((await _database.GetPlayerAsync(team.Player2)).Deaths == 0)
+                        if (player2.Deaths == 0)
                         {
                             p2d = 1f;
                         }
                         else
                         {
-                            p2d = (float)(await _database.GetPlayerAsync(team.Player2)).Deaths;
+                            p2d =(float) player2.Deaths;
                         }
 
                     }
@@ -165,19 +167,20 @@ namespace RutgersDiscord.Commands.User
                 float kd = (p1k/p1d + p2k/p2d) / 2f;
                 kds.Add(kd.ToString("0.00"));
 
-                IEnumerable<MatchInfo> teamsmatches = await _database.GetMatchByAttribute(teamID1: team.TeamID, teamID2: team.TeamID);
-                if (teamsmatches.IsNullOrEmpty())
-                {
+                //THIS SECTION IS BROKEN
+                IEnumerable<MatchInfo> teamsmatches = await _database.GetMatchByAttribute(teamID1: team.TeamID);
+//                if (teamsmatches.IsNullOrEmpty())
+//                {
                     fmaps.Add("None");
-                }
-                else
-                { 
-                var most = (from k in teamsmatches
-                            group k.MapID by k.MapID into grp
-                            orderby grp.Count() descending
-                            select grp.Key).First();
-                fmaps.Add((await _database.GetMapAsync((int)most)).MapName);
-                }
+//                }
+//                else
+//                { 
+//                var most = (from k in teamsmatches
+//                            group k.MapID by k.MapID into grp
+//                            orderby grp.Count() descending
+//                            select grp.Key).First();
+//                fmaps.Add((await _database.GetMapAsync((int)most)).MapName);
+//                }
             }
 
             List<PageBuilder> pages = new();
