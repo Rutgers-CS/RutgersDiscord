@@ -34,11 +34,11 @@ public class ScheduleHandler
 
 			if (match.MatchTime > DateTime.Now.AddMinutes(16).Ticks)
             {
-				JobManager.AddJob(async () => await MentionUsers((ulong)match.DiscordChannel, players), s => s.WithName($"[match_{match.MatchID}]").ToRunOnceAt(new DateTime((long)match.MatchTime) - TimeSpan.FromMinutes(15)));
+				JobManager.AddJob(async () => await MentionUsers((ulong)match.DiscordChannel, players), s => s.WithName($"[match_15m_{match.MatchID}]").ToRunOnceAt(new DateTime((long)match.MatchTime) - TimeSpan.FromMinutes(15)));
 			}
 			if (match.MatchTime > DateTime.Now.AddDays(1).Ticks)
 			{
-				JobManager.AddJob(async () => await MentionUsers((ulong)match.DiscordChannel, players), s => s.WithName($"[match_{match.MatchID}]").ToRunOnceAt(new DateTime((long)match.MatchTime) - TimeSpan.FromDays(1)));
+				JobManager.AddJob(async () => await MentionUsers((ulong)match.DiscordChannel, players), s => s.WithName($"[match_24h_{match.MatchID}]").ToRunOnceAt(new DateTime((long)match.MatchTime) - TimeSpan.FromDays(1)));
 			}
 		}
     }
