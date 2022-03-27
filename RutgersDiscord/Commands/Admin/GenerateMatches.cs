@@ -56,10 +56,10 @@ public class GenerateMatches
 
         //Create Greeting message
         String greetingMessage = "Welcome ";
-        /*foreach( PlayerInfo player in playerList)
+        foreach (PlayerInfo player in playerList)
         {
             greetingMessage += $"<@{player.DiscordID}>";
-        }*/
+        }
         greetingMessage += " to the match page";
 
         //Create embed with info
@@ -77,6 +77,7 @@ public class GenerateMatches
             .WithIsInline(false);
         EmbedBuilder embed = new EmbedBuilder()
             .WithTitle($"{teamHome.TeamName} vs. {teamAway.TeamName}")
+            .AddField(defaultTime)
             .AddField(commandList);
 
         //Send Message
