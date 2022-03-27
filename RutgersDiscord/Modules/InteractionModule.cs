@@ -24,18 +24,20 @@ namespace RutgersDiscord.Modules
         private readonly DiscordSocketClient _client;
         private readonly InteractivityService _interactivity;
         private readonly DatabaseHandler _database;
-        private readonly RegistrationHandler _registrationHandler;
-        private readonly DatHostAPIHandler _datHostAPIHandler;
-        private readonly GameServerHandler _gameServerHandler;
+        private readonly RegistrationHandler _registration;
+        private readonly DatHostAPIHandler _datHostAPI;
+        private readonly GameServerHandler _gameServer;
+        private readonly ScheduleHandler _schedule;
         //FIX Assign teamID
-        public InteractionModule(DiscordSocketClient client, InteractivityService interactivity, DatabaseHandler database, RegistrationHandler registrationHandler, DatHostAPIHandler datHostAPIHandler, GameServerHandler gameServerHandler)
+        public InteractionModule(DiscordSocketClient client, InteractivityService interactivity, DatabaseHandler database, RegistrationHandler registration, DatHostAPIHandler datHostAPI, GameServerHandler gameServer, ScheduleHandler schedule)
         {
             _client = client;
             _interactivity = interactivity;
             _database = database;
-            _registrationHandler = registrationHandler;
-            _datHostAPIHandler = datHostAPIHandler;
-            _gameServerHandler = gameServerHandler;
+            _registration = registration;
+            _datHostAPI = datHostAPI;
+            _gameServer = gameServer;
+            _schedule = schedule;
         }
 
         //TODO Clean up these commands
@@ -56,7 +58,7 @@ namespace RutgersDiscord.Modules
         [SlashCommand("ready", "Set your team as ready for the match")]
         public async Task TeamReady()
         {
-            ReadyCommand rc = new ReadyCommand(_client, Context, _database, _interactivity, _gameServerHandler, _datHostAPIHandler);
+            ReadyCommand rc = new ReadyCommand(_client, Context, _database, _interactivity, _gameServer, _datHostAPI);
             await rc.Ready();
         }
 
@@ -98,7 +100,7 @@ namespace RutgersDiscord.Modules
         [SlashCommand("resched", "reschedule")]
         public async Task Resched(int month, int day, int hour, int min)
         {
-            RescheduleCommand rc = new RescheduleCommand(_client, Context, _database, _interactivity);
+            RescheduleCommand rc = new RescheduleCommand(_client, Context, _database, _interactivity,_schedule);
             DateTime t = new DateTime(DateTime.Now.Year, month, day, hour, min, 0);
             await rc.RescheduleMatch(t);
         }
