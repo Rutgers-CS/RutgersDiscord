@@ -128,7 +128,7 @@ namespace RutgersDiscord.Commands.User
                     }
                     else
                     {
-                        JobManager.AddJob(async () => await _schedule.MentionUsers((ulong)match.DiscordChannel, players), s => s.WithName($"[match_15m_{match.MatchID}]").ToRunOnceAt(new DateTime((long)match.MatchTime) - TimeSpan.FromMinutes(15)));
+                        JobManager.AddJob(async () => await _schedule.MentionUsers((ulong)match.DiscordChannel, players,false), s => s.WithName($"[match_15m_{match.MatchID}]").ToRunOnceAt(new DateTime((long)match.MatchTime) - TimeSpan.FromMinutes(15)));
                     }                
                 }
                 if (date - TimeSpan.FromDays(1) > DateTime.Now)
@@ -140,7 +140,7 @@ namespace RutgersDiscord.Commands.User
                     }
                     else
                     {
-                        JobManager.AddJob(async () => await _schedule.MentionUsers((ulong)match.DiscordChannel, players), s => s.WithName($"[match_24h_{match.MatchID}]").ToRunOnceAt(new DateTime((long)match.MatchTime) - TimeSpan.FromDays(1)));
+                        JobManager.AddJob(async () => await _schedule.MentionUsers((ulong)match.DiscordChannel, players,true), s => s.WithName($"[match_24h_{match.MatchID}]").ToRunOnceAt(new DateTime((long)match.MatchTime) - TimeSpan.FromDays(1)));
                     }
                 }
             }

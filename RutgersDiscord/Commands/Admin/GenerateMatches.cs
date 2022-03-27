@@ -84,7 +84,8 @@ public class GenerateMatches
         await channel.SendMessageAsync(greetingMessage,embed: embed.Build());
 
         //Add job 
-        JobManager.AddJob(async () => await _schedule.MentionUsers((ulong)match.DiscordChannel, playerList.Select(s => s.DiscordID).ToList()), s => s.WithName($"[match_{match.MatchID}]").ToRunOnceAt(new DateTime((long)match.MatchTime) - TimeSpan.FromMinutes(15)));
+        JobManager.AddJob(async () => await _schedule.MentionUsers((ulong)match.DiscordChannel, playerList.Select(s => s.DiscordID).ToList(),false), s => s.WithName($"[match_15m_{match.MatchID}]").ToRunOnceAt(new DateTime((long)match.MatchTime) - TimeSpan.FromMinutes(15)));
+        JobManager.AddJob(async () => await _schedule.MentionUsers((ulong)match.DiscordChannel, playerList.Select(s => s.DiscordID).ToList(), true), s => s.WithName($"[match_24h_{match.MatchID}]").ToRunOnceAt(new DateTime((long)match.MatchTime) - TimeSpan.FromDays(1)));
 
         //aknowledge the interaction
         await _context.Interaction.RespondAsync("Channel Created");

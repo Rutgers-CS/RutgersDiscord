@@ -34,23 +34,30 @@ public class ScheduleHandler
 
 			if (match.MatchTime > DateTime.Now.AddMinutes(16).Ticks)
             {
-				JobManager.AddJob(async () => await MentionUsers((ulong)match.DiscordChannel, players), s => s.WithName($"[match_15m_{match.MatchID}]").ToRunOnceAt(new DateTime((long)match.MatchTime) - TimeSpan.FromMinutes(15)));
+				JobManager.AddJob(async () => await MentionUsers((ulong)match.DiscordChannel, players, false), s => s.WithName($"[match_15m_{match.MatchID}]").ToRunOnceAt(new DateTime((long)match.MatchTime) - TimeSpan.FromMinutes(15)));
 			}
 			if (match.MatchTime > DateTime.Now.AddDays(1).Ticks)
 			{
-				JobManager.AddJob(async () => await MentionUsers((ulong)match.DiscordChannel, players), s => s.WithName($"[match_24h_{match.MatchID}]").ToRunOnceAt(new DateTime((long)match.MatchTime) - TimeSpan.FromDays(1)));
+				JobManager.AddJob(async () => await MentionUsers((ulong)match.DiscordChannel, players, true), s => s.WithName($"[match_24h_{match.MatchID}]").ToRunOnceAt(new DateTime((long)match.MatchTime) - TimeSpan.FromDays(1)));
 			}
 		}
     }
 
-	public async Task MentionUsers(ulong channel, List<long> players)
+	public async Task MentionUsers(ulong channel, List<long> players, bool dayAnnouncement)
     {
 		string message = "heads up ";
 		foreach(long player in players)
         {
 			message += $"<@{player}> ";
         }
-		message += "there are 15 mins until match starts!";
+		if(!dayAnnouncement)
+        {
+			message += "there are 15 mins until match starts!";
+		}
+		else
+        {
+			message += "there is 1 day until match starts!";
+		}
 		await _client.GetGuild(Constants.guild).GetTextChannel(channel).SendMessageAsync(message);
 	}
 
