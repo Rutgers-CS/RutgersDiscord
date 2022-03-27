@@ -357,7 +357,7 @@ namespace RutgersDiscord.Modules
             await RespondAsync(rs);
         }
 
-        [SlashCommand("fixDb","RUN ONCE", runMode: RunMode.Async)]
+        [SlashCommand("fixdb","RUN ONCE", runMode: RunMode.Async)]
         public async Task FixDB()
         {
             IEnumerable<PlayerInfo> players = await _database.GetAllPlayersAsync();
