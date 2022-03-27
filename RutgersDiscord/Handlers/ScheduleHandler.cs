@@ -28,14 +28,19 @@ public class ScheduleHandler
 		IEnumerable<TeamInfo> allTeams = await _database.GetAllTeamsAsync();
 		foreach(MatchInfo match in futureMatches)
 		{
-			if(match.MatchTime > DateTime.Now.AddMinutes(16).Ticks)
+			IEnumerable<TeamInfo> teams = allTeams.Where(s => (s.TeamID == match.TeamHomeID || s.TeamID == match.TeamAwayID));
+			List<long> players = teams.Select(t => t.Player1).ToList();
+			players.AddRange(teams.Select(t => t.Player2));
+
+			if (match.MatchTime > DateTime.Now.AddMinutes(16).Ticks)
             {
-				IEnumerable<TeamInfo> teams = allTeams.Where(s => (s.TeamID == match.TeamHomeID || s.TeamID == match.TeamAwayID));
-				List<long> players = teams.Select(t => t.Player1).ToList();
-				players.AddRange(teams.Select(t => t.Player2));
 				JobManager.AddJob(async () => await MentionUsers((ulong)match.DiscordChannel, players), s => s.WithName($"[match_{match.MatchID}]").ToRunOnceAt(new DateTime((long)match.MatchTime) - TimeSpan.FromMinutes(15)));
 			}
-        }
+			if (match.MatchTime > DateTime.Now.AddDays(1).Ticks)
+			{
+				JobManager.AddJob(async () => await MentionUsers((ulong)match.DiscordChannel, players), s => s.WithName($"[match_{match.MatchID}]").ToRunOnceAt(new DateTime((long)match.MatchTime) - TimeSpan.FromDays(1)));
+			}
+		}
     }
 
 	public async Task MentionUsers(ulong channel, List<long> players)

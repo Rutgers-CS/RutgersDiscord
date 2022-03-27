@@ -113,6 +113,10 @@ namespace RutgersDiscord.Commands.User
                 {
                     JobManager.GetSchedule($"[match_{match.MatchID}]").ToRunOnceAt(date - TimeSpan.FromMinutes(15));
                 }
+                if (date - TimeSpan.FromDays(1) > DateTime.Now)
+                {
+                    JobManager.GetSchedule($"[match_{match.MatchID}]").ToRunOnceAt(date - TimeSpan.FromDays(1));
+                }
                 return;
             }
             //Code shouldn't reach here
