@@ -65,7 +65,7 @@ public class GenerateMatches
         //Create embed with info
         EmbedFieldBuilder defaultTime = new EmbedFieldBuilder()
             .WithName("Default Time")
-            .WithValue($"<t:{(new DateTime((long)match.MatchTime) - new DateTime(1970, 1, 1)).TotalSeconds}:f>")
+            .WithValue($"<t:{(new DateTime((long)match.MatchTime).ToUniversalTime() - new DateTime(1970, 1, 1)).TotalSeconds}:f>")
             .WithIsInline(false);
         EmbedFieldBuilder commandList = new EmbedFieldBuilder()
             .WithName("Commands")
