@@ -735,7 +735,7 @@ namespace RutgersDiscord.Handlers
             if (s == null) return null;
             string str = new((from c in s where char.IsWhiteSpace(c) 
                                      || char.IsLetterOrDigit(c)
-                                     || c == '_' || c == '*' || c == '=' || c == '(' || c == ')' || c == '\\' || c == '"' || c == ':' || c == ',' select c)
+                                     || c == '_' || c == '*' || c == '=' || c == '(' || c == ')' || c == '\\' || c == '"' || c == ':' || c == ',' || c == '<' || c == '>' select c)
                                      .ToArray());
             return str;
         }
