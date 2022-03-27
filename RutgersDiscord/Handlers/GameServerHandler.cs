@@ -32,12 +32,12 @@ namespace RutgersDiscord.Handlers
         public async Task UpdateDatabase(string json)
         {
             Console.WriteLine(json);
-            ServerReply result = JsonConvert.DeserializeObject<ServerReply>(json);
+            ServerReply result = JsonConvert.DeserializeObject<ServerReply>(json, new JsonSerializerSettings{NullValueHandling = NullValueHandling.Ignore});
 
             //update match in database
             string matchid = result.id;
             string serverid = result.game_server_id;
-
+            
             MatchInfo cmatch = (await _database.GetMatchByAttribute(datMatchID: matchid)).First();
             /*            cmatch.DatMatchID = matchid;
                         cmatch.ServerID = serverid;
@@ -50,7 +50,7 @@ namespace RutgersDiscord.Handlers
             //Match canceled
             if (result.cancel_reason != null)
             {
-                await channel.SendMessageAsync($"Match cancelled with reason: {result.cancel_reason}");
+                await channel.SendMessageAsync($"Match cancelled with reason: `{result.cancel_reason}`");
                 await _datHostAPIHandler.DeleteServer(serverid);
 
                 cmatch.DatMatchID = null;
