@@ -98,13 +98,13 @@ namespace RutgersDiscord.Commands
             await _context.Interaction.DeferAsync();
             if(match.MapID == null)
             {
-                await _context.Channel.SendMessageAsync("Veto not done. Starting veto");
+                await _context.Channel.SendMessageAsync("Starting veto...");
                 VetoCommand v = new(_client,_context,_database,_interactivity);
                 await v.StartVeto();
             }
             else
             {
-                await _context.Channel.SendMessageAsync("Starting Match");
+                await _context.Channel.SendMessageAsync("Starting Match...");
             }
 
             match = (await _database.GetMatchByAttribute(discordChannel: (long?)_context.Channel.Id)).FirstOrDefault();
@@ -136,8 +136,7 @@ namespace RutgersDiscord.Commands
 
                         var st = await _datHostAPIHandler.CreateMatch(ms);
                         PreGameJson preGameJson = JsonConvert.DeserializeObject<PreGameJson>(st);
-                        await _context.Channel.SendMessageAsync($"Paste in csgo console: `connect {newServer.IP}:{newServer.Port}`");
-                        await _context.Channel.SendMessageAsync($"If you can't connect try again in a few seconds the server might still be booting up");
+                        await _context.Channel.SendMessageAsync($"Paste `connect {newServer.IP}:{newServer.Port}` in CSGO console to connect.");
 
                         match.ServerID = newServer.ServerID;
                         match.DatMatchID = preGameJson.id;

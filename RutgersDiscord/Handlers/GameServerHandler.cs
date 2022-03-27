@@ -52,7 +52,19 @@ namespace RutgersDiscord.Handlers
             //Match canceled
             if (result.cancel_reason != null)
             {
-                await channel.SendMessageAsync($"Match cancelled with reason: `{result.cancel_reason}`");
+                string canceled = result.cancel_reason;
+                if (canceled.StartsWith("MISSING_PLAYERS:"))
+                {
+                    string[] canceledPlayers = canceled.Replace("MISSING_PLAYERS:", "").Split(',');
+                    foreach (var s in canceledPlayers)
+                    {
+                        var player = (await _database.GetPlayerByAttribute(steamID: s)).First().DiscordID;
+                        canceled += $"<@{player}> ";
+                    }
+                    canceled += "failed to connect.";
+                }
+                
+                await channel.SendMessageAsync($"Match cancelled with reason: `{canceled}`");
                 await _datHostAPIHandler.DeleteServer(serverid);
 
                 cmatch.DatMatchID = null;
@@ -61,7 +73,7 @@ namespace RutgersDiscord.Handlers
                 cmatch.TeamHomeReady = false;
                 await _database.UpdateMatchAsync(cmatch);
 
-                await channel.SendMessageAsync("You may ready again");
+                await channel.SendMessageAsync("Both teams need to ready again to start the match.");
                 return;
             }
 
@@ -109,23 +121,24 @@ namespace RutgersDiscord.Handlers
 
 
             List<PlayerStat> players = result.player_stats;
-
+            Console.WriteLine(players.Count);
             //update player in database and channel permissions
             foreach (PlayerStat player in players)
             {
-                var cplayer = (await _database.GetPlayerByAttribute(steamID: player.steam_id)).FirstOrDefault();
+                if (!player.steam_id.StartsWith("BOT"))
+                {
+                    Console.WriteLine(player.steam_id);
+                    var cplayer = (await _database.GetPlayerByAttribute(steamID: player.steam_id)).FirstOrDefault();
+                    //TODO Change to kenji init method
+                    if (cplayer.Kills == null) cplayer.Kills = 0;
+                    if (cplayer.Deaths == null) cplayer.Deaths = 0;
 
-                //TODO Change to kenji init method
-                if (cplayer.Kills == null) cplayer.Kills = 0;
-                if (cplayer.Deaths == null) cplayer.Deaths = 0;
-
-                cplayer.Kills += player.kills;
-                cplayer.Deaths += player.deaths;
-
-                await _database.UpdatePlayerAsync(cplayer);
-
-                //update channel permissions
-                await channel.AddPermissionOverwriteAsync(guild.GetUser((ulong)cplayer.DiscordID), new OverwritePermissions(sendMessages: PermValue.Deny));
+                    cplayer.Kills += player.kills;
+                    cplayer.Deaths += player.deaths;
+                    await _database.UpdatePlayerAsync(cplayer);
+                    //update channel permissions
+                    await channel.AddPermissionOverwriteAsync(guild.GetUser((ulong)cplayer.DiscordID), new OverwritePermissions(sendMessages: PermValue.Deny));
+                }
             }
 
             cmatch.MatchFinished = true;
@@ -136,16 +149,21 @@ namespace RutgersDiscord.Handlers
             //Fetch Demo
             new Task(async () =>
             {
+                Console.WriteLine("Waiting For Demo");
                 //wait 30 sec for match to finish processing
-                System.Threading.Thread.Sleep(3000);
+                System.Threading.Thread.Sleep(60000);
+                Console.WriteLine("Downloading Demo");
                 await _datHostAPIHandler.GetDemo(serverid, matchid);
-            });
+            }).Start();
 
             //Delete the server in 5 mins
             new Task(async () =>
             {
                 //5 min
                 System.Threading.Thread.Sleep(300000);
+                /*var token = await _database.GetTokenByServerID(serverid);
+                token.ServerID = null;
+                await _database.UpdateToken(token);*/
                 await _datHostAPIHandler.DeleteServer(serverid);
             }).Start();
             
@@ -196,7 +214,7 @@ namespace RutgersDiscord.Handlers
             public string match_end_webhook_url { get; set; }
             public bool started { get; set; }
             public bool finished { get; set; }
-            public object cancel_reason { get; set; }
+            public string cancel_reason { get; set; }
             public int rounds_played { get; set; }
             public Team1Stats team1_stats { get; set; }
             public Team2Stats team2_stats { get; set; }

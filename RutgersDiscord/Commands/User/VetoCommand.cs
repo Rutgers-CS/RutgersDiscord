@@ -100,7 +100,7 @@ public class VetoCommand
         bool[] banCaptainAway = new bool[mapPool.Count];
         while (mapsRemaining > 1)
         {
-            embed = EmbedHelper(captainHome, captainAway, currentTurn, mapPool, banCaptainHome, banCaptainAway);
+            embed = await EmbedHelper(captainHome, teamHome.TeamName, captainAway, teamAway.TeamName, currentTurn, mapPool, banCaptainHome, banCaptainAway);
             ComponentBuilder dropDownMenu = DropDownMenuHelper(match, mapPool, banCaptainHome, banCaptainAway);
 
             //updates the message
@@ -159,11 +159,11 @@ public class VetoCommand
     }
 
 
-    private EmbedBuilder EmbedHelper(SocketUser captainHome, SocketUser captainAway, SocketUser currentTurn, List<MapInfo> mapPool, bool[] banCaptainHome, bool[] banCaptainAway)
+    private async Task<EmbedBuilder> EmbedHelper(SocketUser captainHome, string homeName, SocketUser captainAway, string awayName, SocketUser currentTurn, List<MapInfo> mapPool, bool[] banCaptainHome, bool[] banCaptainAway)
     {
         EmbedBuilder embed = new EmbedBuilder()
             .WithColor(Constants.EmbedColors.active)
-            .WithDescription($"{currentTurn.Username} turn to ban");
+            .WithDescription($"{currentTurn.Username} turn to **BAN**");
 
         string checkmark = ":negative_squared_cross_mark:";
         int count = 0;
@@ -180,7 +180,7 @@ public class VetoCommand
 
         List<EmbedFieldBuilder> f = new List<EmbedFieldBuilder>();
         f.Add(new EmbedFieldBuilder()
-            .WithName($"⠀⠀Team {captainHome.Username}")
+            .WithName($"{homeName}")
             .WithValue(embedColumn1)
             .WithIsInline(true));
         f.Add(new EmbedFieldBuilder()
@@ -188,7 +188,7 @@ public class VetoCommand
             .WithValue(embedColumn2)
             .WithIsInline(true));
         f.Add(new EmbedFieldBuilder()
-            .WithName($"Team {captainAway.Username}")
+            .WithName($"{awayName}")
             .WithValue(embedColumn3)
             .WithIsInline(true));
         embed.WithFields(f);

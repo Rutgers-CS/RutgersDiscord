@@ -103,6 +103,10 @@ namespace RutgersDiscord.Commands.User
             if (((SocketMessageComponent)response.Value).Data.CustomId == $"reschedule_{match.MatchID}_{commandID}_reject")
             {
                 await _context.Interaction.ModifyOriginalResponseAsync(m => m.Embed = embed.WithColor(Constants.EmbedColors.reject).Build());
+                EmbedBuilder embedFollowup = new EmbedBuilder()
+                    .WithColor(Constants.EmbedColors.reject)
+                    .WithTitle("Reschedule Rejected");
+                await _context.Channel.SendMessageAsync(_context.User.Mention, embed: embedFollowup.Build());
             }
             else if(((SocketMessageComponent)response.Value).Data.CustomId == $"reschedule_{match.MatchID}_{commandID}_accept")
             {
@@ -115,7 +119,7 @@ namespace RutgersDiscord.Commands.User
                     .WithTitle("Reschedule Accepted")
                     .WithDescription($"New match time\n" +
                                      $"<t:{dateSpan}:f>");
-                await _context.Channel.SendMessageAsync(embed: embedFollowup.Build());
+                await _context.Channel.SendMessageAsync($"<@{team.Player1}> <@{team.Player2}> <@{teamOpponent.Player1}> <@{teamOpponent.Player2}>", embed: embedFollowup.Build());
 
                 List<long> players = new() { team.Player1, team.Player2, teamOpponent.Player1, teamOpponent.Player2};
 

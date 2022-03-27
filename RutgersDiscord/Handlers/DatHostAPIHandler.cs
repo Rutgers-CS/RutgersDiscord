@@ -94,9 +94,16 @@ namespace RutgersDiscord.Handlers
         {
             if (serverID == templateServerID) return;
             var response = await _httpClient.GetAsync($"game-server/{serverID}/files/{matchID}.dem");
-            using (var fs = new FileStream($"./demo_{matchID}.dem", FileMode.CreateNew))
+            try
             {
-                await response.Content.CopyToAsync(fs);
+                using (var fs = new FileStream($"./demos/demo_{matchID}.dem", FileMode.CreateNew))
+                {
+                    await response.Content.CopyToAsync(fs);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
             }
         }
     }
