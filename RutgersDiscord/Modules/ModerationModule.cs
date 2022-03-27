@@ -108,6 +108,20 @@ namespace RutgersDiscord.Modules
             await g.CreateMatch(teamHomeID, teamAwayID,t);
         }
 
+        [SlashCommand("cm", "Creates a match with string.", runMode: RunMode.Async)]
+        public async Task CreateMatchString(string input)
+        {
+            string[] inputArr = input.Split("    ");
+            try
+            {
+                await CreateMatch(int.Parse(inputArr[0]), int.Parse(inputArr[1]), int.Parse(inputArr[2]), int.Parse(inputArr[3]), int.Parse(inputArr[4]));
+            }
+            catch
+            {
+                await Context.Interaction.RespondAsync("Parse failed", ephemeral: true);
+            }
+        }
+
         /*[SlashCommand("match", "edits matches.", runMode: RunMode.Async)]
         public async Task Match(OperationType op, [ComplexParameter] MatchInfo match)
         {
