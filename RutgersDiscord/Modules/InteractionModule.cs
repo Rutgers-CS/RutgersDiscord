@@ -88,8 +88,16 @@ namespace RutgersDiscord.Modules
         [SlashCommand("leaderboard", "Display the tournament leaderboard")]
         public async Task DisplayLeaderboard()
         {
-            LeaderboardCommand lc = new LeaderboardCommand(_client, Context, _database, _interactivity);
-            await lc.PullLeaderboard();
+            try
+            {
+                LeaderboardCommand lc = new LeaderboardCommand(_client, Context, _database, _interactivity);
+                await lc.PullLeaderboard();
+            }
+            catch (Exception ex)
+            {
+
+                Console.WriteLine(ex);
+            }
         }
 
         [SlashCommand("help", "Display all user commands")]
