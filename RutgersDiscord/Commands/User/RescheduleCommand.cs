@@ -55,7 +55,7 @@ namespace RutgersDiscord.Commands.User
             }
 
             DateTime discordEpoch = new DateTime(1970, 1, 1);
-            double originalDateSpan = (new DateTime((long)match.MatchTime) - discordEpoch).TotalSeconds;
+            double originalDateSpan = (new DateTime((long)match.MatchTime).ToUniversalTime() - discordEpoch).TotalSeconds;
             double dateSpan = (date.ToUniversalTime() - discordEpoch).TotalSeconds;
             TeamInfo teamOpponent;
             if (match.TeamHomeID == team.TeamID)
