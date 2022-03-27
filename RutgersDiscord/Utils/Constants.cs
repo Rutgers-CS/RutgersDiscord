@@ -7,7 +7,7 @@ public static class Constants
     public static class EmbedColors
     {
         public static readonly Color active = new Color(250, 218, 94);
-        public static readonly Color reject = new Color(25, 25, 25);
+        public static readonly Color reject = new Color(184, 45, 11);
         public static readonly Color accept = new Color(20, 184, 37);
     }
 

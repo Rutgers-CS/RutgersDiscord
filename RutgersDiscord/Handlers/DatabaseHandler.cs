@@ -658,6 +658,23 @@ namespace RutgersDiscord.Handlers
             }
         }
 
+        public async Task<ServerTokens> GetTokenByServerID(string serverID)
+        {
+            string query = $"SELECT * FROM {tokenTable} WHERE ServerID = {serverID}";
+            query = SanitizeString(query);
+            try
+            {
+                using (var sqliteConnection = new SqliteConnection(databaseName))
+                {
+                    return (await sqliteConnection.QueryAsync<ServerTokens>(query)).FirstOrDefault();
+                }
+            }
+            catch
+            {
+                return default;
+            }
+        }
+
         private async Task<IEnumerable<T>> GetTableFromDBUsing<T>(string strQuery, string databaseName = databaseName)
         {
             strQuery = SanitizeString(strQuery);

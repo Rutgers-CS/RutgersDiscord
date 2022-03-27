@@ -37,7 +37,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="config.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </None>
     <None Update="database.db">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

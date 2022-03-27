@@ -62,7 +62,7 @@ public class GenerateMatches
         {
             greetingMessage += $"<@{player.DiscordID}>";
         }
-        greetingMessage += " to the match page";
+        greetingMessage += " to the match room";
 
         //Create embed with info
         EmbedFieldBuilder defaultTime = new EmbedFieldBuilder()
@@ -71,11 +71,14 @@ public class GenerateMatches
             .WithIsInline(false);
         EmbedFieldBuilder commandList = new EmbedFieldBuilder()
             .WithName("Commands")
-            .WithValue("`/admin` pings admin \n" +
-                       "`/ready` (max 15 mins before)\n" +
-                       "`/reschedule [month] [day] [hour] [minute]` to request a reschedule\n" +
-                       "`/unready`\n" +
-                       "`/veto` to start veto on the map")
+            .WithValue("\n`/admin`\n" +
+                       "Calls an admin to your match room.\n\n" +
+                       "`/reschedule [month] [day] [hour] [minute]`\n" +
+                       "Propose a new time for the match.\n\n" +
+                       "`/ready ... /unready`\n" +
+                       "Once both teams have readied,\n" +
+                       "> 1. Vetoing starts\n" +
+                       "> 2. Server generates")
             .WithIsInline(false);
         EmbedBuilder embed = new EmbedBuilder()
             .WithTitle($"{teamHome.TeamName} vs. {teamAway.TeamName}")

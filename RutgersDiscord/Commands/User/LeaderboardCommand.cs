@@ -91,70 +91,78 @@ namespace RutgersDiscord.Commands.User
                 float p2k;
                 float p1d;
                 float p2d;
-                if (team.Player1 != 0)
+                if (team.Player1 == 0)
                 {
-                    p1k = 0;
-                } else
-                {
-                    p1k = (float)(await _database.GetPlayerAsync(team.Player1)).Kills;
-                }
+                    p1k = 0f;
+                    p1d = 1f;
 
-                if (team.Player2 != 0)
-                {
-
-                    if (!((await _database.GetPlayerAsync(team.Player2)).Kills.HasValue))
-                    {
-                        p2k = 0;
-                    }
-                    else
-                    {
-                        p2k = (float)(await _database.GetPlayerAsync(team.Player2)).Kills;
-                    }
-                } else
-                {
-                    p2k = 0;
-                }
-
-                if (!((await _database.GetPlayerAsync(team.Player1)).Deaths.HasValue))
-                {
-                    p1d = 1;
                 }
                 else
                 {
-                    if ((await _database.GetPlayerAsync(team.Player1)).Deaths == 0)
+                    if (((await _database.GetPlayerAsync(team.Player1)).Kills.HasValue))
                     {
-                        p1d = 1;
+                        p1k = (float)(await _database.GetPlayerAsync(team.Player1)).Kills;
+
                     }
                     else
                     {
-                        p1d = (float)(await _database.GetPlayerAsync(team.Player1)).Deaths;
+                        p1k = 0f;
                     }
-                }
 
-                if (team.Player2 != 0)
-                {
-
-                    if (!((await _database.GetPlayerAsync(team.Player2)).Deaths.HasValue))
+                    if (((await _database.GetPlayerAsync(team.Player1)).Deaths.HasValue))
                     {
-                        p2d = 1;
-                    }
-                    else
-                    {
-                        if ((await _database.GetPlayerAsync(team.Player2)).Deaths == 0)
+                        if ((await _database.GetPlayerAsync(team.Player1)).Deaths == 0)
                         {
-                            p2d = 1;
+                            p1d = 1f;
                         }
                         else
                         {
-                            p2d = (float)(await _database.GetPlayerAsync(team.Player1)).Deaths;
+                            p1d = (float)(await _database.GetPlayerAsync(team.Player1)).Deaths;
                         }
-                    }
-                } else
-                {
-                    p2d = 1;
-                }
 
-                float kd = (p1k/p1d + p2k/p2d) / 2;
+                    }
+                    else
+                    {
+                        p1d = 1f;
+                    }
+
+                }
+                if (team.Player2 == 0)
+                {
+                    p2k = 0f;
+                    p2d = 1f;
+
+                }
+                else
+                {
+                    if (((await _database.GetPlayerAsync(team.Player2)).Kills.HasValue))
+                    {
+                        p2k = (float)(await _database.GetPlayerAsync(team.Player2)).Kills;
+
+                    }
+                    else
+                    {
+                        p2k = 0f;
+                    }
+
+                    if (((await _database.GetPlayerAsync(team.Player2)).Deaths.HasValue))
+                    {
+                        if ((await _database.GetPlayerAsync(team.Player2)).Deaths == 0)
+                        {
+                            p2d = 1f;
+                        }
+                        else
+                        {
+                            p2d = (float)(await _database.GetPlayerAsync(team.Player2)).Deaths;
+                        }
+
+                    }
+                    else
+                    {
+                        p2d = 1f;
+                    }
+                }
+                float kd = (p1k/p1d + p2k/p2d) / 2f;
                 kds.Add(kd.ToString("0.00"));
 
                 IEnumerable<MatchInfo> teamsmatches = await _database.GetMatchByAttribute(teamID1: team.TeamID, teamID2: team.TeamID);

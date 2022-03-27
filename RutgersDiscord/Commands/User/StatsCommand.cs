@@ -69,15 +69,15 @@ namespace RutgersDiscord.Commands.User
 
                 if (player.Kills == null)
                 { 
-                    pk = 0;
+                    pk = 0f;
                 } else
                 {
                     pk = (float)player.Kills;
                 }
                 if (player.Deaths == null)
                 {
-                    pd = 0;
-                    kdpd = 1;
+                    pd = 0f;
+                    kdpd = 1f;
                 } else
                 {
                     pd = (float)player.Deaths;

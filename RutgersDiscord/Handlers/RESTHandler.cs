@@ -30,7 +30,7 @@ public class RESTHandler
 #if DEBUG
         listener.Prefixes.Add($"http://localhost:{_config.settings.ApplicationSettings.Port}/api/");
 #else
-        listener.Prefixes.Add($"http://*:{_config.settings.application.port}/api/");
+        listener.Prefixes.Add($"http://*:{_config.settings.ApplicationSettings.Port}/api/");
 #endif
         listener.Start();
 
