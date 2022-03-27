@@ -73,39 +73,39 @@ namespace RutgersDiscord.Modules
             await RespondWithFileAsync(new FileAttachment($"./{filepath}"));
         }
 
-        [SlashCommand("announcement", "Posts announcement", runMode: RunMode.Async)]
-        public async Task PostAnnouncement()
-        {
-            PostAnnouncement pa = new PostAnnouncement(_client, Context, _database, _interactivity);
-            await pa.GetAnnouncement();
-        }
-
-        [SlashCommand("database", "queries database.", runMode: RunMode.Async)]
-        public async Task Database(string query)
-        {
-            var response = await _database.GetTable<string>(query);
-            string output = "";
-            int split = 0;
-            foreach (dynamic r in response)
-            {
-                output += r + "\n";
-                if (split == 9)
+        /*        [SlashCommand("announcement", "Posts announcement", runMode: RunMode.Async)]
+                public async Task PostAnnouncement()
                 {
-                    await Context.Channel.SendMessageAsync(output);
-                    output = "";
-                    split = 0;
-                }
-                split++;
-            }
-            await RespondAsync(output);
-        }
+                    PostAnnouncement pa = new PostAnnouncement(_client, Context, _database, _interactivity);
+                    await pa.GetAnnouncement();
+                }*/
 
-        [SlashCommand("creatematch", "Creates a match.", runMode: RunMode.Async)]
+        /*        [SlashCommand("database", "queries database.", runMode: RunMode.Async)]
+                public async Task Database(string query)
+                {
+                    var response = await _database.GetTable<string>(query);
+                    string output = "";
+                    int split = 0;
+                    foreach (dynamic r in response)
+                    {
+                        output += r + "\n";
+                        if (split == 9)
+                        {
+                            await Context.Channel.SendMessageAsync(output);
+                            output = "";
+                            split = 0;
+                        }
+                        split++;
+                    }
+                    await RespondAsync(output);
+                }*/
+
+/*        [SlashCommand("creatematch", "Creates a match.", runMode: RunMode.Async)]*/
         public async Task CreateMatch(int teamHomeID, int teamAwayID, int month, int day, int hour)
         {
-            DateTime t = new DateTime(DateTime.Now.Year,month,day,hour,0,0);
-            GenerateMatches g = new(_client, Context, _database, _interactivity,_schedule);
-            await g.CreateMatch(teamHomeID, teamAwayID,t);
+            DateTime t = new DateTime(DateTime.Now.Year, month, day, hour, 0, 0);
+            GenerateMatches g = new(_client, Context, _database, _interactivity, _schedule);
+            await g.CreateMatch(teamHomeID, teamAwayID, t);
         }
 
         [SlashCommand("cm", "Creates a match with string.", runMode: RunMode.Async)]
@@ -147,16 +147,16 @@ namespace RutgersDiscord.Modules
             }
         }*/
 
-        [SlashCommand("regisbutton", "creates a reg button", runMode: RunMode.Async)]
+/*        [SlashCommand("regisbutton", "creates a reg button", runMode: RunMode.Async)]
         public async Task RegButton()
         {
             var builder = new ComponentBuilder()
                 .WithButton("Register Today", "spawn_registration_form", emote: new Emoji("▶"), style: ButtonStyle.Success);
             await RespondAsync(components: builder.Build());
-        }
+        }*/
 
 
-        #region Manual Database Commands
+/*        #region Manual Database Commands
         #region Players
         [SlashCommand("create-player", "Creates a player", runMode: RunMode.Async)]
         public async Task CreatePlayer([ComplexParameter] PlayerInfo player)
@@ -352,7 +352,7 @@ namespace RutgersDiscord.Modules
             await _database.AddTestData();
             await RespondAsync("Test Data Added");
         }
-        #endregion
+        #endregion*/
 
         [SlashCommand("resolve", "resolves admin call", runMode: RunMode.Async)]
         public async Task Resolve(string matchID)
@@ -364,12 +364,12 @@ namespace RutgersDiscord.Modules
             await RespondAsync("Issue marked resolved");
         }
 
-        [SlashCommand("create-server", "creates new server", runMode: RunMode.Async)]
+/*        [SlashCommand("create-server", "creates new server", runMode: RunMode.Async)]
         public async Task CreateServer()
         {
             string rs = (await _datHostAPIService.CreateNewServer()).ToString();
             await RespondAsync(rs);
-        }
+        }*/
 
         [SlashCommand("fixdb","RUN ONCE", runMode: RunMode.Async)]
         public async Task FixDB()
