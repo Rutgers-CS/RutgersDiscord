@@ -34,9 +34,6 @@ namespace RutgersDiscord.Handlers
             Console.WriteLine(json);
             ServerReply result = JsonConvert.DeserializeObject<ServerReply>(json);
 
-            Team1Stats homeTeam = result.team1_stats;
-            Team2Stats awayTeam = result.team2_stats;
-
             //update match in database
             string matchid = result.id;
             string serverid = result.game_server_id;
@@ -65,6 +62,9 @@ namespace RutgersDiscord.Handlers
                 await channel.SendMessageAsync("You may ready again");
                 return;
             }
+
+            Team1Stats homeTeam = result.team1_stats;
+            Team2Stats awayTeam = result.team2_stats;
 
             var currentHomeTeam = (await _database.GetTeamByAttribute(cmatch.TeamHomeID)).First();
             //TODO Change To Kenji Init Method
