@@ -19,13 +19,15 @@ namespace RutgersDiscord.Commands.User
         private readonly SocketInteractionContext _context;
         private readonly DatabaseHandler _database;
         private readonly InteractivityService _interactivity;
+        private readonly ScheduleHandler _schedule;
 
-        public RescheduleCommand(DiscordSocketClient client, SocketInteractionContext context, DatabaseHandler database, InteractivityService interactivity)
+        public RescheduleCommand(DiscordSocketClient client, SocketInteractionContext context, DatabaseHandler database, InteractivityService interactivity, ScheduleHandler schedule)
         {
             _client = client;
             _context = context;
             _database = database;
             _interactivity = interactivity;
+            _schedule = schedule;
         }
 
         public async Task RescheduleMatch(DateTime date)
@@ -101,25 +103,47 @@ namespace RutgersDiscord.Commands.User
             if (((SocketMessageComponent)response.Value).Data.CustomId == $"reschedule_{match.MatchID}_{commandID}_reject")
             {
                 await _context.Interaction.ModifyOriginalResponseAsync(m => m.Embed = embed.WithColor(Constants.EmbedColors.reject).Build());
-                return;
             }
-
-            if(((SocketMessageComponent)response.Value).Data.CustomId == $"reschedule_{match.MatchID}_{commandID}_accept")
+            else if(((SocketMessageComponent)response.Value).Data.CustomId == $"reschedule_{match.MatchID}_{commandID}_accept")
             {
                 await _context.Interaction.ModifyOriginalResponseAsync(m => m.Embed = embed.WithColor(Constants.EmbedColors.accept).Build());
                 match.MatchTime = date.Ticks;
                 await _database.UpdateMatchAsync(match);
-                if(date - TimeSpan.FromMinutes(15) > DateTime.Now)
+
+                EmbedBuilder embedFollowup = new EmbedBuilder()
+                    .WithColor(Constants.EmbedColors.accept)
+                    .WithTitle("Reschedule Accepted")
+                    .WithDescription($"New match time\n" +
+                                     $"<t:{dateSpan}:f>");
+                await _context.Channel.SendMessageAsync(embed: embedFollowup.Build());
+
+                List<long> players = new() { team.Player1, team.Player2, teamOpponent.Player1, teamOpponent.Player2};
+
+                if (date - TimeSpan.FromMinutes(15) > DateTime.Now)
                 {
-                    JobManager.GetSchedule($"[match_{match.MatchID}]").ToRunOnceAt(date - TimeSpan.FromMinutes(15));
+                    var schedule = JobManager.GetSchedule($"[match_15m_{match.MatchID}]");
+                    if (schedule != null)
+                    {
+                        schedule.ToRunOnceAt(date - TimeSpan.FromMinutes(15));
+                    }
+                    else
+                    {
+                        JobManager.AddJob(async () => await _schedule.MentionUsers((ulong)match.DiscordChannel, players), s => s.WithName($"[match_15m_{match.MatchID}]").ToRunOnceAt(new DateTime((long)match.MatchTime) - TimeSpan.FromMinutes(15)));
+                    }                
                 }
                 if (date - TimeSpan.FromDays(1) > DateTime.Now)
                 {
-                    JobManager.GetSchedule($"[match_{match.MatchID}]").ToRunOnceAt(date - TimeSpan.FromDays(1));
+                    var schedule = JobManager.GetSchedule($"[match_24h_{match.MatchID}]");
+                    if (schedule != null)
+                    {
+                        schedule.ToRunOnceAt(date - TimeSpan.FromDays(1));
+                    }
+                    else
+                    {
+                        JobManager.AddJob(async () => await _schedule.MentionUsers((ulong)match.DiscordChannel, players), s => s.WithName($"[match_24h_{match.MatchID}]").ToRunOnceAt(new DateTime((long)match.MatchTime) - TimeSpan.FromDays(1)));
+                    }
                 }
-                return;
             }
-            //Code shouldn't reach here
         }
     }
 }
