@@ -79,7 +79,7 @@ public class VetoCommand
         {
             teamAway = team;
             teamHome = await _database.GetTeamAsync((int)match.TeamHomeID);
-            var temp = await _interactivity.NextButtonAsync(u => (long)u.User.Id == teamAway.Player1
+            var temp = await _interactivity.NextButtonAsync(u => (long)u.User.Id == teamHome.Player1
                 && ((SocketMessageComponent)u).Data.CustomId == $"veto_accept_{match.MatchID}");
             await temp.Value.DeferAsync();
         }

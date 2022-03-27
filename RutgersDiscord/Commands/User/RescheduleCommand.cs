@@ -119,7 +119,7 @@ namespace RutgersDiscord.Commands.User
 
                 List<long> players = new() { team.Player1, team.Player2, teamOpponent.Player1, teamOpponent.Player2};
 
-                if (date - TimeSpan.FromMinutes(15) > DateTime.Now)
+                if (date > DateTime.Now.AddMinutes(15))
                 {
                     var schedule = JobManager.GetSchedule($"[match_15m_{match.MatchID}]");
                     if (schedule != null)
@@ -131,7 +131,7 @@ namespace RutgersDiscord.Commands.User
                         JobManager.AddJob(async () => await _schedule.MentionUsers((ulong)match.DiscordChannel, players,false), s => s.WithName($"[match_15m_{match.MatchID}]").ToRunOnceAt(new DateTime((long)match.MatchTime) - TimeSpan.FromMinutes(15)));
                     }                
                 }
-                if (date - TimeSpan.FromDays(1) > DateTime.Now)
+                if (date > DateTime.Now.AddDays(1))
                 {
                     var schedule = JobManager.GetSchedule($"[match_24h_{match.MatchID}]");
                     if (schedule != null)
