@@ -17,6 +17,7 @@ namespace RutgersDiscord
         private static DiscordSocketClient _client;
         private static IServiceProvider _services;
         private static InteractionService _interaction;
+        private static ConfigHandler _config;
 
         static async Task Main(string[] args)
         {
@@ -32,9 +33,11 @@ namespace RutgersDiscord
             _client = new DiscordSocketClient(config);
             _client.Log += Log;
             _interaction = new InteractionService(_client.Rest);
+            _config = new ConfigHandler();
             _services = new ServiceCollection()
                 .AddSingleton(_client)
                 .AddSingleton(_interaction)
+                .AddSingleton(_config)
                 .AddSingleton<InteractionHandler>()
                 .AddSingleton<DatabaseHandler>()
                 .AddSingleton<ScheduleHandler>()
@@ -54,8 +57,8 @@ namespace RutgersDiscord
 
             _client.Ready += ClientReady;
 
-            string token = "NjcwNjgyOTY2OTEyOTI1NzE4.Xix8Lw.CxPFLuz_zDmLooDKCypTorRNrBU"; //DBPass
-            await _client.LoginAsync(TokenType.Bot, token);//token
+            string token = _config.settings.DiscordSettings.BotToken;
+            await _client.LoginAsync(TokenType.Bot, token);
             await _client.StartAsync();
             await Task.Delay(-1);
 
@@ -63,7 +66,7 @@ namespace RutgersDiscord
 
         static public async Task ClientReady()
         {
-            ulong localDiscordServer = 670683408057237547;
+            ulong localDiscordServer = _config.settings.DiscordSettings.Guild;
             await _interaction.RegisterCommandsToGuildAsync(localDiscordServer, deleteMissing: true);
             //await _interaction.RegisterCommandsGloballyAsync(deleteMissing: true);
         }

@@ -17,21 +17,23 @@ namespace RutgersDiscord.Commands.User
         private readonly SocketInteractionContext _context;
         private readonly DatabaseHandler _database;
         private readonly InteractivityService _interactivity;
+        private readonly ConfigHandler _config;
 
 
 
-        public NotifyAdminCommand(DiscordSocketClient client, SocketInteractionContext context, DatabaseHandler database, InteractivityService interactivity)
+        public NotifyAdminCommand(DiscordSocketClient client, SocketInteractionContext context, DatabaseHandler database, InteractivityService interactivity, ConfigHandler config)
         {
             _client = client;
             _context = context;
             _database = database;
             _interactivity = interactivity;
+            _config = config;
         }
 
         public async Task CallAdmin()
         {
-            ulong discid = 860410058961059890; //TODO change to private admin channel
-            ulong adminroleid = Constants.Role.admin;
+            ulong discid = _config.settings.DiscordSettings.Channels.SCAdmin;
+            ulong adminroleid = _config.settings.DiscordSettings.Roles.Admin;
             var chnl = _client.GetChannel(discid) as IMessageChannel;
             var match = (await _database.GetMatchByAttribute(discordChannel: (long?)chnl.Id)).FirstOrDefault();
             match.AdminCalled = true;

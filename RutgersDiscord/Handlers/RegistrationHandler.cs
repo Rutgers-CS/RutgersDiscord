@@ -18,12 +18,14 @@ namespace RutgersDiscord.Handlers
         private readonly DatabaseHandler _database;
         private readonly InteractivityService _interactivity;
         private readonly bool registrationOpen = false;
+        private readonly ConfigHandler _config;
 
-        public RegistrationHandler(DiscordSocketClient client, DatabaseHandler database, InteractivityService interactivity)
+        public RegistrationHandler(DiscordSocketClient client, DatabaseHandler database, InteractivityService interactivity, ConfigHandler config)
         {
             _client = client;
             _database = database;
             _interactivity = interactivity;
+            _config = config;
         }
 
         public void SubscribeHandlers()
@@ -103,7 +105,7 @@ namespace RutgersDiscord.Handlers
             else
             {
                 await TeamOptionsButtons(modal.User);
-                await (modal.User as IGuildUser).AddRoleAsync(Constants.Role.scarletClassic);
+                await (modal.User as IGuildUser).AddRoleAsync(_config.settings.DiscordSettings.Roles.ScarletClassic);
                 await modal.RespondAsync("Registration Succeeded. Please check your DMs to pick a team.", ephemeral: true);
             }
         }
@@ -115,7 +117,6 @@ namespace RutgersDiscord.Handlers
                 .WithButton("Join Existing Team", "team_options_join", emote: new Emoji("\U0001F4F2"))
                 .WithButton("Looking for Team", "team_options_look", emote: new Emoji("\U0001F50E"));
 
-            await (await user.CreateDMChannelAsync()).SendMessageAsync($"Click a Button Below To Finish Your Registration, Reach out to one of us ({_client.GetUser(Constants.Users.galifi).Mention}, {_client.GetUser(Constants.Users.open).Mention}, {_client.GetUser(Constants.Users.kenji).Mention}) if you have any issues.", components: builder.Build());
         }
 
         public async Task TeamOptionsButtonsHandler(SocketMessageComponent component)
@@ -171,8 +172,8 @@ namespace RutgersDiscord.Handlers
                     await component.RespondAsync("Select a Team", components: selectBuilder.Build());
                     break;
                 case "team_options_look":
-                    await _client.GetGuild(Constants.guild).GetTextChannel(Constants.Channels.scGeneral).SendMessageAsync($"{component.User.Mention} has registed for Scarlet Classic Wingman 2V2 and is looking for a team.");
-                    await component.RespondAsync($"We've marked you as looking for a team. Try asking around in sc-general or dm {_client.GetUser(Constants.Users.galifi).Mention} for help finding a partner.");
+                    await _client.GetGuild(_config.settings.DiscordSettings.Guild).GetTextChannel(_config.settings.DiscordSettings.Channels.SCGeneral).SendMessageAsync($"{component.User.Mention} has registed for Scarlet Classic Wingman 2V2 and is looking for a team.");
+                    await component.RespondAsync($"We've marked you as looking for a team. Try asking around in sc-general or dm {_client.GetUser(_config.settings.DiscordSettings.Users.Galifi).Mention} for help finding a partner.");
                     break;
             }
         }
@@ -306,7 +307,7 @@ namespace RutgersDiscord.Handlers
             }
         }
 
-        private static async Task<long> GetSteamID64(string url)
+        private async Task<long> GetSteamID64(string url)
         {
             string trimmedURL = url.Replace("steamcommunity.com/id/", "").Replace("steamcommunity.com/profiles/", "").Replace("https://", "").Replace("/", "");
             long steamID64;
@@ -316,7 +317,7 @@ namespace RutgersDiscord.Handlers
 
             if (vanityURL)
             {
-                string requestUrl = $"http://api.steampowered.com/ISteamUser/ResolveVanityURL/v0001/?key={Environment.GetEnvironmentVariable("steamWebAPIToken")}&vanityurl=" + trimmedURL;
+                string requestUrl = $"http://api.steampowered.com/ISteamUser/ResolveVanityURL/v0001/?key={_config.settings.ApplicationSettings.SteamWebAPIToken}&vanityurl=" + trimmedURL;
                 HttpClient steamAPIClient = new HttpClient();
                 HttpResponseMessage response = await steamAPIClient.GetAsync(requestUrl);
                 string responseBody = await response.Content.ReadAsStringAsync();

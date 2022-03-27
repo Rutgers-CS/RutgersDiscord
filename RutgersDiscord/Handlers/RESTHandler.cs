@@ -13,22 +13,24 @@ public class RESTHandler
     private readonly DatabaseHandler _database;
     private readonly InteractivityService _interactivity;
     private readonly GameServerHandler _gameServerHandler;
+    private readonly ConfigHandler _config;
 
-    public RESTHandler(DiscordSocketClient client, DatabaseHandler database, InteractivityService interactivity, GameServerHandler gameServerHandler)
+    public RESTHandler(DiscordSocketClient client, DatabaseHandler database, InteractivityService interactivity, GameServerHandler gameServerHandler, ConfigHandler config)
     {
         _client = client;
         _database = database;
         _interactivity = interactivity;
         _gameServerHandler = gameServerHandler;
+        _config = config;
     }
 
     public void Listen()
     {
         HttpListener listener = new HttpListener();
 #if DEBUG
-        listener.Prefixes.Add($"http://localhost:{Environment.GetEnvironmentVariable("port")}/api/");
+        listener.Prefixes.Add($"http://localhost:{_config.settings.ApplicationSettings.Port}/api/");
 #else
-        listener.Prefixes.Add($"http://*:{Environment.GetEnvironmentVariable("port")}/api/");
+        listener.Prefixes.Add($"http://*:{_config.settings.application.port}/api/");
 #endif
         listener.Start();
 

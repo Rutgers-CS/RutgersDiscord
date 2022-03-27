@@ -11,11 +11,13 @@ public class ScheduleHandler
 {
 	private readonly DiscordSocketClient _client;
 	private readonly DatabaseHandler _database;
+	private readonly ConfigHandler _config;
 
-	public ScheduleHandler(DiscordSocketClient client, DatabaseHandler database)
+	public ScheduleHandler(DiscordSocketClient client, DatabaseHandler database, ConfigHandler config)
 	{
 		_client = client;
 		_database = database;
+		_config = config;
 		JobManager.Initialize(new Registry());
 	}
 
@@ -58,7 +60,7 @@ public class ScheduleHandler
         {
 			message += "there is 1 day until match starts!";
 		}
-		await _client.GetGuild(Constants.guild).GetTextChannel(channel).SendMessageAsync(message);
+		await _client.GetGuild(_config.settings.DiscordSettings.Guild).GetTextChannel(channel).SendMessageAsync(message);
 	}
 
 	

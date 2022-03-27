@@ -13,15 +13,16 @@ namespace RutgersDiscord.Handlers
     public class DatHostAPIHandler
     {
         private readonly HttpClient _httpClient;
+        private readonly ConfigHandler _config;
         private string templateServerID;
 
-        public DatHostAPIHandler(HttpClient httpClient)
+        public DatHostAPIHandler(HttpClient httpClient, ConfigHandler config)
         {
             _httpClient = httpClient;
-
-            templateServerID = "623ed1db4581bf34d0ed1b3f";//Environment.GetEnvironmentVariable("templateServerID");
-            string datHostEmail = Environment.GetEnvironmentVariable("datHostEmail");
-            string datHostPassword = Environment.GetEnvironmentVariable("datHostPassword");
+            _config = config;
+            templateServerID = _config.settings.DatHostSettings.TemplateServerID;
+            string datHostEmail = _config.settings.DatHostSettings.DatHostEmail;
+            string datHostPassword = _config.settings.DatHostSettings.DatHostPassword;
 
             _httpClient.BaseAddress = new Uri("https://dathost.net/api/0.1/");
             _httpClient.DefaultRequestHeaders.Authorization =
@@ -31,7 +32,6 @@ namespace RutgersDiscord.Handlers
 
         public async Task<ServerInfo> CreateNewServer()
         {
-            Console.WriteLine(templateServerID);
             var response = await _httpClient.PostAsync($"game-servers/{templateServerID}/duplicate", null);
             using (HttpContent content = response.Content)
             {

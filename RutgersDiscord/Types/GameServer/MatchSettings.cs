@@ -14,7 +14,7 @@ public class MatchSettings
     public bool enable_tech_pause { get; set; } = true;
     private string game_server_id { get; set; }
     private string map { get; set; }
-    private string match_end_webhook_url { get; set; } = $"http://{Environment.GetEnvironmentVariable("publicIP")}:{Environment.GetEnvironmentVariable("port")}/api";
+    private string match_end_webhook_url { get; set; }
     private string message_prefix { get; set; } = "Scarlet Classic";
     private string playwin_result_webhook_url { get; set; }
     private int ready_min_players { get; set; } = 2;
@@ -35,9 +35,10 @@ public class MatchSettings
     public int warmup_time { get; set; } = 15;
 
 
-    public MatchSettings(MapInfo map, TeamInfo homeTeam, PlayerInfo homeTeamPlayer1, PlayerInfo homeTeamPlayer2, TeamInfo awayTeam, PlayerInfo awayTeamPlayer1, PlayerInfo awayTeamPlayer2, string gameServerID)
+    public MatchSettings(MapInfo map, TeamInfo homeTeam, PlayerInfo homeTeamPlayer1, PlayerInfo homeTeamPlayer2, TeamInfo awayTeam, PlayerInfo awayTeamPlayer1, PlayerInfo awayTeamPlayer2, string gameServerID, string webHookURL)
     {
         game_server_id = gameServerID;
+        match_end_webhook_url = webHookURL;
 
         if (map.OfficialMap)
         {

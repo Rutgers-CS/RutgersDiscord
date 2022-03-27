@@ -1,0 +1,38 @@
+{
+    "Settings": {
+        "ApplicationSettings": {
+			"PublicIP": "",
+			"Port": "",
+			"SteamWebAPIToken": ""
+		},
+        "DiscordSettings": {
+			"BotToken": "",
+			"Guild": "",
+			"Channels": {
+				"Announcements": "",
+				"SCGeneral": "",
+				"SCAnnouncements": "",
+				"SCAdmin": ""
+			},
+			"ChannelCategories": {
+				"MatchesCategory": ""
+			},
+			"Roles": {
+				"Everyone": "",
+				"Admin": "",
+				"ScarletClassic": "",
+				"Goodfellas": ""
+			},
+			"Users": {
+				"Galifi": "",
+				"Op7day": "",
+				"Guihori": ""
+			}
+		},
+        "DatHostSettings": {
+            "DatHostEmail": "",
+			"DatHostPassword": "",
+			"TemplateServerID": ""
+        }
+    }
+}
