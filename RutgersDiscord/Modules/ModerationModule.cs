@@ -28,8 +28,9 @@ namespace RutgersDiscord.Modules
         private readonly ScheduleHandler _schedule;
         private readonly RegistrationHandler _registrationHandler;
         private readonly DatHostAPIHandler _datHostAPIService;
+        private readonly ConfigHandler _config;
 
-        public ModerationModule(DiscordSocketClient client, InteractivityService interactivity, DatabaseHandler database, ScheduleHandler schedule, RegistrationHandler registrationHandler, DatHostAPIHandler datHostAPIService)
+        public ModerationModule(DiscordSocketClient client, InteractivityService interactivity, DatabaseHandler database, ScheduleHandler schedule, RegistrationHandler registrationHandler, DatHostAPIHandler datHostAPIService, ConfigHandler config)
         {
             _client = client;
             _interactivity = interactivity;
@@ -37,6 +38,7 @@ namespace RutgersDiscord.Modules
             _schedule = schedule;
             _registrationHandler = registrationHandler;
             _datHostAPIService = datHostAPIService;
+            _config = config;
         }
 
         [SlashCommand("db-query", "queries database.", runMode: RunMode.Async)]
@@ -103,9 +105,9 @@ namespace RutgersDiscord.Modules
 /*        [SlashCommand("creatematch", "Creates a match.", runMode: RunMode.Async)]*/
         public async Task CreateMatch(int teamHomeID, int teamAwayID, int month, int day, int hour)
         {
-            DateTime t = new DateTime(DateTime.Now.Year, month, day, hour, 0, 0);
-            GenerateMatches g = new(_client, Context, _database, _interactivity, _schedule);
-            await g.CreateMatch(teamHomeID, teamAwayID, t);
+            DateTime t = new DateTime(DateTime.Now.Year,month,day,hour,0,0);
+            GenerateMatches g = new(_client, Context, _database, _interactivity,_schedule, _config);
+            await g.CreateMatch(teamHomeID, teamAwayID,t);
         }
 
         [SlashCommand("cm", "Creates a match with string.", runMode: RunMode.Async)]

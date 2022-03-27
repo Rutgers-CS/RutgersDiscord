@@ -17,20 +17,22 @@ namespace RutgersDiscord.Commands.Admin
         private readonly SocketInteractionContext _context;
         private readonly DatabaseHandler _database;
         private readonly InteractivityService _interactivity;
+        private readonly ConfigHandler _config;
 
-        public PostAnnouncement(DiscordSocketClient client, SocketInteractionContext context, DatabaseHandler database, InteractivityService interactivity)
+        public PostAnnouncement(DiscordSocketClient client, SocketInteractionContext context, DatabaseHandler database, InteractivityService interactivity, ConfigHandler config)
         {
             _client = client;
             _context = context;
             _database = database;
             _interactivity = interactivity;
+            _config = config;
         }
 
         public async Task GetAnnouncement()
         {
-            ulong discid = Constants.Channels.announcements; // change to announcement channel 
-            ulong roleid = Constants.Role.goodfellas; //change to goodfellas role
-            var everyone = _client.GetGuild(Constants.guild).EveryoneRole.Mention; //everyone
+            ulong discid = _config.settings.DiscordSettings.Channels.Announcements;
+            ulong roleid = _config.settings.DiscordSettings.Roles.Goodfellas;
+            var everyone = _client.GetGuild(_config.settings.DiscordSettings.Guild).EveryoneRole.Mention; //everyone
             var chnl = _client.GetChannel(discid) as IMessageChannel;
 
             var builder = new ComponentBuilder()
@@ -58,7 +60,7 @@ namespace RutgersDiscord.Commands.Admin
             var msg = await chnl.SendMessageAsync(input);
             await msg.ModifyAsync(x => x.Components = builder.Build());
 
-            var chnl2 = _client.GetChannel(Constants.Channels.scAnnoucement) as IMessageChannel;
+            var chnl2 = _client.GetChannel(_config.settings.DiscordSettings.Channels.SCAnnouncements) as IMessageChannel;
             await chnl2.SendFileAsync(new FileAttachment("./coin.gif"));
             var msg2 = await chnl2.SendMessageAsync(input);
             await msg2.ModifyAsync(x => x.Components = builder.Build());

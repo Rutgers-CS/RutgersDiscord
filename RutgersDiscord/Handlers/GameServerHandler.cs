@@ -20,13 +20,15 @@ namespace RutgersDiscord.Handlers
         private readonly DatabaseHandler _database;
         private readonly InteractivityService _interactivity;
         private readonly DatHostAPIHandler _datHostAPIHandler;
+        private readonly ConfigHandler _config;
 
 
-        public GameServerHandler(DiscordSocketClient client, DatabaseHandler database, DatHostAPIHandler datHostAPIHandler)
+        public GameServerHandler(DiscordSocketClient client, DatabaseHandler database, DatHostAPIHandler datHostAPIHandler, ConfigHandler config)
         {
             _client = client;
             _database = database;
             _datHostAPIHandler = datHostAPIHandler;
+            _config = config;
         }
 
         public async Task UpdateDatabase(string json)
@@ -44,7 +46,7 @@ namespace RutgersDiscord.Handlers
                         await _database.UpdateMatchAsync(cmatch);*/
 
             //Get Channel
-            SocketGuild guild = _client.GetGuild(Constants.guild);
+            SocketGuild guild = _client.GetGuild(_config.settings.DiscordSettings.Guild);
             SocketTextChannel channel = guild.GetTextChannel((ulong)cmatch.DiscordChannel);
 
             //Match canceled

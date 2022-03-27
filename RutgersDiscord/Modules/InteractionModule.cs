@@ -28,8 +28,9 @@ namespace RutgersDiscord.Modules
         private readonly DatHostAPIHandler _datHostAPI;
         private readonly GameServerHandler _gameServer;
         private readonly ScheduleHandler _schedule;
+        private readonly ConfigHandler _config;
         //FIX Assign teamID
-        public InteractionModule(DiscordSocketClient client, InteractivityService interactivity, DatabaseHandler database, RegistrationHandler registration, DatHostAPIHandler datHostAPI, GameServerHandler gameServer, ScheduleHandler schedule)
+        public InteractionModule(DiscordSocketClient client, InteractivityService interactivity, DatabaseHandler database, RegistrationHandler registration, DatHostAPIHandler datHostAPI, GameServerHandler gameServer, ScheduleHandler schedule, ConfigHandler config)
         {
             _client = client;
             _interactivity = interactivity;
@@ -38,6 +39,7 @@ namespace RutgersDiscord.Modules
             _datHostAPI = datHostAPI;
             _gameServer = gameServer;
             _schedule = schedule;
+            _config = config;
         }
 
         //TODO Clean up these commands
@@ -58,7 +60,7 @@ namespace RutgersDiscord.Modules
         [SlashCommand("ready", "Set your team as ready for the match")]
         public async Task TeamReady()
         {
-            ReadyCommand rc = new ReadyCommand(_client, Context, _database, _interactivity, _gameServer, _datHostAPI);
+            ReadyCommand rc = new ReadyCommand(_client, Context, _database, _interactivity, _gameServer, _datHostAPI, _config);
             await rc.Ready();
         }
 
@@ -72,7 +74,7 @@ namespace RutgersDiscord.Modules
         [SlashCommand("admin", "Notify an admin")]
         public async Task NotifyAdmin()
         {
-            NotifyAdminCommand nac = new NotifyAdminCommand(_client, Context, _database, _interactivity);
+            NotifyAdminCommand nac = new NotifyAdminCommand(_client, Context, _database, _interactivity, _config);
             await nac.CallAdmin();
         }
 

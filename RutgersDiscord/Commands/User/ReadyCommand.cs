@@ -20,8 +20,9 @@ namespace RutgersDiscord.Commands
         private readonly InteractivityService _interactivity;
         private readonly DatHostAPIHandler _datHostAPIHandler;
         private readonly GameServerHandler _gameServerHandler;
+        private readonly ConfigHandler _config;
 
-        public ReadyCommand(DiscordSocketClient client, SocketInteractionContext context, DatabaseHandler database, InteractivityService interactivity, GameServerHandler gameServerHandler, DatHostAPIHandler datHostAPIHandler)
+        public ReadyCommand(DiscordSocketClient client, SocketInteractionContext context, DatabaseHandler database, InteractivityService interactivity, GameServerHandler gameServerHandler, DatHostAPIHandler datHostAPIHandler, ConfigHandler config)
         {
             _client = client;
             _context = context;
@@ -29,6 +30,7 @@ namespace RutgersDiscord.Commands
             _interactivity = interactivity;
             _datHostAPIHandler = datHostAPIHandler;
             _gameServerHandler = gameServerHandler;
+            _config = config;
         }
 
         public async Task Ready()
@@ -129,7 +131,8 @@ namespace RutgersDiscord.Commands
                         PlayerInfo aP1 = await _database.GetPlayerAsync((long)awayTeam.Player1);
                         PlayerInfo aP2 = await _database.GetPlayerAsync((long)awayTeam.Player2);
                         MapInfo map = await _database.GetMapAsync((int)match.MapID);
-                        MatchSettings ms = new MatchSettings(map, homeTeam, hP1, hP2, awayTeam, aP1, aP2, newServer.ServerID);
+                        string webHook = $"http://{_config.settings.ApplicationSettings.PublicIP}:{_config.settings.ApplicationSettings.Port}/api";
+                        MatchSettings ms = new MatchSettings(map, homeTeam, hP1, hP2, awayTeam, aP1, aP2, newServer.ServerID, webHook);
 
                         var st = await _datHostAPIHandler.CreateMatch(ms);
                         PreGameJson preGameJson = JsonConvert.DeserializeObject<PreGameJson>(st);

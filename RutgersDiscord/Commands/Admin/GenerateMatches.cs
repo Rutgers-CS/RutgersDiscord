@@ -17,14 +17,16 @@ public class GenerateMatches
     private readonly DatabaseHandler _database;
     private readonly InteractivityService _interactivity;
     private readonly ScheduleHandler _schedule;
+    private readonly ConfigHandler _config;
 
-    public GenerateMatches(DiscordSocketClient client, SocketInteractionContext context, DatabaseHandler database, InteractivityService interactivity, ScheduleHandler schedule)
+    public GenerateMatches(DiscordSocketClient client, SocketInteractionContext context, DatabaseHandler database, InteractivityService interactivity, ScheduleHandler schedule, ConfigHandler config)
     {
         _client = client;
         _context = context;
         _database = database;
         _interactivity = interactivity;
         _schedule = schedule;
+        _config = config;
     }
 
     //test method
@@ -103,12 +105,12 @@ public class GenerateMatches
     private async Task<RestTextChannel> CreateMatchChannel(IEnumerable<PlayerInfo> playersToAdd, string channelName)
     {
         List<Overwrite> overwrite = new();
-        overwrite.Add(new Overwrite(Constants.Role.everyone, PermissionTarget.Role, new OverwritePermissions(viewChannel: PermValue.Deny)));
+        overwrite.Add(new Overwrite(_config.settings.DiscordSettings.Roles.Everyone, PermissionTarget.Role, new OverwritePermissions(viewChannel: PermValue.Deny)));
         foreach (PlayerInfo player in playersToAdd)
         {
             overwrite.Add(new Overwrite((ulong)player.DiscordID, PermissionTarget.User, new OverwritePermissions(viewChannel: PermValue.Allow)));
         }
-        return await _context.Guild.CreateTextChannelAsync(channelName, c => { c.CategoryId = Constants.ChannelCategories.matches; c.PermissionOverwrites = overwrite; });
+        return await _context.Guild.CreateTextChannelAsync(channelName, c => { c.CategoryId = _config.settings.DiscordSettings.ChannelCategories.MatchesCategory; c.PermissionOverwrites = overwrite; });
     }
    
 }

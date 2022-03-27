@@ -3,14 +3,6 @@
     "RutgersDiscord": {
       "commandName": "Project",
       "environmentVariables": {
-        "port": "30000",
-        "botToken": "NjcwNjgyOTY2OTEyOTI1NzE4.Xix8Lw.CxPFLuz_zDmLooDKCypTorRNrBU",
-        "discordServer": "670683408057237547",
-        "steamWebAPIToken": "186D2EF917BF0D72F5BFCB2FD6C40F5B",
-        "datHostEmail": "aseiple678@gmail.com",
-        "datHostPassword": "s!MYMzLZnnjhx2b",
-        "templateServerID": "623ed1db4581bf34d0ed1b3f",
-        "publicIP": "184.152.220.28"
       }
     }
   }
