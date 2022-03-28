@@ -167,20 +167,31 @@ namespace RutgersDiscord.Commands.User
                 float kd = (p1k/p1d + p2k/p2d) / 2f;
                 kds.Add(kd.ToString("0.00"));
 
-                //THIS SECTION IS BROKEN
                 IEnumerable<MatchInfo> teamsmatches = await _database.GetMatchByAttribute(teamID1: team.TeamID);
-//                if (teamsmatches.IsNullOrEmpty())
-//                {
+                if (teamsmatches.IsNullOrEmpty())
+                {
                     fmaps.Add("None");
-//                }
-//                else
-//                { 
-//                var most = (from k in teamsmatches
-//                            group k.MapID by k.MapID into grp
-//                            orderby grp.Count() descending
-//                            select grp.Key).First();
-//                fmaps.Add((await _database.GetMapAsync((int)most)).MapName);
-//                }
+                }
+                else
+                { 
+              
+                teamsmatches = teamsmatches.Where(i => i.MapID != null);
+           
+                    if (!teamsmatches.Any())
+                    {
+                        fmaps.Add("None");
+                    }
+                    else
+                    {
+                        var most = (from k in teamsmatches
+
+                                    group k.MapID by k.MapID into grp
+                                    orderby grp.Count() descending
+                                    select grp.Key).First();
+
+                        fmaps.Add((await _database.GetMapAsync((int)most)).MapName);
+                    }
+                }
             }
 
             List<PageBuilder> pages = new();
@@ -253,7 +264,14 @@ namespace RutgersDiscord.Commands.User
         
             for (int i = 0; i < (teamlist.Count); i++)
             {
-                leaderboard += "║ " + teamlist[i] + CalculateSpace(teamcolw, teamlist[i].Length) + " │ " + recordlist[i] + CalculateSpace(recordcolw, recordlist[i].Length) + " | " + difflist[i] + CalculateSpace(diffcolw, difflist[i].Length) + " | " + kdlist[i] + CalculateSpace(kdcolw, kdlist[i].Length) + " | " + maplist[i] + CalculateSpace(mapcolw, maplist[i].Length) + " ║" + "\r\n";
+                if (teamlist[i].StartsWith("杀")) //mega hardcode
+                {
+                    leaderboard += "║ " + teamlist[i] + CalculateSpace(teamcolw, teamlist[i].Length * 2 - 1) + " │ " + recordlist[i] + CalculateSpace(recordcolw, recordlist[i].Length) + " | " + difflist[i] + CalculateSpace(diffcolw, difflist[i].Length) + " | " + kdlist[i] + CalculateSpace(kdcolw, kdlist[i].Length) + " | " + maplist[i] + CalculateSpace(mapcolw, maplist[i].Length) + " ║" + "\r\n";
+                } 
+                else
+                {
+                    leaderboard += "║ " + teamlist[i] + CalculateSpace(teamcolw, teamlist[i].Length) + " │ " + recordlist[i] + CalculateSpace(recordcolw, recordlist[i].Length) + " | " + difflist[i] + CalculateSpace(diffcolw, difflist[i].Length) + " | " + kdlist[i] + CalculateSpace(kdcolw, kdlist[i].Length) + " | " + maplist[i] + CalculateSpace(mapcolw, maplist[i].Length) + " ║" + "\r\n";
+                }
 
                 if (!((i + 1) == teamlist.Count))
                 {
