@@ -88,7 +88,7 @@ namespace RutgersDiscord.Commands.User
             var response = await _interactivity.NextInteractionAsync(
                 s => (s.User.Id == (ulong)teamOpponent.Player1
                 && ((SocketMessageComponent)s).Data.CustomId.StartsWith($"reschedule_{match.MatchID}_{commandID}")),
-                timeout:TimeSpan.FromHours(1));
+                timeout:TimeSpan.FromHours(12));
 
             ComponentBuilder componentEmpty = new ComponentBuilder();
             await _context.Interaction.ModifyOriginalResponseAsync(m => m.Components = componentEmpty.Build());

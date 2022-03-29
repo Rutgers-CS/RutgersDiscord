@@ -23,7 +23,8 @@ namespace RutgersDiscord
         {
             var interactiveConfig = new InteractivityConfig
             {
-                DefaultTimeout = TimeSpan.FromMinutes(10)
+                DefaultTimeout = TimeSpan.FromMinutes(10),
+                RunOnGateway = false
             };
             var config = new DiscordSocketConfig()
             {
