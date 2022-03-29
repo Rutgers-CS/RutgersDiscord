@@ -27,7 +27,7 @@ namespace RutgersDiscord.Commands.User
             _interactivity = interactivity;
         }
 
-        public async Task GetStats()
+        public async Task GetStats(string sortBy)
         {
             string kills;
             string deaths;
@@ -35,6 +35,7 @@ namespace RutgersDiscord.Commands.User
             List<string> killslist = new();
             List<string> deathslist = new();
             List<string> kdslist = new();
+            List<string> choicelist = new();
             float pk;
             float pd;
             float kdpd;
@@ -74,9 +75,9 @@ namespace RutgersDiscord.Commands.User
                 {
                     pk = (float)player.Kills;
                 }
-                if (player.Deaths == null)
+                if (player.Deaths == null || player.Deaths == 0)
                 {
-                    pd = 0f;
+                    pd = 0;
                     kdpd = 1f;
                 } else
                 {
@@ -85,16 +86,12 @@ namespace RutgersDiscord.Commands.User
                 }
                 
                 playerdiscord = player.DiscordID;
-                calckd = pk / kdpd;
+                calckd = (float)(pk / kdpd);
 
                 killslist.Add($"<@{playerdiscord}>" + " - " + pk);
                 deathslist.Add($"<@{playerdiscord}>" + " - " + pd);
                 kdslist.Add($"<@{playerdiscord}>" + " - " + calckd.ToString("0.0#"));
             }
-
-            killslist = MySort(killslist, true);
-            deathslist = MySort(deathslist, true);
-            kdslist = MySort(kdslist, false);
 
             List<PageBuilder> pages = new();
             Dictionary<IEmote, PaginatorAction> emotes = new Dictionary<IEmote, PaginatorAction>();
@@ -103,43 +100,173 @@ namespace RutgersDiscord.Commands.User
             emotes.Add(backwardemote, PaginatorAction.Backward); emotes.Add(forwardemote, PaginatorAction.Forward);
 
             var originalsize = killslist.Count; //all lists will be of equal size
-            if (originalsize % 10 == 0)
+
+            if (sortBy == "kd")
             {
-                for (int i = 0; i < (originalsize / 10); i++)
+                choicelist = MySort(kdslist, false);
+
+                if (originalsize % 10 == 0)
                 {
-                    kills = string.Join("\r\n", killslist.Take(10));
-                    deaths = string.Join("\r\n", deathslist.Take(10));
-                    kds = string.Join("\r\n", kdslist.Take(10));
-                    pages.Add(new PageBuilder()
-                        .WithTitle("Scarlet Classic's Statistical Leaders")
-                        .WithColor(new Color(102, 0, 0))
-                        .WithFooter("Rutgers CS:GO")
-                        .AddField("Most Kills", $"{kills}", true)
-                        .AddField("Most Deaths", $"{deaths}", true)
-                        .AddField("Highest KD", $"{kds}", true));
-                    killslist.RemoveRange(0, Math.Min(10, killslist.Count));
-                    deathslist.RemoveRange(0, Math.Min(10, deathslist.Count));
-                    kdslist.RemoveRange(0, Math.Min(10, kdslist.Count));
+                    for (int i = 0; i < (originalsize / 10); i++)
+                    {
+                        kds = string.Join("\r\n", choicelist.Take(10));
+                        pages.Add(new PageBuilder()
+                            .WithTitle("Highest KD")  //"Scarlet Classic's Statistical Leaders"
+                            .WithColor(new Color(102, 0, 0))
+                            .WithFooter("Rutgers CS:GO")
+                            .AddField("Scarlet Classic's Statistical Leaders", $"{kds}", true));   //"Highest KD"
+                        choicelist.RemoveRange(0, Math.Min(10, choicelist.Count));
+                    }
+                }
+                else
+                {
+                    for (int i = 0; i <= (originalsize / 10); i++)
+                    {
+                        kds = string.Join("\r\n", choicelist.Take(10));
+                        pages.Add(new PageBuilder()
+                            .WithTitle("Highest KD")
+                            .WithColor(new Color(102, 0, 0))
+                            .WithFooter("Rutgers CS:GO")
+                            .AddField("Scarlet Classic's Statistical Leaders", $"{kds}", true));
+                        choicelist.RemoveRange(0, Math.Min(10, choicelist.Count));
+                    }
+                }
+            }
+            else if (sortBy == "kills")
+            {
+                choicelist = MySort(killslist, true);
+
+                if (originalsize % 10 == 0)
+                {
+                    for (int i = 0; i < (originalsize / 10); i++)
+                    {
+                        kills = string.Join("\r\n", choicelist.Take(10));
+                        pages.Add(new PageBuilder()
+                            .WithTitle("Most Kills")
+                            .WithColor(new Color(102, 0, 0))
+                            .WithFooter("Rutgers CS:GO")
+                            .AddField("Scarlet Classic's Statistical Leaders", $"{kills}", true));
+                        choicelist.RemoveRange(0, Math.Min(10, choicelist.Count));
+                    }
+                }
+                else
+                {
+                    for (int i = 0; i <= (originalsize / 10); i++)
+                    {
+                        kills = string.Join("\r\n", choicelist.Take(10));
+                        pages.Add(new PageBuilder()
+                            .WithTitle("Most Kills")
+                            .WithColor(new Color(102, 0, 0))
+                            .WithFooter("Rutgers CS:GO")
+                            .AddField("Scarlet Classic's Statistical Leaders", $"{kills}", true));
+                        choicelist.RemoveRange(0, Math.Min(10, choicelist.Count));
+                    }
+                }
+            }
+            else if (sortBy == "deaths")
+            {
+                choicelist = MySort(deathslist, true);
+
+                if (originalsize % 10 == 0)
+                {
+                    for (int i = 0; i < (originalsize / 10); i++)
+                    {
+                        deaths = string.Join("\r\n", choicelist.Take(10));
+                        pages.Add(new PageBuilder()
+                            .WithTitle("Most Deaths")
+                            .WithColor(new Color(102, 0, 0))
+                            .WithFooter("Rutgers CS:GO")
+                            .AddField("Scarlet Classic's Statistical Leaders", $"{deaths}", true));
+                        choicelist.RemoveRange(0, Math.Min(10, choicelist.Count));
+                    }
+                }
+                else
+                {
+                    for (int i = 0; i <= (originalsize / 10); i++)
+                    {
+                        deaths = string.Join("\r\n", choicelist.Take(10));
+                        pages.Add(new PageBuilder()
+                            .WithTitle("Most Deaths")
+                            .WithColor(new Color(102, 0, 0))
+                            .WithFooter("Rutgers CS:GO")
+                            .AddField("Scarlet Classic's Statistical Leaders", $"{deaths}", true));
+                        choicelist.RemoveRange(0, Math.Min(10, choicelist.Count));
+                    }
+                }
+            }
+            else if (sortBy == "all")
+            {
+
+                if (originalsize % 10 == 0)
+                {
+                    for (int i = 0; i < (originalsize / 10); i++)
+                    {
+                        kills = string.Join("\r\n", killslist.Take(10));
+                        deaths = string.Join("\r\n", deathslist.Take(10));
+                        kds = string.Join("\r\n", kdslist.Take(10));
+                        pages.Add(new PageBuilder()
+                            .WithTitle("Scarlet Classic's Statistical Leaders")
+                            .WithColor(new Color(102, 0, 0))
+                            .WithFooter("Rutgers CS:GO")
+                            .AddField("Most Kills", $"{kills}", true)
+                            .AddField("Most Deaths", $"{deaths}", true)
+                            .AddField("Highest KD", $"{kds}", true));
+                        killslist.RemoveRange(0, Math.Min(10, killslist.Count));
+                        deathslist.RemoveRange(0, Math.Min(10, deathslist.Count));
+                        kdslist.RemoveRange(0, Math.Min(10, kdslist.Count));
+                    }
+                }
+                else
+                {
+                    for (int i = 0; i <= (originalsize / 10); i++)
+                    {
+                        kills = string.Join("\r\n", killslist.Take(10));
+                        deaths = string.Join("\r\n", deathslist.Take(10));
+                        kds = string.Join("\r\n", kdslist.Take(10));
+                        pages.Add(new PageBuilder()
+                            .WithTitle("Scarlet Classic's Statistical Leaders")
+                            .WithColor(new Color(102, 0, 0))
+                            .WithFooter("Rutgers CS:GO")
+                            .AddField("Most Kills", $"{kills}", true)
+                            .AddField("Most Deaths", $"{deaths}", true)
+                            .AddField("Highest KD", $"{kds}", true));
+                        killslist.RemoveRange(0, Math.Min(10, killslist.Count));
+                        deathslist.RemoveRange(0, Math.Min(10, deathslist.Count));
+                        kdslist.RemoveRange(0, Math.Min(10, kdslist.Count));
+                    }
                 }
             } else
             {
-                for (int i = 0; i <= (originalsize / 10); i++)
+                choicelist = MySort(kdslist, false);
+
+                if (originalsize % 10 == 0)
                 {
-                    kills = string.Join("\r\n", killslist.Take(10));
-                    deaths = string.Join("\r\n", deathslist.Take(10));
-                    kds = string.Join("\r\n", kdslist.Take(10));
-                    pages.Add(new PageBuilder()
-                        .WithTitle("Scarlet Classic's Statistical Leaders")
-                        .WithColor(new Color(102, 0, 0))
-                        .WithFooter("Rutgers CS:GO")
-                        .AddField("Most Kills", $"{kills}", true)
-                        .AddField("Most Deaths", $"{deaths}", true)
-                        .AddField("Highest KD", $"{kds}", true));
-                    killslist.RemoveRange(0, Math.Min(10, killslist.Count));
-                    deathslist.RemoveRange(0, Math.Min(10, deathslist.Count));
-                    kdslist.RemoveRange(0, Math.Min(10, kdslist.Count));
+                    for (int i = 0; i < (originalsize / 10); i++)
+                    {
+                        kds = string.Join("\r\n", choicelist.Take(10));
+                        pages.Add(new PageBuilder()
+                            .WithTitle("Highest KD")
+                            .WithColor(new Color(102, 0, 0))
+                            .WithFooter("Rutgers CS:GO")
+                            .AddField("Scarlet Classic's Statistical Leaders", $"{choicelist}", true));
+                        choicelist.RemoveRange(0, Math.Min(10, choicelist.Count));
+                    }
+                }
+                else
+                {
+                    for (int i = 0; i <= (originalsize / 10); i++)
+                    {
+                        kds = string.Join("\r\n", choicelist.Take(10));
+                        pages.Add(new PageBuilder()
+                            .WithTitle("Highest KD")
+                            .WithColor(new Color(102, 0, 0))
+                            .WithFooter("Rutgers CS:GO")
+                            .AddField("Scarlet Classic's Statistical Leaders", $"{choicelist}", true));
+                        choicelist.RemoveRange(0, Math.Min(10, choicelist.Count));
+                    }
                 }
             }
+
             var paginator = new StaticPaginatorBuilder().WithUsers(_context.User).WithPages(pages).WithFooter(PaginatorFooter.PageNumber | PaginatorFooter.Users).WithEmotes(emotes).Build();
 
             await _context.Interaction.RespondAsync("retrieving stats");
