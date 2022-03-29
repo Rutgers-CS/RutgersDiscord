@@ -79,21 +79,17 @@ namespace RutgersDiscord.Modules
         }
 
         [SlashCommand("stats", "Display the tournament's statistical leaders")]
-        public async Task FetchStats()
+        public async Task FetchStats([Choice("KD", "kd"), Choice("Kills", "kills"), Choice("Deaths", "deaths"), Choice("All", "all")] string sortBy = "kd")
         {
             StatsCommand sc = new StatsCommand(_client, Context, _database, _interactivity);
-            await sc.GetStats();
+            await sc.GetStats(sortBy);
         }
 
         [SlashCommand("leaderboard", "Display the tournament leaderboard")]
-
-
         public async Task DisplayLeaderboard([Choice("Record", "record"), Choice("KD", "kd"), Choice("RD", "rd")] string sortBy)
         {
-           
             LeaderboardCommand lc = new LeaderboardCommand(_client, Context, _database, _interactivity);
             await lc.PullLeaderboard(sortBy);
-       
         }
 
         [SlashCommand("help", "Display all user commands")]
