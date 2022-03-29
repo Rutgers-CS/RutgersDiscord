@@ -88,7 +88,7 @@ namespace RutgersDiscord.Modules
         [SlashCommand("leaderboard", "Display the tournament leaderboard")]
 
 
-        public async Task DisplayLeaderboard([Choice("Record", "record"), Choice("KD", "kd"), Choice("RD", "rd")] string sortBy)
+        public async Task DisplayLeaderboard([Choice("Record", "record"), Choice("KD", "kd"), Choice("RD", "rd")] string sortBy = "record")
         {
            
             LeaderboardCommand lc = new LeaderboardCommand(_client, Context, _database, _interactivity);
