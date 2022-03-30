@@ -28,6 +28,7 @@ public class VetoCommand
     {
         await _context.Interaction.DeferAsync();
         await StartVeto();
+        await _context.Interaction.DeleteOriginalResponseAsync();
     }
 
     public async Task StartVeto()
@@ -55,51 +56,52 @@ public class VetoCommand
             return;
         }
 
-        //TODO send confirmation to captain and create embed
-        ComponentBuilder component = new ComponentBuilder()
-                .WithButton("Start Veto", $"veto_accept_{match.MatchID}");
-        EmbedBuilder embed = new EmbedBuilder()
-            .WithTitle("Waiting for opponent to accept");
-        RestUserMessage message = await _context.Channel.SendMessageAsync(embed: embed.Build(),components: component.Build());
-
-        //await _context.Interaction.ModifyOriginalResponseAsync(m => m.);
-
         //Set Home and Away teams
         TeamInfo teamHome, teamAway;
-        if(team.TeamID == match.TeamHomeID)
+        long opponent;
+        if (team.TeamID == match.TeamHomeID)
         {
             teamHome = team;
-            teamAway = _database.GetTeamAsync((int)match.TeamAwayID).Result;
-            var temp = await _interactivity.NextButtonAsync(u => (long)u.User.Id == teamAway.Player1
-                && ((SocketMessageComponent)u).Data.CustomId == $"veto_accept_{match.MatchID}");
-            await temp.Value.DeferAsync();
+            teamAway = await _database.GetTeamAsync((int)match.TeamAwayID);
+            opponent = teamAway.Player1;
         }
         else
         {
             teamAway = team;
-            teamHome = _database.GetTeamAsync((int)match.TeamHomeID).Result;
-            var temp = await _interactivity.NextButtonAsync(u => (long)u.User.Id == teamAway.Player1
-                && ((SocketMessageComponent)u).Data.CustomId == $"veto_accept_{match.MatchID}");
-            await temp.Value.DeferAsync();
+            teamHome = await _database.GetTeamAsync((int)match.TeamHomeID);
+            opponent = teamHome.Player1;
         }
+
+        //TODO send confirmation to captain and create embed
+        ComponentBuilder component = new ComponentBuilder()
+                .WithButton("Start Veto", $"veto_accept_{match.MatchID}");
+        EmbedBuilder embed = new EmbedBuilder()
+            .WithTitle($"Waiting for {_context.Guild.GetUser((ulong)opponent).Username} to accept");
+        RestUserMessage message = await _context.Channel.SendMessageAsync(embed: embed.Build(), components: component.Build());
+
+        //await _context.Interaction.ModifyOriginalResponseAsync(m => m.);
+
+        var temp = await _interactivity.NextButtonAsync(u => (long)u.User.Id == opponent
+            && ((SocketMessageComponent)u).Data.CustomId == $"veto_accept_{match.MatchID}");
+        await temp.Value.DeferAsync();
 
         //Get captains for quick reference
         SocketUser captainHome = _context.Guild.GetUser((ulong)teamHome.Player1);
         SocketUser captainAway = _context.Guild.GetUser((ulong)teamAway.Player1);
 
-       //Clear button from message
+        //Clear button from message
         ComponentBuilder emptyComponent = new ComponentBuilder();
         await message.ModifyAsync(m => { m.Embed = embed.Build(); m.Components = emptyComponent.Build(); });
 
         //Start veto
-        List<MapInfo> mapPool = _database.GetAllMapsAsync().Result.ToList();
+        List<MapInfo> mapPool = (await _database.GetAllMapsAsync()).ToList();
         var currentTurn = captainHome;
         int mapsRemaining = mapPool.Count;
         bool[] banCaptainHome = new bool[mapPool.Count];
         bool[] banCaptainAway = new bool[mapPool.Count];
         while (mapsRemaining > 1)
         {
-            embed = EmbedHelper(captainHome, captainAway, currentTurn, mapPool, banCaptainHome, banCaptainAway);
+            embed = await EmbedHelper(captainHome, teamHome.TeamName, captainAway, teamAway.TeamName, currentTurn, mapPool, banCaptainHome, banCaptainAway);
             ComponentBuilder dropDownMenu = DropDownMenuHelper(match, mapPool, banCaptainHome, banCaptainAway);
 
             //updates the message
@@ -143,7 +145,6 @@ public class VetoCommand
             }
         }
 
-        //TODO: add map image
         EmbedBuilder embedPost = new EmbedBuilder()
             .WithColor(Constants.EmbedColors.reject)
             .WithTitle($"{teamHome.TeamName} VS {teamAway.TeamName}")
@@ -158,11 +159,11 @@ public class VetoCommand
     }
 
 
-    private EmbedBuilder EmbedHelper(SocketUser captainHome, SocketUser captainAway, SocketUser currentTurn, List<MapInfo> mapPool, bool[] banCaptainHome, bool[] banCaptainAway)
+    private async Task<EmbedBuilder> EmbedHelper(SocketUser captainHome, string homeName, SocketUser captainAway, string awayName, SocketUser currentTurn, List<MapInfo> mapPool, bool[] banCaptainHome, bool[] banCaptainAway)
     {
         EmbedBuilder embed = new EmbedBuilder()
             .WithColor(Constants.EmbedColors.active)
-            .WithDescription($"{currentTurn.Username} turn to ban");
+            .WithDescription($"**{currentTurn.Username}** turn to **BAN**");
 
         string checkmark = ":negative_squared_cross_mark:";
         int count = 0;
@@ -179,7 +180,7 @@ public class VetoCommand
 
         List<EmbedFieldBuilder> f = new List<EmbedFieldBuilder>();
         f.Add(new EmbedFieldBuilder()
-            .WithName($"⠀⠀Team {captainHome.Username}")
+            .WithName($"{homeName}")
             .WithValue(embedColumn1)
             .WithIsInline(true));
         f.Add(new EmbedFieldBuilder()
@@ -187,7 +188,7 @@ public class VetoCommand
             .WithValue(embedColumn2)
             .WithIsInline(true));
         f.Add(new EmbedFieldBuilder()
-            .WithName($"Team {captainAway.Username}")
+            .WithName($"{awayName}")
             .WithValue(embedColumn3)
             .WithIsInline(true));
         embed.WithFields(f);

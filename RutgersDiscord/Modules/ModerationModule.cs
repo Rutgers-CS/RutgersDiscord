@@ -14,6 +14,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using Newtonsoft.Json;
 using System.IO;
+using RutgersDiscord.Commands.Admin;
 
 namespace RutgersDiscord.Modules
 {
@@ -26,18 +27,22 @@ namespace RutgersDiscord.Modules
         private readonly DatabaseHandler _database;
         private readonly ScheduleHandler _schedule;
         private readonly RegistrationHandler _registrationHandler;
+        private readonly DatHostAPIHandler _datHostAPIService;
+        private readonly ConfigHandler _config;
 
-        public ModerationModule(DiscordSocketClient client, InteractivityService interactivity, DatabaseHandler database, ScheduleHandler schedule, RegistrationHandler registrationHandler)
+        public ModerationModule(DiscordSocketClient client, InteractivityService interactivity, DatabaseHandler database, ScheduleHandler schedule, RegistrationHandler registrationHandler, DatHostAPIHandler datHostAPIService, ConfigHandler config)
         {
             _client = client;
             _interactivity = interactivity;
             _database = database;
             _schedule = schedule;
             _registrationHandler = registrationHandler;
+            _datHostAPIService = datHostAPIService;
+            _config = config;
         }
 
-        [SlashCommand("database", "queries database.", runMode: RunMode.Async)]
-        public async Task Database(string query)
+        [SlashCommand("db-query", "queries database.", runMode: RunMode.Async)]
+        public async Task DBQuery(string query)
         {
             var response = await _database.GetTable<string>(query);
             string output = "";
@@ -45,7 +50,7 @@ namespace RutgersDiscord.Modules
             foreach (dynamic r in response)
             {
                 output += r + "\n";
-                if (split == 9)
+                if (split == 4)
                 {
                     await Context.Channel.SendMessageAsync(output);
                     output = "";
@@ -56,15 +61,77 @@ namespace RutgersDiscord.Modules
             await RespondAsync(output);
         }
 
-        [SlashCommand("creatematch", "Creates a match.", runMode: RunMode.Async)]
+        [SlashCommand("db-execute", "executes on database.", runMode: RunMode.Async)]
+        public async Task DBExecute(string query)
+        {
+            var response = await _database.GenExec(query);
+            await RespondAsync(response.ToString());
+        }
+
+        [SlashCommand("db-backup", "backs-up database. !!blocks other connections!!", runMode: RunMode.Async)]
+        public async Task DBBackup()
+        {
+            string filepath = await _database.BackupDatabase();
+            await RespondWithFileAsync(new FileAttachment($"./{filepath}"));
+        }
+
+        /*        [SlashCommand("announcement", "Posts announcement", runMode: RunMode.Async)]
+                public async Task PostAnnouncement()
+                {
+                    PostAnnouncement pa = new PostAnnouncement(_client, Context, _database, _interactivity);
+                    await pa.GetAnnouncement();
+                }*/
+
+        /*        [SlashCommand("database", "queries database.", runMode: RunMode.Async)]
+                public async Task Database(string query)
+                {
+                    var response = await _database.GetTable<string>(query);
+                    string output = "";
+                    int split = 0;
+                    foreach (dynamic r in response)
+                    {
+                        output += r + "\n";
+                        if (split == 9)
+                        {
+                            await Context.Channel.SendMessageAsync(output);
+                            output = "";
+                            split = 0;
+                        }
+                        split++;
+                    }
+                    await RespondAsync(output);
+                }*/
+
+/*        [SlashCommand("creatematch", "Creates a match.", runMode: RunMode.Async)]*/
         public async Task CreateMatch(int teamHomeID, int teamAwayID, int month, int day, int hour)
         {
             DateTime t = new DateTime(DateTime.Now.Year,month,day,hour,0,0);
-            GenerateMatches g = new(_client, Context, _database, _interactivity,_schedule);
+            GenerateMatches g = new(_client, Context, _database, _interactivity,_schedule, _config);
             await g.CreateMatch(teamHomeID, teamAwayID,t);
         }
 
-        [SlashCommand("match", "edits matches.", runMode: RunMode.Async)]
+        [SlashCommand("cm", "Creates a match with string.", runMode: RunMode.Async)]
+        public async Task CreateMatchString(string input)
+        {
+            string[] inputArr = input.Split("    ");
+            try
+            {
+                await CreateMatch(int.Parse(inputArr[0]), int.Parse(inputArr[1]), int.Parse(inputArr[2]), int.Parse(inputArr[3]), int.Parse(inputArr[4]));
+            }
+            catch
+            {
+                await Context.Interaction.RespondAsync("Parse failed", ephemeral: true);
+            }
+        }
+
+        [SlashCommand("ff", "Forfeit a match", runMode: RunMode.Async)]
+        public async Task ForfeitMatch([Choice("Home", "home"), Choice("Away", "away")] string team)
+        {
+            ForfeitCommand ff = new(_client, Context, _database, _interactivity, _config);
+            await ff.ForfeitTeam(team);
+        }
+
+        /*[SlashCommand("match", "edits matches.", runMode: RunMode.Async)]
         public async Task Match(OperationType op, [ComplexParameter] MatchInfo match)
         {
             switch (op)
@@ -83,13 +150,22 @@ namespace RutgersDiscord.Modules
                     await RespondAsync($"match deleted");
                     break;
                 case OperationType.update:
-                    await _database.UpdateMatchAsync(MatchInfo.Merge(_database.GetMatchAsync(match.MatchID).Result, match));
+                    await _database.UpdateMatchAsync(MatchInfo.Merge((await _database.GetMatchAsync(match.MatchID)), match));
                     await RespondAsync($"match edited");
                     break;
             }
-        }
+        }*/
 
-        #region Manual Database Commands
+/*        [SlashCommand("regisbutton", "creates a reg button", runMode: RunMode.Async)]
+        public async Task RegButton()
+        {
+            var builder = new ComponentBuilder()
+                .WithButton("Register Today", "spawn_registration_form", emote: new Emoji("▶"), style: ButtonStyle.Success);
+            await RespondAsync(components: builder.Build());
+        }*/
+
+
+/*        #region Manual Database Commands
         #region Players
         [SlashCommand("create-player", "Creates a player", runMode: RunMode.Async)]
         public async Task CreatePlayer([ComplexParameter] PlayerInfo player)
@@ -99,9 +175,9 @@ namespace RutgersDiscord.Modules
         }
 
         [SlashCommand("read-player", "Reads a player", runMode: RunMode.Async)]
-        public async Task ReadPlayer(long playerID)
+        public async Task ReadPlayer(string playerID)
         {
-            PlayerInfo player = await _database.GetPlayerAsync(playerID);
+            PlayerInfo player = await _database.GetPlayerAsync(long.Parse(playerID));
             EmbedBuilder embed = new EmbedBuilder()
                 .WithColor(Color.Red)
                 .WithDescription(player.ToString());
@@ -119,7 +195,8 @@ namespace RutgersDiscord.Modules
         [SlashCommand("delete-player", "Deletes a player", runMode: RunMode.Async)]
         public async Task DeletePlayer(long playerID)
         {
-            await _database.DeletePlayerAsync(playerID);
+            var player = await _database.GetPlayerAsync(playerID);
+            await _database.DeletePlayerAsync(player);
             await RespondAsync("Player Deleted");
         }
 
@@ -166,7 +243,8 @@ namespace RutgersDiscord.Modules
         [SlashCommand("delete-team", "Deletes a team", runMode: RunMode.Async)]
         public async Task DeleteTeam(int teamID)
         {
-            await _database.DeleteTeamAsync(teamID);
+            var team = await _database.GetTeamAsync(teamID);
+            await _database.DeleteTeamAsync(team);
             await RespondAsync("Team Deleted");
         }
 
@@ -193,7 +271,7 @@ namespace RutgersDiscord.Modules
         }
 
         [SlashCommand("read-match", "Reads a match", runMode: RunMode.Async)]
-        public async Task ReadMatch(long matchID)
+        public async Task ReadMatch(int matchID)
         {
             MatchInfo match = await _database.GetMatchAsync(matchID);
             EmbedBuilder embed = new EmbedBuilder()
@@ -211,9 +289,9 @@ namespace RutgersDiscord.Modules
         }
 
         [SlashCommand("delete-match", "Deletes a match", runMode: RunMode.Async)]
-        public async Task DeleteMatch(long matchID)
+        public async Task DeleteMatch([ComplexParameter] MatchInfo match)
         {
-            await _database.DeleteMatchAsync(matchID);
+            await _database.DeleteMatchAsync(match);
             await RespondAsync("Match Deleted");
         }
 
@@ -283,12 +361,61 @@ namespace RutgersDiscord.Modules
             await _database.AddTestData();
             await RespondAsync("Test Data Added");
         }
-        #endregion
+        #endregion*/
 
-        [SlashCommand("resolve", "resolves admin call", runMode: RunMode.Async)]
-        public async Task Resolve()
+        //TODO Maybe add this
+        /*[SlashCommand("resolve", "resolves admin call", runMode: RunMode.Async)]
+        public async Task Resolve(string matchID)
         {
-            //TODO
-        }
+            var match = await _database.GetMatchAsync(int.Parse(matchID));
+            match.AdminCalled = false;
+            await _database.UpdateMatchAsync(match);
+            await RespondAsync("Issue marked resolved");
+        }*/
+
+/*        [SlashCommand("create-server", "creates new server", runMode: RunMode.Async)]
+        public async Task CreateServer()
+        {
+            string rs = (await _datHostAPIService.CreateNewServer()).ToString();
+            await RespondAsync(rs);
+        }*/
+
+        /*[SlashCommand("fixdb","RUN ONCE", runMode: RunMode.Async)]
+        public async Task FixDB()
+        {
+            IEnumerable<PlayerInfo> players = await _database.GetAllPlayersAsync();
+            foreach(PlayerInfo p in players)
+            {
+                if(p.Kills == null)
+                {
+                    p.Kills = 0;
+                }
+                if (p.Deaths == null)
+                {
+                    p.Deaths = 0;
+                }
+                await _database.UpdatePlayerAsync(p);
+            }
+            IEnumerable<TeamInfo> teams = await _database.GetAllTeamsAsync();
+            foreach(TeamInfo t in teams)
+            {
+                if(t.Losses == null)
+                {
+                    t.Losses = 0;
+                }
+                if(t.Wins == null)
+                {
+                    t.Wins = 0;
+                }
+                if(t.RoundLosses == null)
+                {
+                    t.RoundLosses = 0;
+                }
+                if(t.RoundWins == null)
+                {
+                    t.RoundWins = 0;
+                }
+            }
+        }*/
     }
 }
