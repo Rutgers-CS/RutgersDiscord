@@ -27,50 +27,91 @@ namespace RutgersDiscord.Commands.Admin
             _interactivity = interactivity;
             _config = config;
         }
+        //Cancel Request
+        //Send Response
+        //Check if match exists
+        //Fix match room permission
 
         public async Task ForfeitTeam(string team)
         {
-            MatchInfo match = (await _database.GetMatchByAttribute(discordChannel: (long) _context.Channel.Id)).First();
-            TeamInfo homeTeam = await _database.GetTeamAsync((int) match.TeamHomeID);
-            TeamInfo awayTeam = await _database.GetTeamAsync((int) match.TeamAwayID);
-            var confirmButton = new ComponentBuilder()
-                    .WithButton("Confirm", $"ff_confirm_{_context.Channel.Id}");
-
-            if (team == "home")
+            MatchInfo match = (await _database.GetMatchByAttribute(discordChannel: (long)_context.Channel.Id)).FirstOrDefault();
+            if (match != null)
             {
-                //TODO Check This
-                await _context.Interaction.RespondAsync($"{homeTeam.TeamName} Will take an L\n{awayTeam.TeamName} Will take a W", ephemeral: true, components: confirmButton.Build());
-                var temp = await _interactivity.NextButtonAsync(u => ((SocketMessageComponent)u).Data.CustomId == $"ff_confirm_{_context.Channel.Id}");
-                await temp.Value.DeferAsync();
+                TeamInfo homeTeam = await _database.GetTeamAsync((int)match.TeamHomeID);
+                TeamInfo awayTeam = await _database.GetTeamAsync((int)match.TeamAwayID);
+                var confirmButton = new ComponentBuilder()
+                        .WithButton("Confirm", $"ff_confirm_{_context.Channel.Id}")
+                        .WithButton("Cancel", $"ff_cancel_{_context.Channel.Id}");
 
-                homeTeam.Losses += 1;
-                awayTeam.Wins += 1;
-                await _database.UpdateTeamAsync(homeTeam);
-                await _database.UpdateTeamAsync(awayTeam);
+                if (team == "home")
+                {
+                    await _context.Interaction.RespondAsync($"{homeTeam.TeamName} Will take an L\n{awayTeam.TeamName} Will take a W", ephemeral: true, components: confirmButton.Build());
+                    var temp = await _interactivity.NextButtonAsync(u => ((SocketMessageComponent)u).Data.CustomId == $"ff_confirm_{_context.Channel.Id}" || ((SocketMessageComponent)u).Data.CustomId == $"ff_cancel_{_context.Channel.Id}");
+                    await temp.Value.DeferAsync();
+                    if (((SocketMessageComponent)temp.Value).Data.CustomId.StartsWith("ff_confirm"))
+                    {
+                        homeTeam.Losses += 1;
+                        awayTeam.Wins += 1;
+                        await _database.UpdateTeamAsync(homeTeam);
+                        await _database.UpdateTeamAsync(awayTeam);
 
-                match.HomeTeamWon = false;
-                match.MatchFinished = true;
-                await _database.UpdateMatchAsync(match);
-            }
-            else if (team == "away")
-            {
-                //TODO Check This
-                await _context.Interaction.RespondAsync($"{awayTeam.TeamName} Will take an L\n{homeTeam.TeamName} Will take a W", ephemeral: true, components: confirmButton.Build());
-                var temp = await _interactivity.NextButtonAsync(u => ((SocketMessageComponent)u).Data.CustomId == $"ff_confirm_{_context.Channel.Id}");
-                await temp.Value.DeferAsync();
-                
-                homeTeam.Wins += 1;
-                awayTeam.Losses += 1;
-                await _database.UpdateTeamAsync(homeTeam);
-                await _database.UpdateTeamAsync(awayTeam);
+                        match.HomeTeamWon = false;
+                        match.MatchFinished = true;
+                        await _database.UpdateMatchAsync(match);
 
-                match.HomeTeamWon = true;
-                match.MatchFinished = true;
-                await _database.UpdateMatchAsync(match);
+                        //Stupid way to remove perms
+                        SocketGuild guild = _client.GetGuild(_config.settings.DiscordSettings.Guild);
+                        SocketTextChannel channel = guild.GetTextChannel((ulong) _context.Channel.Id);
+                        await channel.AddPermissionOverwriteAsync(guild.GetUser((ulong)homeTeam.Player1), new OverwritePermissions(sendMessages: PermValue.Deny));
+                        await channel.AddPermissionOverwriteAsync(guild.GetUser((ulong)homeTeam.Player2), new OverwritePermissions(sendMessages: PermValue.Deny));
+                        await channel.AddPermissionOverwriteAsync(guild.GetUser((ulong)awayTeam.Player1), new OverwritePermissions(sendMessages: PermValue.Deny));
+                        await channel.AddPermissionOverwriteAsync(guild.GetUser((ulong)awayTeam.Player2), new OverwritePermissions(sendMessages: PermValue.Deny));
+                        await temp.Value.FollowupAsync($"{homeTeam.TeamName} has forfeited");
+                    }
+                    else
+                    {
+                        await temp.Value.FollowupAsync("Forfeit cancelled", ephemeral: true);
+                    }
+                }
+                else if (team == "away")
+                {
+                    await _context.Interaction.RespondAsync($"{awayTeam.TeamName} Will take an L\n{homeTeam.TeamName} Will take a W", ephemeral: true, components: confirmButton.Build());
+                    var temp = await _interactivity.NextButtonAsync(u => ((SocketMessageComponent)u).Data.CustomId == $"ff_confirm_{_context.Channel.Id}" || ((SocketMessageComponent)u).Data.CustomId == $"ff_cancel_{_context.Channel.Id}");
+                    await temp.Value.DeferAsync();
+                    if (((SocketMessageComponent)temp.Value).Data.CustomId.StartsWith("ff_confirm"))
+                    {
+                        awayTeam.Losses += 1;
+                        homeTeam.Wins += 1;
+                        await _database.UpdateTeamAsync(homeTeam);
+                        await _database.UpdateTeamAsync(awayTeam);
+
+                        match.HomeTeamWon = false;
+                        match.MatchFinished = true;
+                        await _database.UpdateMatchAsync(match);
+
+                        //Stupid way to remove perms
+                        SocketGuild guild = _client.GetGuild(_config.settings.DiscordSettings.Guild);
+                        SocketTextChannel channel = guild.GetTextChannel((ulong)_context.Channel.Id);
+                        await channel.AddPermissionOverwriteAsync(guild.GetUser((ulong)homeTeam.Player1), new OverwritePermissions(sendMessages: PermValue.Deny));
+                        await channel.AddPermissionOverwriteAsync(guild.GetUser((ulong)homeTeam.Player2), new OverwritePermissions(sendMessages: PermValue.Deny));
+                        await channel.AddPermissionOverwriteAsync(guild.GetUser((ulong)awayTeam.Player1), new OverwritePermissions(sendMessages: PermValue.Deny));
+                        await channel.AddPermissionOverwriteAsync(guild.GetUser((ulong)awayTeam.Player2), new OverwritePermissions(sendMessages: PermValue.Deny));
+
+                        await temp.Value.FollowupAsync($"{awayTeam.TeamName} has forfeited");
+                    }
+                    else
+                    {
+                        await temp.Value.FollowupAsync("Forfeit cancelled", ephemeral: true);
+                    }
+                }
+                else
+                {
+                    await _context.Interaction.RespondAsync("I can't believe you've done this", ephemeral: true);
+                }
             }
             else
             {
-                await _context.Interaction.RespondAsync("Error", ephemeral: true);
+                await _context.Interaction.RespondAsync("Can't find match", ephemeral: true);
             }
         }
     }

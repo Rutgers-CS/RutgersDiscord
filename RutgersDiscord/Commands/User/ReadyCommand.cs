@@ -163,8 +163,6 @@ namespace RutgersDiscord.Commands
                         await _context.Channel.SendMessageAsync($"Paste `connect {newServer.IP}:{newServer.Port}` in console to connect.");
 
                         //Send gotv in scgeneral
-                        //TODO make this message expire or go to different channel
-                        //also maybe ddos concerns brought up by izno
                         ulong scgen = _config.settings.DiscordSettings.Channels.SCGeneral;
                         var scgenChan = _client.GetChannel(scgen) as IMessageChannel;
                         string msg = $"{homeTeam.TeamName} vs {awayTeam.TeamName} is live now!\nConnect to GOTV: `connect {newServer.IP}:{newServer.Port+1}`";
