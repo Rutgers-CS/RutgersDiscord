@@ -90,7 +90,7 @@ namespace RutgersDiscord.Commands
                 }
             }
 
-            match.TeamAwayReady = true;
+
             await _database.UpdateMatchAsync(match);
 
 
