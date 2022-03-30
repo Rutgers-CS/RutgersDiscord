@@ -17,6 +17,7 @@ namespace RutgersDiscord.Handlers
         const string playerTable = "players";
         const string teamTable = "teams";
         const string mapTable = "maps";
+        const string tokenTable = "servertokens";
 
         const string databaseName = "Data Source=database.db";
 
@@ -41,6 +42,22 @@ namespace RutgersDiscord.Handlers
             await AddTeamAsync(team2);
 
             //await AddMatchAsync(match);
+        }
+
+        public async Task<string> BackupDatabase()
+        {
+            string timestamp = DateTime.Now.ToString("MM-dd-HH-mm-ss");
+            var fileName = $"{timestamp}.db";
+
+            using (var sqliteConnection = new SqliteConnection(databaseName))
+            {
+                sqliteConnection.Open();
+                using (var bckcon = new SqliteConnection($"Data Source={fileName}"))
+                {
+                    sqliteConnection.BackupDatabase(bckcon);
+                    return fileName;
+                }
+            }
         }
 
         //TEMPORARY method. In the future we will only allow public methods here to output predefined types
@@ -77,7 +94,8 @@ namespace RutgersDiscord.Handlers
                     }
                     catch (SqliteException ex)
                     {
-                        return 0;
+                        Console.WriteLine(ex);
+                        return default;
                     }
                 }
             }
@@ -91,6 +109,7 @@ namespace RutgersDiscord.Handlers
         public async Task<PlayerInfo> GetPlayerAsync(long discordID)
         {
             string query = $"SELECT * FROM {playerTable} WHERE DiscordID = {discordID}";
+            query = SanitizeString(query);
             try
             {
                 using (var sqliteConnection = new SqliteConnection(databaseName))
@@ -104,14 +123,13 @@ namespace RutgersDiscord.Handlers
             }
         }
 
-        public async Task<int> UpdatePlayerAsync(PlayerInfo player)
+        public async Task<bool> UpdatePlayerAsync(PlayerInfo player)
         {
-            string query = $"UPDATE {playerTable} SET Steam64ID=@Steam64ID, SteamID=@SteamID, Name=@Name, TeamID=@TeamID, Kills=@Kills, Deaths=@Deaths WHERE DiscordID=@DiscordID";
             try
             {
                 using (var sqliteConnection = new SqliteConnection(databaseName))
                 {
-                    return await sqliteConnection.ExecuteAsync(query, player);
+                    return await sqliteConnection.UpdateAsync<PlayerInfo>(player);
                 }
             }
             catch
@@ -120,14 +138,13 @@ namespace RutgersDiscord.Handlers
             }
         }
 
-        public async Task<int> DeletePlayerAsync(long discordID)
+        public async Task<bool> DeletePlayerAsync(PlayerInfo player)
         {
-            string query = $"DELETE from {playerTable} WHERE DiscordID = {discordID}";
             try
             {
                 using (var sqliteConnection = new SqliteConnection(databaseName))
                 {
-                    return await sqliteConnection.ExecuteAsync(query);
+                    return await sqliteConnection.DeleteAsync(player);
                 }
             }
             catch
@@ -147,15 +164,15 @@ namespace RutgersDiscord.Handlers
             }
             if (steamID != null)
             {
-                filter += $"AND SteamID = {steamID} ";
+                filter += $"AND SteamID = \"{steamID}\" ";
             }
             if (name != null)
             {
-                filter += $"AND Name = {name} ";
+                filter += $"AND Name = \"{name}\" ";
             }
             if (teamID != null)
             {
-                filter += $"AND TeamID = {teamID}";
+                filter += $"AND TeamID = {teamID} ";
             }
             if (kills != null)
             {
@@ -185,7 +202,7 @@ namespace RutgersDiscord.Handlers
 
         public async Task<PlayerInfo> GetPlayerBySteamIDAsync(string steamID)
         {
-            string query = $"SELECT * FROM {playerTable} WHERE SteamID = {steamID}";
+            string query = $"SELECT * FROM {playerTable} WHERE SteamID = \"{steamID}\"";
             try
             {
                 using (var sqliteConnection = new SqliteConnection(databaseName))
@@ -220,12 +237,10 @@ namespace RutgersDiscord.Handlers
         #region Teams CRUD
         public async Task<int> AddTeamAsync(TeamInfo team)
         {
-            //string query = "INSERT INTO teams (TeamID, TeamName, Player1, Player2, Wins, Losses) VALUES (@TeamID, @TeamName, @Player1, @Player2, @Wins, @Losses)";
             try
             {
                 using (var sqliteConnection = new SqliteConnection(databaseName))
                 {
-                    //return await sqliteConnection.ExecuteAsync(query, team);
                     return await sqliteConnection.InsertAsync(team);
                 }
             }
@@ -238,6 +253,7 @@ namespace RutgersDiscord.Handlers
         public async Task<TeamInfo> GetTeamAsync(int teamID)
         {
             string query = $"SELECT * FROM {teamTable} WHERE TeamID = {teamID}";
+            query = SanitizeString(query);
             try
             {
                 using (var sqliteConnection = new SqliteConnection(databaseName))
@@ -251,14 +267,13 @@ namespace RutgersDiscord.Handlers
             }
         }
 
-        public async Task<int> UpdateTeamAsync(TeamInfo team)
+        public async Task<bool> UpdateTeamAsync(TeamInfo team)
         {
-            string query = $"UPDATE {teamTable} SET TeamName=@TeamName, Player1=@Player1, Player2=@Player2, Wins=@Wins, Losses=@Losses WHERE TeamID=@TeamID";
             try
             {
                 using (var sqliteConnection = new SqliteConnection(databaseName))
                 {
-                    return await sqliteConnection.ExecuteAsync(query, team);
+                    return await sqliteConnection.UpdateAsync<TeamInfo>(team);
                 }
             }
             catch
@@ -267,14 +282,13 @@ namespace RutgersDiscord.Handlers
             }
         }
 
-        public async Task<int> DeleteTeamAsync(int teamID)
+        public async Task<bool> DeleteTeamAsync(TeamInfo team)
         {
-            string query = $"DELETE from {teamTable} WHERE TeamID = {teamID}";
             try
             {
                 using (var sqliteConnection = new SqliteConnection(databaseName))
                 {
-                    return await sqliteConnection.ExecuteAsync(query);
+                    return await sqliteConnection.DeleteAsync(team);
                 }
             }
             catch
@@ -364,12 +378,11 @@ namespace RutgersDiscord.Handlers
         #region Matches CRUD
         public async Task<int> AddMatchAsync(MatchInfo match)
         {
-            string query = $"INSERT INTO {matchTable} (MatchID, TeamHomeID, TeamAwayID, ScoreHome, ScoreAway, MatchFinished, MapID, DiscordChannel) VALUES (@MatchID, @TeamHomeID, @TeamAwayID, @ScoreHome, @ScoreAway, @MatchFinished, @MapID, @DiscordChannel)";
             try
             {
                 using (var sqliteConnection = new SqliteConnection(databaseName))
                 {
-                    return await sqliteConnection.ExecuteAsync(query, match);
+                    return await sqliteConnection.InsertAsync<MatchInfo>(match);
                 }
             }
             catch
@@ -378,9 +391,10 @@ namespace RutgersDiscord.Handlers
             }
         }
 
-        public async Task<MatchInfo> GetMatchAsync(long matchID)
+        public async Task<MatchInfo> GetMatchAsync(int matchID)
         {
             string query = $"SELECT * FROM {matchTable} WHERE TeamID = {matchID}";
+            query = SanitizeString(query);
             try
             {
                 using (var sqliteConnection = new SqliteConnection(databaseName))
@@ -394,14 +408,13 @@ namespace RutgersDiscord.Handlers
             }
         }
 
-        public async Task<int> UpdateMatchAsync(MatchInfo match)
+        public async Task<bool> UpdateMatchAsync(MatchInfo match)
         {
-            string query = $"UPDATE {matchTable} SET TeamHomeID=@TeamHomeID, TeamAwayID=@TeamAwayID, ScoreHome=@ScoreHome, ScoreAway=@ScoreAway, MatchFinished=@MatchFinished, MapID=@MapID, DiscordChannel=@DiscordChannel WHERE MatchID=@MatchID";
             try
             {
                 using (var sqliteConnection = new SqliteConnection(databaseName))
                 {
-                    return await sqliteConnection.ExecuteAsync(query, match);
+                    return await sqliteConnection.UpdateAsync<MatchInfo>(match);
                 }
             }
             catch
@@ -410,14 +423,13 @@ namespace RutgersDiscord.Handlers
             }
         }
 
-        public async Task<int> DeleteMatchAsync(long matchID)
+        public async Task<bool> DeleteMatchAsync(MatchInfo match)
         {
-            string query = $"DELETE from {matchTable} WHERE TeamID = {matchID}";
             try
             {
                 using (var sqliteConnection = new SqliteConnection(databaseName))
                 {
-                    return await sqliteConnection.ExecuteAsync(query);
+                    return await sqliteConnection.DeleteAsync(match);
                 }
             }
             catch
@@ -429,7 +441,6 @@ namespace RutgersDiscord.Handlers
 
         #region Matches Extra
 
-        //TODO: Add more attributes here later I'm lazy
         public async Task<IEnumerable<MatchInfo>> GetMatchByAttribute(int? teamID1 = null, int? teamID2 = null, long? matchTime = null, int? scoreHome = null, int? scoreAway = null, bool? matchFinished = null,bool? homeTeamWon = null, int? mapID = null, long? discordChannel = null, bool? teamHomeReady = null, bool? teamAwayReady = null, string datMatchID = null, string serverID = null)
         {
             string filter = "true ";
@@ -479,11 +490,11 @@ namespace RutgersDiscord.Handlers
             }
             if (datMatchID != null)
             {
-                filter += $"AND DatMatchID = {datMatchID} ";
+                filter += $"AND DatMatchID = \"{datMatchID}\" ";
             }
             if (serverID != null)
             {
-                filter += $"AND ServerID = {serverID} ";
+                filter += $"AND ServerID = \"{serverID}\" ";
             }
             return await GetTableFromDBUsing<MatchInfo>($"SELECT * FROM {matchTable} WHERE {filter}");
         }
@@ -607,6 +618,62 @@ namespace RutgersDiscord.Handlers
         }
         #endregion
 
+        public async Task<ServerTokens> GetUnusedToken()
+        {
+            string query = $"SELECT * FROM {tokenTable} WHERE ServerID IS null";
+            try
+            {
+                using (var sqliteConnection = new SqliteConnection(databaseName))
+                {
+                    var res = (await sqliteConnection.QueryAsync<ServerTokens>(query)).FirstOrDefault();
+                    if (res != null)
+                    {
+                        return res;
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                }
+            }
+            catch
+            {
+                return default;
+            }
+        }
+
+        public async Task<bool> UpdateToken(ServerTokens token)
+        {
+            try
+            {
+                using (var sqliteConnection = new SqliteConnection(databaseName))
+                {
+                    return await sqliteConnection.UpdateAsync<ServerTokens>(token);
+                }
+            }
+            catch
+            {
+                return default;
+            }
+        }
+
+        public async Task<ServerTokens> GetTokenByServerID(string serverID)
+        {
+            string query = $"SELECT * FROM {tokenTable} WHERE ServerID = {serverID}";
+            query = SanitizeString(query);
+            try
+            {
+                using (var sqliteConnection = new SqliteConnection(databaseName))
+                {
+                    return (await sqliteConnection.QueryAsync<ServerTokens>(query)).FirstOrDefault();
+                }
+            }
+            catch
+            {
+                return default;
+            }
+        }
+
         private async Task<IEnumerable<T>> GetTableFromDBUsing<T>(string strQuery, string databaseName = databaseName)
         {
             strQuery = SanitizeString(strQuery);
@@ -625,13 +692,49 @@ namespace RutgersDiscord.Handlers
             }
         }
 
+        public async Task<IEnumerable<T>> GenQuery<T>(string query)
+        {
+            query = SanitizeString(query);
+
+            try
+            {
+                using (var sqliteConnection = new SqliteConnection(databaseName))
+                {
+                    return await sqliteConnection.QueryAsync<T>(query);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+                return default;
+            }
+        }
+
+        public async Task<int> GenExec(string query)
+        {
+            query = SanitizeString(query);
+
+            try
+            {
+                using (var sqliteConnection = new SqliteConnection(databaseName))
+                {
+                    return await sqliteConnection.ExecuteAsync(query);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+                return default;
+            }
+        }
+
         //We might need to whitelist more characters in the future
         private static string SanitizeString(string s)
         {
             if (s == null) return null;
             string str = new((from c in s where char.IsWhiteSpace(c) 
                                      || char.IsLetterOrDigit(c)
-                                     || c == '_' || c == '*' || c == '=' || c == '(' || c == ')' || c == '\\' || c == '"' select c)
+                                     || c == '_' || c == '*' || c == '=' || c == '(' || c == ')' || c == '\\' || c == '"' || c == ':' || c == ',' || c == '<' || c == '>' select c)
                                      .ToArray());
             return str;
         }

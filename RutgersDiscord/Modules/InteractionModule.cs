@@ -24,93 +24,88 @@ namespace RutgersDiscord.Modules
         private readonly DiscordSocketClient _client;
         private readonly InteractivityService _interactivity;
         private readonly DatabaseHandler _database;
-        private readonly RegistrationHandler _registrationHandler;
-        private readonly GameServerHandler _gameServerHandler;
-
-        public InteractionModule(DiscordSocketClient client, InteractivityService interactivity, DatabaseHandler database, RegistrationHandler registrationHandler, GameServerHandler gameServerHandler)
+        private readonly RegistrationHandler _registration;
+        private readonly DatHostAPIHandler _datHostAPI;
+        private readonly GameServerHandler _gameServer;
+        private readonly ScheduleHandler _schedule;
+        private readonly ConfigHandler _config;
+        //FIX Assign teamID
+        public InteractionModule(DiscordSocketClient client, InteractivityService interactivity, DatabaseHandler database, RegistrationHandler registration, DatHostAPIHandler datHostAPI, GameServerHandler gameServer, ScheduleHandler schedule, ConfigHandler config)
         {
             _client = client;
             _interactivity = interactivity;
             _database = database;
-            _registrationHandler = registrationHandler;
-            _gameServerHandler = gameServerHandler;
+            _registration = registration;
+            _datHostAPI = datHostAPI;
+            _gameServer = gameServer;
+            _schedule = schedule;
+            _config = config;
         }
 
-        [SlashCommand("echo", "Echo an input", runMode: RunMode.Async)]
+/*        [SlashCommand("echo", "Echo an input", runMode: RunMode.Async)]
         public async Task Echo(string input)
         {
             await RespondAsync(input);
-        }
+        }*/
 
-        [SlashCommand("announcement", "Posts announcement")]
-        public async Task PostAnnouncement()
-        {
-            PostAnnouncement pa = new PostAnnouncement(_client, Context, _database, _interactivity);
-            pa.GetAnnouncement();
-        }
 
-        [SlashCommand("veto", "Starts veto process", runMode: RunMode.Async)]
+/*        [SlashCommand("veto", "Starts veto process", runMode: RunMode.Async)]
         public async Task Veto()
         {
             VetoCommand v = new VetoCommand(_client, Context, _database, _interactivity);
             await v.StartVetoAcknowledge();
-        }
-
-        [SlashCommand("register", "Provide required information to register for the event")]
-        public async Task Register()
-        {
-            RegisterCommand rc = new RegisterCommand(_client, Context, _database, _interactivity, _registrationHandler);
-            await rc.RegistrationForm();
-        }
+        }*/
 
         [SlashCommand("ready", "Set your team as ready for the match")]
         public async Task TeamReady()
         {
-            ReadyCommand rc = new ReadyCommand(_client, Context, _database, _interactivity,_gameServerHandler);
-            rc.Ready();
+            ReadyCommand rc = new ReadyCommand(_client, Context, _database, _interactivity, _gameServer, _datHostAPI, _config);
+            await rc.Ready();
         }
 
         [SlashCommand("unready", "Set your team as not ready for the match")]
         public async Task TeamUnReady()
         {
             UnReadyCommand urc = new UnReadyCommand(_client, Context, _database, _interactivity);
-            urc.UnReady();
+            await urc.UnReady();
         }
 
         [SlashCommand("admin", "Notify an admin")]
         public async Task NotifyAdmin()
         {
-            NotifyAdminCommand nac = new NotifyAdminCommand(_client, Context, _database, _interactivity);
-            nac.CallAdmin();
+            NotifyAdminCommand nac = new NotifyAdminCommand(_client, Context, _database, _interactivity, _config);
+            await nac.CallAdmin();
         }
 
         [SlashCommand("stats", "Display the tournament's statistical leaders")]
-        public async Task FetchStats()
+        public async Task FetchStats([Choice("KD", "kd"), Choice("Kills", "kills"), Choice("Deaths", "deaths"), Choice("All", "all")] string sortBy = "kd")
         {
             StatsCommand sc = new StatsCommand(_client, Context, _database, _interactivity);
-            sc.GetStats();
+            await sc.GetStats(sortBy);
         }
 
         [SlashCommand("leaderboard", "Display the tournament leaderboard")]
-        public async Task DisplayLeaderboard()
+
+
+        public async Task DisplayLeaderboard([Choice("Record", "record"), Choice("KD", "kd"), Choice("RD", "rd")] string sortBy = "record")
         {
             LeaderboardCommand lc = new LeaderboardCommand(_client, Context, _database, _interactivity);
-            lc.PullLeaderboard();
+            await lc.PullLeaderboard(sortBy);
         }
 
         [SlashCommand("help", "Display all user commands")]
         public async Task Help()
         {
             HelpCommand lc = new HelpCommand(_client, Context, _database, _interactivity);
-            lc.GetHelp();
+            await lc.GetHelp();
         }
 
-        [SlashCommand("teamselection", "Select or create a team")]
-        public async Task TeamSelection()
+        [SlashCommand("reschedule", "Requests a reschedule")]
+        public async Task Resched(int month, int day, int hour, int min)
         {
-
+            RescheduleCommand rc = new RescheduleCommand(_client, Context, _database, _interactivity,_schedule);
+            DateTime t = new DateTime(DateTime.Now.Year, month, day, hour, min, 0);
+            await rc.RescheduleMatch(t);
         }
-
-        
     }
 }

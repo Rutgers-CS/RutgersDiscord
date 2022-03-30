@@ -1,4 +1,4 @@
-﻿using Discord.WebSocket;
+﻿/*using Discord.WebSocket;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +8,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Interactivity;
 using RutgersDiscord.Handlers;
-using Discord;
 using System.Net.Http;
 using Newtonsoft.Json;
 using Microsoft.Extensions.DependencyInjection;
@@ -46,3 +45,4 @@ namespace RutgersDiscord.Commands.User
         }
     }
 }
+*/

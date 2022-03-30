@@ -3,12 +3,6 @@
     "RutgersDiscord": {
       "commandName": "Project",
       "environmentVariables": {
-        "steamWebAPIToken": "186D2EF917BF0D72F5BFCB2FD6C40F5B",
-        "discordTestServer": "670683408057237547",
-        "IP": "\"http://*:25565/api/\"",
-        "botToken": "NjcwNjgyOTY2OTEyOTI1NzE4.Xix8Lw.CxPFLuz_zDmLooDKCypTorRNrBU",
-        "dbConnectionString": "server=localhost;userid=root;",
-        "defaultDatabase": "test"
       }
     }
   }
