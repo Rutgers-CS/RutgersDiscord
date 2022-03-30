@@ -76,12 +76,12 @@ public class VetoCommand
         ComponentBuilder component = new ComponentBuilder()
                 .WithButton("Start Veto", $"veto_accept_{match.MatchID}");
         EmbedBuilder embed = new EmbedBuilder()
-            .WithTitle($"Waiting for {_context.Guild.GetUser((ulong)teamHome.Player1).Nickname} to accept");
+            .WithTitle($"Waiting for {_context.Guild.GetUser((ulong)opponent).Username} to accept");
         RestUserMessage message = await _context.Channel.SendMessageAsync(embed: embed.Build(), components: component.Build());
 
         //await _context.Interaction.ModifyOriginalResponseAsync(m => m.);
 
-        var temp = await _interactivity.NextButtonAsync(u => (long)u.User.Id == teamAway.Player1
+        var temp = await _interactivity.NextButtonAsync(u => (long)u.User.Id == opponent
             && ((SocketMessageComponent)u).Data.CustomId == $"veto_accept_{match.MatchID}");
         await temp.Value.DeferAsync();
 
