@@ -42,7 +42,6 @@ namespace RutgersDiscord.Modules
             _config = config;
         }
 
-        //TODO Clean up these commands
 /*        [SlashCommand("echo", "Echo an input", runMode: RunMode.Async)]
         public async Task Echo(string input)
         {

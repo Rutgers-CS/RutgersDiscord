@@ -24,7 +24,6 @@ public class ScheduleHandler
 	//When bot is restarted re add all jobs
 	public async Task AddRequiredJobsAsync()
     {
-		//TODO
 		IEnumerable<MatchInfo> futureMatches = await _database.GetMatchByAttribute(matchFinished: false);
 		//Get all players at once to not spam the database
 		IEnumerable<TeamInfo> allTeams = await _database.GetAllTeamsAsync();
