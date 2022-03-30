@@ -81,14 +81,12 @@ namespace RutgersDiscord.Handlers
             Team2Stats awayTeam = result.team2_stats;
 
             var currentHomeTeam = (await _database.GetTeamByAttribute(cmatch.TeamHomeID)).First();
-            //TODO Change To Kenji Init Method
             if (currentHomeTeam.Wins == null) currentHomeTeam.Wins = 0;
             if (currentHomeTeam.Losses == null) currentHomeTeam.Losses = 0;
             if (currentHomeTeam.RoundWins == null) currentHomeTeam.RoundWins = 0;
             if (currentHomeTeam.RoundLosses == null) currentHomeTeam.RoundLosses = 0;
             
             var currentAwayTeam = (await _database.GetTeamByAttribute(cmatch.TeamAwayID)).First();
-            //TODO Change To Kenji Init Method
             if (currentAwayTeam.Wins == null) currentAwayTeam.Wins = 0;
             if (currentAwayTeam.Losses == null) currentAwayTeam.Losses = 0;
             if (currentAwayTeam.RoundWins == null) currentAwayTeam.RoundWins = 0;
@@ -129,7 +127,6 @@ namespace RutgersDiscord.Handlers
                 {
                     Console.WriteLine(player.steam_id);
                     var cplayer = (await _database.GetPlayerByAttribute(steamID: player.steam_id)).FirstOrDefault();
-                    //TODO Change to kenji init method
                     if (cplayer.Kills == null) cplayer.Kills = 0;
                     if (cplayer.Deaths == null) cplayer.Deaths = 0;
 
@@ -150,8 +147,8 @@ namespace RutgersDiscord.Handlers
             new Task(async () =>
             {
                 Console.WriteLine("Waiting For Demo");
-                //wait 30 sec for match to finish processing
-                System.Threading.Thread.Sleep(60000);
+                //wait 3 min for match to finish processing
+                System.Threading.Thread.Sleep(180000);
                 Console.WriteLine("Downloading Demo");
                 await _datHostAPIHandler.GetDemo(serverid, matchid);
             }).Start();
@@ -161,10 +158,18 @@ namespace RutgersDiscord.Handlers
             {
                 //5 min
                 System.Threading.Thread.Sleep(300000);
-                /*var token = await _database.GetTokenByServerID(serverid);
-                token.ServerID = null;
-                await _database.UpdateToken(token);*/
                 await _datHostAPIHandler.DeleteServer(serverid);
+                try
+                {
+                    var token = await _database.GetTokenByServerID(serverid);
+                    token.ServerID = null;
+                    await _database.UpdateToken(token);
+                }
+                catch (Exception ex)
+                {
+
+                    Console.WriteLine("Token unallocate failed\n" + ex);
+                }
             }).Start();
             
         }
