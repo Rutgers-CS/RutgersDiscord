@@ -197,6 +197,10 @@ namespace RutgersDiscord.Commands.User
             else if (sortBy == "all")
             {
 
+                killslist = MySort(killslist, true);
+                deathslist = MySort(deathslist, true);
+                kdslist = MySort(kdslist, false);
+
                 if (originalsize % 10 == 0)
                 {
                     for (int i = 0; i < (originalsize / 10); i++)
