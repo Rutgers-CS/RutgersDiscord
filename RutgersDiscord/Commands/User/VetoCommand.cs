@@ -56,15 +56,6 @@ public class VetoCommand
             return;
         }
 
-        //TODO send confirmation to captain and create embed
-        ComponentBuilder component = new ComponentBuilder()
-                .WithButton("Start Veto", $"veto_accept_{match.MatchID}");
-        EmbedBuilder embed = new EmbedBuilder()
-            .WithTitle("Waiting for opponent to accept");
-        RestUserMessage message = await _context.Channel.SendMessageAsync(embed: embed.Build(),components: component.Build());
-
-        //await _context.Interaction.ModifyOriginalResponseAsync(m => m.);
-
         //Set Home and Away teams
         TeamInfo teamHome, teamAway;
         long opponent;
