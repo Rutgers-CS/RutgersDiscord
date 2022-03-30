@@ -55,7 +55,7 @@ namespace RutgersDiscord.Commands.Admin
             else if (team == "away")
             {
                 //TODO Check This
-                await _context.Interaction.RespondAsync($"{homeTeam.TeamName} Will take an L\n{awayTeam.TeamName} Will take a W", ephemeral: true, components: confirmButton.Build());
+                await _context.Interaction.RespondAsync($"{awayTeam.TeamName} Will take an L\n{homeTeam.TeamName} Will take a W", ephemeral: true, components: confirmButton.Build());
                 var temp = await _interactivity.NextButtonAsync(u => ((SocketMessageComponent)u).Data.CustomId == $"ff_confirm_{_context.Channel.Id}");
                 await temp.Value.DeferAsync();
                 
