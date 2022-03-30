@@ -124,6 +124,13 @@ namespace RutgersDiscord.Modules
             }
         }
 
+        [SlashCommand("ff", "Forfeit a match", runMode: RunMode.Async)]
+        public async Task ForfeitMatch([Choice("Home", "home"), Choice("Away", "away")] string team)
+        {
+            ForfeitCommand ff = new(_client, Context, _database, _interactivity, _config);
+            await ff.ForfeitTeam(team);
+        }
+
         /*[SlashCommand("match", "edits matches.", runMode: RunMode.Async)]
         public async Task Match(OperationType op, [ComplexParameter] MatchInfo match)
         {
@@ -356,15 +363,15 @@ namespace RutgersDiscord.Modules
         }
         #endregion*/
 
-        [SlashCommand("resolve", "resolves admin call", runMode: RunMode.Async)]
+        //TODO Maybe add this
+        /*[SlashCommand("resolve", "resolves admin call", runMode: RunMode.Async)]
         public async Task Resolve(string matchID)
         {
-            //TODO switch to button in NotifyAdmin class
             var match = await _database.GetMatchAsync(int.Parse(matchID));
             match.AdminCalled = false;
             await _database.UpdateMatchAsync(match);
             await RespondAsync("Issue marked resolved");
-        }
+        }*/
 
 /*        [SlashCommand("create-server", "creates new server", runMode: RunMode.Async)]
         public async Task CreateServer()

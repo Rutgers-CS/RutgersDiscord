@@ -56,13 +56,11 @@ public class VetoCommand
             return;
         }
 
-        //TODO send confirmation to captain and create embed
         ComponentBuilder component = new ComponentBuilder()
                 .WithButton("Start Veto", $"veto_accept_{match.MatchID}");
         EmbedBuilder embed = new EmbedBuilder()
-            .WithTitle("Waiting for opponent to accept");
+            .WithTitle("Waiting for opponent to accept"); //TODO kenji Add name that needs to accept
         RestUserMessage message = await _context.Channel.SendMessageAsync(embed: embed.Build(),components: component.Build());
-
         //await _context.Interaction.ModifyOriginalResponseAsync(m => m.);
 
         //Set Home and Away teams
@@ -88,7 +86,7 @@ public class VetoCommand
         SocketUser captainHome = _context.Guild.GetUser((ulong)teamHome.Player1);
         SocketUser captainAway = _context.Guild.GetUser((ulong)teamAway.Player1);
 
-       //Clear button from message
+        //Clear button from message
         ComponentBuilder emptyComponent = new ComponentBuilder();
         await message.ModifyAsync(m => { m.Embed = embed.Build(); m.Components = emptyComponent.Build(); });
 
@@ -144,7 +142,6 @@ public class VetoCommand
             }
         }
 
-        //TODO: add map image
         EmbedBuilder embedPost = new EmbedBuilder()
             .WithColor(Constants.EmbedColors.reject)
             .WithTitle($"{teamHome.TeamName} VS {teamAway.TeamName}")
@@ -163,7 +160,7 @@ public class VetoCommand
     {
         EmbedBuilder embed = new EmbedBuilder()
             .WithColor(Constants.EmbedColors.active)
-            .WithDescription($"{currentTurn.Username} turn to **BAN**");
+            .WithDescription($"**{currentTurn.Username}** turn to **BAN**");
 
         string checkmark = ":negative_squared_cross_mark:";
         int count = 0;
