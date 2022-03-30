@@ -90,7 +90,7 @@ namespace RutgersDiscord.Commands
                 }
             }
 
-            match.TeamAwayReady = true;
+
             await _database.UpdateMatchAsync(match);
 
 
@@ -131,12 +131,41 @@ namespace RutgersDiscord.Commands
                         PlayerInfo aP1 = await _database.GetPlayerAsync((long)awayTeam.Player1);
                         PlayerInfo aP2 = await _database.GetPlayerAsync((long)awayTeam.Player2);
                         MapInfo map = await _database.GetMapAsync((int)match.MapID);
+#if DEBUG
+                        string webHook = "";
+#else
                         string webHook = $"http://{_config.settings.ApplicationSettings.PublicIP}:{_config.settings.ApplicationSettings.Port}/api";
+#endif
+
                         MatchSettings ms = new MatchSettings(map, homeTeam, hP1, hP2, awayTeam, aP1, aP2, newServer.ServerID, webHook);
+
+                        long galID = (long) _config.settings.DiscordSettings.Users.Galifi;
+                        long opID = (long) _config.settings.DiscordSettings.Users.Op7day;
+                        long kenID = (long) _config.settings.DiscordSettings.Users.Guihori;
+                        //Add admins as spectator if not in the game
+                        /*if (hP1.DiscordID != galID && hP2.DiscordID != galID && aP1.DiscordID != galID && aP2.DiscordID != galID)
+                        {
+                            ms.spectator_steam_ids += (await _database.GetPlayerAsync(galID)).SteamID + ",";
+                        }
+
+                        if (hP1.DiscordID != opID && hP2.DiscordID != opID && aP1.DiscordID != opID && aP2.DiscordID != opID)
+                        {
+                            ms.spectator_steam_ids += (await _database.GetPlayerAsync(opID)).SteamID + ",";
+                        }
+
+                        if (hP1.DiscordID != kenID && hP2.DiscordID != kenID && aP1.DiscordID != kenID && aP2.DiscordID != kenID)
+                        {
+                            ms.spectator_steam_ids += (await _database.GetPlayerAsync(kenID)).SteamID + ",";
+                        }*/
 
                         var st = await _datHostAPIHandler.CreateMatch(ms);
                         PreGameJson preGameJson = JsonConvert.DeserializeObject<PreGameJson>(st);
-                        await _context.Channel.SendMessageAsync($"Paste `connect {newServer.IP}:{newServer.Port}` in CSGO console to connect.");
+                        await _context.Channel.SendMessageAsync($"Paste `connect {newServer.IP}:{newServer.Port}` in console to connect.");
+
+                        //Send gotv in scgeneral
+                        ulong scgen = _config.settings.DiscordSettings.Channels.SCGeneral;
+                        var scgenChan = _client.GetChannel(scgen) as IMessageChannel;
+                        await scgenChan.SendMessageAsync($"{homeTeam.TeamName} vs {awayTeam.TeamName} is live now!\nConnect to GOTV: `connect {newServer.IP}:{newServer.Port+1}`");
 
                         match.ServerID = newServer.ServerID;
                         match.DatMatchID = preGameJson.id;
