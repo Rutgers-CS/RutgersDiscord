@@ -56,31 +56,43 @@ public class VetoCommand
             return;
         }
 
+        //TODO send confirmation to captain and create embed
         ComponentBuilder component = new ComponentBuilder()
                 .WithButton("Start Veto", $"veto_accept_{match.MatchID}");
         EmbedBuilder embed = new EmbedBuilder()
-            .WithTitle("Waiting for opponent to accept"); //TODO kenji Add name that needs to accept
+            .WithTitle("Waiting for opponent to accept");
         RestUserMessage message = await _context.Channel.SendMessageAsync(embed: embed.Build(),components: component.Build());
+
         //await _context.Interaction.ModifyOriginalResponseAsync(m => m.);
 
         //Set Home and Away teams
         TeamInfo teamHome, teamAway;
-        if(team.TeamID == match.TeamHomeID)
+        long opponent;
+        if (team.TeamID == match.TeamHomeID)
         {
             teamHome = team;
             teamAway = await _database.GetTeamAsync((int)match.TeamAwayID);
-            var temp = await _interactivity.NextButtonAsync(u => (long)u.User.Id == teamAway.Player1
-                && ((SocketMessageComponent)u).Data.CustomId == $"veto_accept_{match.MatchID}");
-            await temp.Value.DeferAsync();
+            opponent = teamAway.Player1;
         }
         else
         {
             teamAway = team;
             teamHome = await _database.GetTeamAsync((int)match.TeamHomeID);
-            var temp = await _interactivity.NextButtonAsync(u => (long)u.User.Id == teamHome.Player1
-                && ((SocketMessageComponent)u).Data.CustomId == $"veto_accept_{match.MatchID}");
-            await temp.Value.DeferAsync();
+            opponent = teamHome.Player1;
         }
+
+        //TODO send confirmation to captain and create embed
+        ComponentBuilder component = new ComponentBuilder()
+                .WithButton("Start Veto", $"veto_accept_{match.MatchID}");
+        EmbedBuilder embed = new EmbedBuilder()
+            .WithTitle($"Waiting for {_context.Guild.GetUser((ulong)teamHome.Player1).Nickname} to accept");
+        RestUserMessage message = await _context.Channel.SendMessageAsync(embed: embed.Build(), components: component.Build());
+
+        //await _context.Interaction.ModifyOriginalResponseAsync(m => m.);
+
+        var temp = await _interactivity.NextButtonAsync(u => (long)u.User.Id == teamAway.Player1
+            && ((SocketMessageComponent)u).Data.CustomId == $"veto_accept_{match.MatchID}");
+        await temp.Value.DeferAsync();
 
         //Get captains for quick reference
         SocketUser captainHome = _context.Guild.GetUser((ulong)teamHome.Player1);
