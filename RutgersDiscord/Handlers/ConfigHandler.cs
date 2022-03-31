@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Discord;
+using Discord.WebSocket;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,13 +13,41 @@ namespace RutgersDiscord.Handlers
     {
         public Settings settings;
 
-        public ConfigHandler()
+        private static DiscordSocketClient _client;
+        public ConfigHandler(DiscordSocketClient client)
         {
+            _client = client;
+
             IConfiguration configuration = new ConfigurationBuilder()
                 .AddJsonFile("./config.json", false, false)
                 .Build();
 
             settings = configuration.GetRequiredSection("Settings").Get<Settings>();
+        }
+
+        //actionDescription: What was issued
+        public async Task LogAsync(string actionDescription, string message, ulong user = 0, ulong channel = 0)
+        {
+            SocketTextChannel logChannel = _client.GetGuild(settings.DiscordSettings.Guild).GetTextChannel(settings.DiscordSettings.Channels.Logs);
+            EmbedBuilder embed = new EmbedBuilder()
+                .WithTitle(actionDescription)
+                .WithDescription(message)
+                .WithTimestamp(DateTimeOffset.Now);
+
+            if(user != 0)
+            {
+                SocketUser u = _client.GetUser(user);
+                embed.WithAuthor(new EmbedAuthorBuilder()
+                    .WithName(u.Username)
+                    .WithIconUrl(u.GetDefaultAvatarUrl()));
+            }
+            if(channel != 0)
+            {
+                SocketTextChannel c = _client.GetGuild(settings.DiscordSettings.Guild).GetTextChannel(channel);
+                embed.WithFields(new EmbedFieldBuilder {Name = c.Name,Value = c.Mention });
+            }
+
+            await logChannel.SendMessageAsync(embed: embed.Build());
         }
     }
 
@@ -47,6 +77,7 @@ namespace RutgersDiscord.Handlers
 
     public class Channel
     {
+        public ulong Logs { get; set; }
         public ulong Announcements { get; set; }
         public ulong SCGeneral { get; set; }
         public ulong SCAnnouncements { get; set; }
