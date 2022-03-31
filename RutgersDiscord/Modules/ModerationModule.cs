@@ -131,6 +131,14 @@ namespace RutgersDiscord.Modules
             await ff.ForfeitTeam(team);
         }
 
+        [SlashCommand("grass-restart", "Only use to restart grassetto if players stuck", runMode: RunMode.Async)]
+        public async Task RestartGrass()
+        {
+            RestartMatchCommand rmc = new RestartMatchCommand(Context, _database, _datHostAPIService);
+            await rmc.RestartMap();
+            await RespondAsync("Match is being restarted");
+        }
+
         /*[SlashCommand("match", "edits matches.", runMode: RunMode.Async)]
         public async Task Match(OperationType op, [ComplexParameter] MatchInfo match)
         {
