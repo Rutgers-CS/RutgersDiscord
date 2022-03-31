@@ -93,7 +93,7 @@ namespace RutgersDiscord.Handlers
         public async Task GetDemo(string serverID, string matchID)
         {
             if (serverID == templateServerID) return;
-            var response = await _httpClient.GetAsync($"game-server/{serverID}/files/{matchID}.dem");
+            var response = await _httpClient.GetAsync($"game-servers/{serverID}/files/{matchID}.dem");
             try
             {
                 using (var fs = new FileStream($"./demos/demo_{matchID}.dem", FileMode.CreateNew))
@@ -104,6 +104,20 @@ namespace RutgersDiscord.Handlers
             catch (Exception ex)
             {
                 Console.WriteLine(ex);
+            }
+        }
+
+        public async Task RestartMatch(string serverID)
+        {
+            if (serverID == templateServerID) return;
+            var req = new FormUrlEncodedContent(new[]
+            { 
+                new KeyValuePair<string, string>("line", "mp_restartgame 1")
+            });
+            var response = await _httpClient.PostAsync($"game-servers/{serverID}/console", req);
+            using (HttpContent content = response.Content)
+            {
+                Console.WriteLine(response.Content.ReadAsStringAsync());
             }
         }
     }

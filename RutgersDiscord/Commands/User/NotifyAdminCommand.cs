@@ -39,7 +39,7 @@ namespace RutgersDiscord.Commands.User
             match.AdminCalled = true;
             await _database.UpdateMatchAsync(match)*/;
             await chnl.SendMessageAsync("**Admin required** " + $"<@&{adminroleid}>" + "\n" + "Requested by: " + _context.User.Mention + $" in <#{_context.Channel.Id}>.");
-            await _context.Interaction.RespondAsync("Admins have been notified.", ephemeral: true);
+            await _context.Interaction.RespondAsync("Admins have been notified.");
             //TODO add button to resolve instead of command
         }
 

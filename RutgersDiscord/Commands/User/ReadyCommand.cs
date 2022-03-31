@@ -131,6 +131,15 @@ namespace RutgersDiscord.Commands
                         PlayerInfo aP1 = await _database.GetPlayerAsync((long)awayTeam.Player1);
                         PlayerInfo aP2 = await _database.GetPlayerAsync((long)awayTeam.Player2);
                         MapInfo map = await _database.GetMapAsync((int)match.MapID);
+
+                        //Ping for grassetto
+                        if (map.MapID == 2)
+                        {
+                            ulong adminChannel = _config.settings.DiscordSettings.Channels.SCAdmin;
+                            var chnl = _client.GetChannel(adminChannel) as IMessageChannel;
+                            await chnl.SendMessageAsync($"Grassetto is being played in <#{_context.Channel.Id}>\nuse /grass-restart if players get stuck.");
+                        }
+
 #if DEBUG
                         string webHook = "";
 #else
@@ -143,20 +152,27 @@ namespace RutgersDiscord.Commands
                         long opID = (long) _config.settings.DiscordSettings.Users.Op7day;
                         long kenID = (long) _config.settings.DiscordSettings.Users.Guihori;
                         //Add admins as spectator if not in the game
-                        /*if (hP1.DiscordID != galID && hP2.DiscordID != galID && aP1.DiscordID != galID && aP2.DiscordID != galID)
+                        try
                         {
-                            ms.spectator_steam_ids += (await _database.GetPlayerAsync(galID)).SteamID + ",";
-                        }
+                            if (hP1.DiscordID != galID && hP2.DiscordID != galID && aP1.DiscordID != galID && aP2.DiscordID != galID)
+                            {
+                                ms.spectator_steam_ids += (await _database.GetPlayerAsync(galID)).SteamID + ",";
+                            }
 
-                        if (hP1.DiscordID != opID && hP2.DiscordID != opID && aP1.DiscordID != opID && aP2.DiscordID != opID)
-                        {
-                            ms.spectator_steam_ids += (await _database.GetPlayerAsync(opID)).SteamID + ",";
-                        }
+                            if (hP1.DiscordID != opID && hP2.DiscordID != opID && aP1.DiscordID != opID && aP2.DiscordID != opID)
+                            {
+                                ms.spectator_steam_ids += (await _database.GetPlayerAsync(opID)).SteamID + ",";
+                            }
 
-                        if (hP1.DiscordID != kenID && hP2.DiscordID != kenID && aP1.DiscordID != kenID && aP2.DiscordID != kenID)
+                            if (hP1.DiscordID != kenID && hP2.DiscordID != kenID && aP1.DiscordID != kenID && aP2.DiscordID != kenID)
+                            {
+                                ms.spectator_steam_ids += (await _database.GetPlayerAsync(kenID)).SteamID + ",";
+                            }
+                        }
+                        catch (Exception ex)
                         {
-                            ms.spectator_steam_ids += (await _database.GetPlayerAsync(kenID)).SteamID + ",";
-                        }*/
+                            Console.WriteLine("Adding Spectators Failed");
+                        }
 
                         var st = await _datHostAPIHandler.CreateMatch(ms);
                         PreGameJson preGameJson = JsonConvert.DeserializeObject<PreGameJson>(st);
