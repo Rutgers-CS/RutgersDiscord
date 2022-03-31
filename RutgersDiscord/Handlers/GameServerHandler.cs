@@ -144,34 +144,25 @@ namespace RutgersDiscord.Handlers
             await _database.UpdateMatchAsync(cmatch);
 
             //Fetch Demo
-            new Task(async () =>
-            {
-                Console.WriteLine("Waiting For Demo");
-                //wait 3 min for match to finish processing
-                System.Threading.Thread.Sleep(180000);
-                Console.WriteLine("Downloading Demo");
-                await _datHostAPIHandler.GetDemo(serverid, matchid);
-            }).Start();
+            Console.WriteLine("Waiting For Demo");
+            //wait 3 min for match to finish processing
+            System.Threading.Thread.Sleep(180000);
+            Console.WriteLine("Downloading Demo");
+            await _datHostAPIHandler.GetDemo(serverid, matchid);
 
-            //Delete the server in 5 mins
-            new Task(async () =>
+            //Delete server
+            await _datHostAPIHandler.DeleteServer(serverid);
+            try
             {
-                //5 min
-                System.Threading.Thread.Sleep(300000);
-                await _datHostAPIHandler.DeleteServer(serverid);
-                try
-                {
-                    var token = await _database.GetTokenByServerID(serverid);
-                    token.ServerID = null;
-                    await _database.UpdateToken(token);
-                }
-                catch (Exception ex)
-                {
+                var token = await _database.GetTokenByServerID(serverid);
+                token.ServerID = null;
+                await _database.UpdateToken(token);
+            }
+            catch (Exception ex)
+            {
 
-                    Console.WriteLine("Token unallocate failed\n" + ex);
-                }
-            }).Start();
-            
+                Console.WriteLine("Token unallocate failed\n" + ex);
+            }
         }
 
         public class Team1Stats

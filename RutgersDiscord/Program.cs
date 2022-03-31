@@ -34,7 +34,7 @@ namespace RutgersDiscord
             _client = new DiscordSocketClient(config);
             _client.Log += Log;
             _interaction = new InteractionService(_client.Rest);
-            _config = new ConfigHandler();
+            _config = new ConfigHandler(_client);
             _services = new ServiceCollection()
                 .AddSingleton(_client)
                 .AddSingleton(_interaction)

@@ -103,7 +103,7 @@ namespace RutgersDiscord.Modules
         [SlashCommand("reschedule", "Requests a reschedule")]
         public async Task Resched(int month, int day, int hour, int min)
         {
-            RescheduleCommand rc = new RescheduleCommand(_client, Context, _database, _interactivity,_schedule);
+            RescheduleCommand rc = new RescheduleCommand(_client, Context, _database, _interactivity,_schedule,_config);
             DateTime t = new DateTime(DateTime.Now.Year, month, day, hour, min, 0);
             await rc.RescheduleMatch(t);
         }
