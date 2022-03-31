@@ -8,12 +8,13 @@
         "DiscordSettings": {
 			"BotToken": "",
 			"Guild": "",
-			"Channels": {
-				"Announcements": "",
-				"SCGeneral": "",
-				"SCAnnouncements": "",
-				"SCAdmin": ""
-			},
+					"Channels": {
+						"Logs":  "",
+						"Announcements": "",
+						"SCGeneral": "",
+						"SCAnnouncements": "",
+						"SCAdmin": ""
+					},
 			"ChannelCategories": {
 				"MatchesCategory": ""
 			},

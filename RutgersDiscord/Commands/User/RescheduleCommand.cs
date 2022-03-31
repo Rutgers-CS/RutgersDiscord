@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.Interactions;
+using Discord.Rest;
 using Discord.WebSocket;
 using FluentScheduler;
 using Interactivity;
@@ -20,14 +21,16 @@ namespace RutgersDiscord.Commands.User
         private readonly DatabaseHandler _database;
         private readonly InteractivityService _interactivity;
         private readonly ScheduleHandler _schedule;
+        private readonly ConfigHandler _config;
 
-        public RescheduleCommand(DiscordSocketClient client, SocketInteractionContext context, DatabaseHandler database, InteractivityService interactivity, ScheduleHandler schedule)
+        public RescheduleCommand(DiscordSocketClient client, SocketInteractionContext context, DatabaseHandler database, InteractivityService interactivity, ScheduleHandler schedule, ConfigHandler config)
         {
             _client = client;
             _context = context;
             _database = database;
             _interactivity = interactivity;
             _schedule = schedule;
+            _config = config;
         }
 
         public async Task RescheduleMatch(DateTime date)
@@ -37,6 +40,7 @@ namespace RutgersDiscord.Commands.User
             MatchInfo match = (await _database.GetMatchByAttribute(discordChannel: (long?)_context.Channel.Id)).FirstOrDefault();
             if (match == null)
             {
+                await _config.LogAsync("Reschedule Command", "Status: `failed` \nReason: `match not found`",_context.User.Id,_context.Channel.Id);
                 await _context.Interaction.RespondAsync("Match not found", ephemeral: true);
                 return;
             }
@@ -44,15 +48,22 @@ namespace RutgersDiscord.Commands.User
             TeamInfo team = await _database.GetTeamByDiscordIDAsync((long)_context.Interaction.User.Id, true);
             if (team == null)
             {
+                //Log
+                await _config.LogAsync("Reschedule Command", "Status: `failed` \nReason: `user not found`", _context.User.Id, _context.Channel.Id);
                 await _context.Interaction.RespondAsync("User not captain of a team", ephemeral: true);
                 return;
             }
 
             if (date < DateTime.Now)
             {
+                //Log
+                await _config.LogAsync("Reschedule Command", "Status: `failed` \nReason: `wrong time input`", _context.User.Id, _context.Channel.Id);
                 await _context.Interaction.RespondAsync("Match cannot be rescheduled for past time", ephemeral: true);
                 return;
             }
+
+            //Log
+            await _config.LogAsync("Reschedule Command", "Status: `In progress` \nDescription: `awaiting opponent response`", _context.User.Id, _context.Channel.Id);
 
             DateTime discordEpoch = new DateTime(1970, 1, 1);
             double originalDateSpan = (new DateTime((long)match.MatchTime).ToUniversalTime() - discordEpoch).TotalSeconds;
@@ -84,25 +95,30 @@ namespace RutgersDiscord.Commands.User
                 .AddField("Proposed Time", $"<t:{dateSpan}:f>");
 
             await _context.Interaction.RespondAsync($"<@{teamOpponent.Player1}>", embed: embed.Build(), components: component.Build());
+            var reply = (await _context.Interaction.GetOriginalResponseAsync()) as RestUserMessage;
 
             var response = await _interactivity.NextInteractionAsync(
                 s => (s.User.Id == (ulong)teamOpponent.Player1
                 && ((SocketMessageComponent)s).Data.CustomId.StartsWith($"reschedule_{match.MatchID}_{commandID}")),
                 timeout:TimeSpan.FromHours(12));
 
+            //Log
+            await _config.LogAsync("Reschedule Command", $"Status: `In progress` \nDescription: `response received`", _context.User.Id, _context.Channel.Id);
+
             ComponentBuilder componentEmpty = new ComponentBuilder();
-            await _context.Interaction.ModifyOriginalResponseAsync(m => m.Components = componentEmpty.Build());
+
+            await reply.ModifyAsync(m => m.Components = componentEmpty.Build());
 
             if (response.IsTimeouted)
             {
-                await _context.Interaction.ModifyOriginalResponseAsync(m => m.Embed = embed.WithColor(Constants.EmbedColors.reject).Build());
+                await reply.ModifyAsync(m => m.Embed = embed.WithColor(Constants.EmbedColors.reject).Build());
                 await _context.Channel.SendMessageAsync("Request timed out");
                 return;
             }
 
             if (((SocketMessageComponent)response.Value).Data.CustomId == $"reschedule_{match.MatchID}_{commandID}_reject")
             {
-                await _context.Interaction.ModifyOriginalResponseAsync(m => m.Embed = embed.WithColor(Constants.EmbedColors.reject).Build());
+                await reply.ModifyAsync(m => m.Embed = embed.WithColor(Constants.EmbedColors.reject).Build());
                 EmbedBuilder embedFollowup = new EmbedBuilder()
                     .WithColor(Constants.EmbedColors.reject)
                     .WithTitle("Reschedule Rejected");
@@ -110,7 +126,7 @@ namespace RutgersDiscord.Commands.User
             }
             else if(((SocketMessageComponent)response.Value).Data.CustomId == $"reschedule_{match.MatchID}_{commandID}_accept")
             {
-                await _context.Interaction.ModifyOriginalResponseAsync(m => m.Embed = embed.WithColor(Constants.EmbedColors.accept).Build());
+                await reply.ModifyAsync(m => m.Embed = embed.WithColor(Constants.EmbedColors.accept).Build());
                 match.MatchTime = date.Ticks;
                 await _database.UpdateMatchAsync(match);
 
@@ -148,6 +164,9 @@ namespace RutgersDiscord.Commands.User
                     }
                 }
             }
+
+            //Log
+            await _config.LogAsync("Reschedule Command", $"Status: `Finished`", _context.User.Id, _context.Channel.Id);
         }
     }
 }
