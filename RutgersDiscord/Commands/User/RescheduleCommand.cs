@@ -100,7 +100,7 @@ namespace RutgersDiscord.Commands.User
             var response = await _interactivity.NextInteractionAsync(
                 s => (s.User.Id == (ulong)teamOpponent.Player1
                 && ((SocketMessageComponent)s).Data.CustomId.StartsWith($"reschedule_{match.MatchID}_{commandID}")),
-                timeout:TimeSpan.FromHours(12));
+                timeout:TimeSpan.FromHours(24));
 
             //Log
             await _config.LogAsync("Reschedule Command", $"Status: `In progress` \nDescription: `response received`", _context.User.Id, _context.Channel.Id);

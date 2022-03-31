@@ -659,7 +659,7 @@ namespace RutgersDiscord.Handlers
 
         public async Task<ServerTokens> GetTokenByServerID(string serverID)
         {
-            string query = $"SELECT * FROM {tokenTable} WHERE ServerID = {serverID}";
+            string query = $"SELECT * FROM {tokenTable} WHERE ServerID = \"{serverID}\"";
             query = SanitizeString(query);
             try
             {
