@@ -107,5 +107,13 @@ namespace RutgersDiscord.Modules
             DateTime t = new DateTime(DateTime.Now.Year, month, day, hour, min, 0);
             await rc.RescheduleMatch(t);
         }
+
+        [SlashCommand("match-schedule", "Shows the games remaining in this round")]
+        public async Task ScheduleCommnd()
+        {
+            MatchSchedule ms = new(_client, Context, _database, _interactivity);
+            await ms.GetMatchSchedule(false);
+
+        }
     }
 }
