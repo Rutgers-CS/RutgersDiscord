@@ -179,8 +179,8 @@ namespace RutgersDiscord.Commands
                         await _context.Channel.SendMessageAsync($"Paste `connect {newServer.IP}:{newServer.Port}` in console to connect.");
 
                         //Send gotv in scgeneral
-                        ulong scgen = _config.settings.DiscordSettings.Channels.SCGeneral;
-                        var scgenChan = _client.GetChannel(scgen) as IMessageChannel;
+                        ulong scmatches = _config.settings.DiscordSettings.Channels.SCMatches;
+                        var scgenChan = _client.GetChannel(scmatches) as IMessageChannel;
                         string msg = $"{homeTeam.TeamName} vs {awayTeam.TeamName} is live now!\nConnect to GOTV: `connect {newServer.IP}:{newServer.Port+1}`";
                         _interactivity.DelayedSendMessageAndDeleteAsync(scgenChan, deleteDelay: TimeSpan.FromMinutes(30), text: msg);
 

@@ -114,7 +114,7 @@ namespace RutgersDiscord.Commands.User
                             .WithTitle("Highest KD")  //"Scarlet Classic's Statistical Leaders"
                             .WithColor(new Color(102, 0, 0))
                             .WithFooter("Rutgers CS:GO")
-                            .AddField("Scarlet Classic's Statistical Leaders", $"{kds}", true));   //"Highest KD"
+                            .AddField("Scarlet Classic's Leaders", $"{kds}", true));   //"Highest KD"
                         choicelist.RemoveRange(0, Math.Min(10, choicelist.Count));
                     }
                 }
@@ -127,7 +127,7 @@ namespace RutgersDiscord.Commands.User
                             .WithTitle("Highest KD")
                             .WithColor(new Color(102, 0, 0))
                             .WithFooter("Rutgers CS:GO")
-                            .AddField("Scarlet Classic's Statistical Leaders", $"{kds}", true));
+                            .AddField("Scarlet Classic's Leaders", $"{kds}", true));
                         choicelist.RemoveRange(0, Math.Min(10, choicelist.Count));
                     }
                 }
@@ -145,7 +145,7 @@ namespace RutgersDiscord.Commands.User
                             .WithTitle("Most Kills")
                             .WithColor(new Color(102, 0, 0))
                             .WithFooter("Rutgers CS:GO")
-                            .AddField("Scarlet Classic's Statistical Leaders", $"{kills}", true));
+                            .AddField("Scarlet Classic's Leaders", $"{kills}", true));
                         choicelist.RemoveRange(0, Math.Min(10, choicelist.Count));
                     }
                 }
@@ -158,7 +158,7 @@ namespace RutgersDiscord.Commands.User
                             .WithTitle("Most Kills")
                             .WithColor(new Color(102, 0, 0))
                             .WithFooter("Rutgers CS:GO")
-                            .AddField("Scarlet Classic's Statistical Leaders", $"{kills}", true));
+                            .AddField("Scarlet Classic's Leaders", $"{kills}", true));
                         choicelist.RemoveRange(0, Math.Min(10, choicelist.Count));
                     }
                 }
@@ -176,7 +176,7 @@ namespace RutgersDiscord.Commands.User
                             .WithTitle("Most Deaths")
                             .WithColor(new Color(102, 0, 0))
                             .WithFooter("Rutgers CS:GO")
-                            .AddField("Scarlet Classic's Statistical Leaders", $"{deaths}", true));
+                            .AddField("Scarlet Classic's Leaders", $"{deaths}", true));
                         choicelist.RemoveRange(0, Math.Min(10, choicelist.Count));
                     }
                 }
@@ -189,7 +189,7 @@ namespace RutgersDiscord.Commands.User
                             .WithTitle("Most Deaths")
                             .WithColor(new Color(102, 0, 0))
                             .WithFooter("Rutgers CS:GO")
-                            .AddField("Scarlet Classic's Statistical Leaders", $"{deaths}", true));
+                            .AddField("Scarlet Classic's Leaders", $"{deaths}", true));
                         choicelist.RemoveRange(0, Math.Min(10, choicelist.Count));
                     }
                 }
@@ -209,7 +209,7 @@ namespace RutgersDiscord.Commands.User
                         deaths = string.Join("\r\n", deathslist.Take(10));
                         kds = string.Join("\r\n", kdslist.Take(10));
                         pages.Add(new PageBuilder()
-                            .WithTitle("Scarlet Classic's Statistical Leaders")
+                            .WithTitle("Scarlet Classic's Leaders")
                             .WithColor(new Color(102, 0, 0))
                             .WithFooter("Rutgers CS:GO")
                             .AddField("Most Kills", $"{kills}", true)
@@ -228,7 +228,7 @@ namespace RutgersDiscord.Commands.User
                         deaths = string.Join("\r\n", deathslist.Take(10));
                         kds = string.Join("\r\n", kdslist.Take(10));
                         pages.Add(new PageBuilder()
-                            .WithTitle("Scarlet Classic's Statistical Leaders")
+                            .WithTitle("Scarlet Classic's Leaders")
                             .WithColor(new Color(102, 0, 0))
                             .WithFooter("Rutgers CS:GO")
                             .AddField("Most Kills", $"{kills}", true)
@@ -252,7 +252,7 @@ namespace RutgersDiscord.Commands.User
                             .WithTitle("Highest KD")
                             .WithColor(new Color(102, 0, 0))
                             .WithFooter("Rutgers CS:GO")
-                            .AddField("Scarlet Classic's Statistical Leaders", $"{choicelist}", true));
+                            .AddField("Scarlet Classic's Leaders", $"{choicelist}", true));
                         choicelist.RemoveRange(0, Math.Min(10, choicelist.Count));
                     }
                 }
@@ -265,7 +265,7 @@ namespace RutgersDiscord.Commands.User
                             .WithTitle("Highest KD")
                             .WithColor(new Color(102, 0, 0))
                             .WithFooter("Rutgers CS:GO")
-                            .AddField("Scarlet Classic's Statistical Leaders", $"{choicelist}", true));
+                            .AddField("Scarlet Classic's Leaders", $"{choicelist}", true));
                         choicelist.RemoveRange(0, Math.Min(10, choicelist.Count));
                     }
                 }
