@@ -21,29 +21,6 @@ namespace RutgersDiscord.Handlers
 
         const string databaseName = "Data Source=database.db";
 
-        public async Task AddTestData()
-        {
-            PlayerInfo august = new PlayerInfo(222897049899630592, 76561198049694740, "STEAM_1:0:44714506", "August", 1, null, null);
-            PlayerInfo kenji = new PlayerInfo(164803512633524225, 76561198064565542, "STEAM_1:0:52149907", "Kenji", 1, null, null);
-            PlayerInfo gal = new PlayerInfo(171431827746193410, 76561198143013155, "STEAM_1:1:91373713", "Galifi", 2, null, null);
-            PlayerInfo park = new PlayerInfo(953059699627012142, 76561198405017903, "STEAM_1:1:222376087", "Andrew", 2, null, null);
-
-            TeamInfo team1 = new TeamInfo(1, "Team1", 222897049899630592, 164803512633524225, 0, 0);
-            TeamInfo team2 = new TeamInfo(2, "Team2", 171431827746193410, 953059699627012142, 0, 0);
-
-            //MatchInfo match = new MatchInfo(0, 1, 2, null, null,null, false, null, null);
-
-            await AddPlayerAsync(august);
-            await AddPlayerAsync(kenji);
-            await AddPlayerAsync(gal);
-            await AddPlayerAsync(park);
-
-            await AddTeamAsync(team1);
-            await AddTeamAsync(team2);
-
-            //await AddMatchAsync(match);
-        }
-
         public async Task<string> BackupDatabase()
         {
             string timestamp = DateTime.Now.ToString("MM-dd-HH-mm-ss");
