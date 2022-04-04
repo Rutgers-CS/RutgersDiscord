@@ -82,6 +82,7 @@ namespace RutgersDiscord.Handlers
         public ulong SCGeneral { get; set; }
         public ulong SCAnnouncements { get; set; }
         public ulong SCAdmin { get; set; }
+        public ulong SCMatches { get; set; }
     }
 
     public class ChannelCategory

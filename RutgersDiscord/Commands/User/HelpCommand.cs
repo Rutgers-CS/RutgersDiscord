@@ -38,7 +38,8 @@ namespace RutgersDiscord.Commands.User
 
             string gencommands = "/admin - Calls an admin" + "\r\n\r\n" +
                                  "/leaderboard - Displays the tourney's standings" + "\r\n\r\n" +
-                                 "/stats - Displays the tourney's player stats" + "\r\n\r\n";
+                                 "/stats - Displays the tourney's player stats" + "\r\n\r\n" +
+                                 "/match-schedule - Shows this weeks remaining matches" + "\r\n\r\n";
             string eventcommands = "/ready | /unready - Readies/unreadies for a match" + "\r\n\r\n" +
                                    "/reschedule - Requests to reschedule a match" + "\r\n\r\n";
          // /reschedule  and // /veto ------ only works in match channel, only by team captain
