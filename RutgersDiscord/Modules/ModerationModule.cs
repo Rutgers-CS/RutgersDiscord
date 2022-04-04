@@ -113,7 +113,7 @@ namespace RutgersDiscord.Modules
         [SlashCommand("cm", "Creates a match with string.", runMode: RunMode.Async)]
         public async Task CreateMatchString(string input)
         {
-            string[] inputArr = input.Split("    ");
+            string[] inputArr = input.Split("\t");
             try
             {
                 await CreateMatch(int.Parse(inputArr[0]), int.Parse(inputArr[1]), int.Parse(inputArr[2]), int.Parse(inputArr[3]), int.Parse(inputArr[4]));
