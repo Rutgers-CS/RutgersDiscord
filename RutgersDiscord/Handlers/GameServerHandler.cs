@@ -143,6 +143,22 @@ namespace RutgersDiscord.Handlers
             cmatch.ScoreAway = awayTeam.score;
             await _database.UpdateMatchAsync(cmatch);
 
+            ulong scmatches = _config.settings.DiscordSettings.Channels.SCMatches;
+            var scmatchchannel = _client.GetChannel(scmatches) as IMessageChannel;
+            string homeTeamName = (await _database.GetTeamAsync((int) cmatch.TeamHomeID)).TeamName;
+            string awayTeamName = (await _database.GetTeamAsync((int) cmatch.TeamAwayID)).TeamName;
+            string msg;
+            if ((bool) cmatch.HomeTeamWon)
+            {
+                msg = $"{homeTeamName} has beat {awayTeam} {cmatch.ScoreHome}:{cmatch.ScoreAway}";
+            }
+            else
+            {
+                msg = $"{awayTeamName} has beat {homeTeamName} {cmatch.ScoreAway}:{cmatch.ScoreHome}";
+            }
+            _interactivity.DelayedSendMessageAndDeleteAsync(scmatchchannel, deleteDelay: TimeSpan.FromMinutes(30), text: msg);
+
+
             //Fetch Demo
             Console.WriteLine("Waiting For Demo");
             //wait 3 min for match to finish processing
