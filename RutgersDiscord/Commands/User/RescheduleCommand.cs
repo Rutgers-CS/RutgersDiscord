@@ -86,8 +86,9 @@ namespace RutgersDiscord.Commands.User
             Random r = new();
             int commandID = r.Next();
             ComponentBuilder component = new ComponentBuilder()
-                .WithButton("Accept Reschedule", $"reschedule_{match.MatchID}_{commandID}_accept")
-                .WithButton("Reject Reschedule", $"reschedule_{match.MatchID}_{commandID}_reject");
+                .WithButton("Accept Reschedule", $"reschedule_accept_{date.Ticks}_{teamOpponent.Player1}_{_context.User.Id}",ButtonStyle.Primary)
+                .WithButton("Reject Reschedule", $"reschedule_reject_{date.Ticks}_{teamOpponent.Player1}_{_context.User.Id}",ButtonStyle.Danger)
+                .WithButton("Rescind", $"reschedule_rescind_{date.Ticks}_{_context.User.Id}_{_context.User.Id}",ButtonStyle.Secondary);
             EmbedBuilder embed = new EmbedBuilder()
                 .WithColor(Constants.EmbedColors.active)
                 .WithTitle($"{_context.User.Username} requested a reschedule")
@@ -95,78 +96,24 @@ namespace RutgersDiscord.Commands.User
                 .AddField("Proposed Time", $"<t:{dateSpan}:f>");
 
             await _context.Interaction.RespondAsync($"<@{teamOpponent.Player1}>", embed: embed.Build(), components: component.Build());
-            var reply = (await _context.Interaction.GetOriginalResponseAsync()) as RestUserMessage;
+            RestUserMessage reply = (await _context.Interaction.GetOriginalResponseAsync()) as RestUserMessage;
 
-            var response = await _interactivity.NextInteractionAsync(
-                s => (s.User.Id == (ulong)teamOpponent.Player1
-                && ((SocketMessageComponent)s).Data.CustomId.StartsWith($"reschedule_{match.MatchID}_{commandID}")),
-                timeout:TimeSpan.FromHours(24));
 
-            //Log
-            await _config.LogAsync("Reschedule Command", $"Status: `In progress` \nDescription: `response received`", _context.User.Id, _context.Channel.Id);
-
-            ComponentBuilder componentEmpty = new ComponentBuilder();
-
-            await reply.ModifyAsync(m => m.Components = componentEmpty.Build());
-
-            if (response.IsTimeouted)
+            //Wait 1 day then time out request
+            System.Threading.Thread.Sleep(86400000); //86400000
+            await reply.UpdateAsync();
+            var replyEmbed = reply.Embeds.First().ToEmbedBuilder();
+            if(replyEmbed.Color == Constants.EmbedColors.active)
             {
-                await reply.ModifyAsync(m => m.Embed = embed.WithColor(Constants.EmbedColors.reject).Build());
-                await _context.Channel.SendMessageAsync("Request timed out");
-                return;
-            }
-
-            if (((SocketMessageComponent)response.Value).Data.CustomId == $"reschedule_{match.MatchID}_{commandID}_reject")
-            {
-                await reply.ModifyAsync(m => m.Embed = embed.WithColor(Constants.EmbedColors.reject).Build());
+                await reply.ModifyAsync(m => { m.Components = null; m.Embed = replyEmbed.WithColor(Constants.EmbedColors.reject).Build(); });
                 EmbedBuilder embedFollowup = new EmbedBuilder()
                     .WithColor(Constants.EmbedColors.reject)
-                    .WithTitle("Reschedule Rejected");
-                await _context.Channel.SendMessageAsync(_context.User.Mention, embed: embedFollowup.Build());
+                    .WithTitle("Reschedule timed out");
+                await reply.Channel.SendMessageAsync($"<@{team.Player1}>", embed: embedFollowup.Build());
+
+                //Log
+                await _config.LogAsync("Reschedule Command", $"Status: `failed`\nReason: `timed out`", _context.User.Id, _context.Channel.Id);
             }
-            else if(((SocketMessageComponent)response.Value).Data.CustomId == $"reschedule_{match.MatchID}_{commandID}_accept")
-            {
-                await reply.ModifyAsync(m => m.Embed = embed.WithColor(Constants.EmbedColors.accept).Build());
-                match.MatchTime = date.Ticks;
-                await _database.UpdateMatchAsync(match);
-
-                EmbedBuilder embedFollowup = new EmbedBuilder()
-                    .WithColor(Constants.EmbedColors.accept)
-                    .WithTitle("Reschedule Accepted")
-                    .WithDescription($"New match time\n" +
-                                     $"<t:{dateSpan}:f>");
-                await _context.Channel.SendMessageAsync($"<@{team.Player1}> <@{team.Player2}> <@{teamOpponent.Player1}> <@{teamOpponent.Player2}>", embed: embedFollowup.Build());
-
-                List<long> players = new() { team.Player1, team.Player2, teamOpponent.Player1, teamOpponent.Player2};
-
-                if (date > DateTime.Now.AddMinutes(15))
-                {
-                    var schedule = JobManager.GetSchedule($"[match_15m_{match.MatchID}]");
-                    if (schedule != null)
-                    {
-                        schedule.ToRunOnceAt(date - TimeSpan.FromMinutes(15));
-                    }
-                    else
-                    {
-                        JobManager.AddJob(async () => await _schedule.MentionUsers((ulong)match.DiscordChannel, players,false), s => s.WithName($"[match_15m_{match.MatchID}]").ToRunOnceAt(new DateTime((long)match.MatchTime) - TimeSpan.FromMinutes(15)));
-                    }                
-                }
-                if (date > DateTime.Now.AddDays(1))
-                {
-                    var schedule = JobManager.GetSchedule($"[match_24h_{match.MatchID}]");
-                    if (schedule != null)
-                    {
-                        schedule.ToRunOnceAt(date - TimeSpan.FromDays(1));
-                    }
-                    else
-                    {
-                        JobManager.AddJob(async () => await _schedule.MentionUsers((ulong)match.DiscordChannel, players,true), s => s.WithName($"[match_24h_{match.MatchID}]").ToRunOnceAt(new DateTime((long)match.MatchTime) - TimeSpan.FromDays(1)));
-                    }
-                }
-            }
-
-            //Log
-            await _config.LogAsync("Reschedule Command", $"Status: `Finished`", _context.User.Id, _context.Channel.Id);
         }
     }
 }

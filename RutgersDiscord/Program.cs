@@ -9,6 +9,7 @@ using RutgersDiscord.Handlers;
 using System.Web.Http;
 using System.Net.Http;
 using System.Text;
+using RutgersDiscord.Handlers.CommandHandlers;
 
 namespace RutgersDiscord
 {
@@ -43,6 +44,7 @@ namespace RutgersDiscord
                 .AddSingleton<DatabaseHandler>()
                 .AddSingleton<ScheduleHandler>()
                 .AddSingleton<RegistrationHandler>()
+                .AddSingleton<RescheduleHandler>()
                 .AddSingleton<RESTHandler>()
                 .AddSingleton<GameServerHandler>()
                 .AddHttpClient()
@@ -53,6 +55,7 @@ namespace RutgersDiscord
             await _services.GetRequiredService<InteractionHandler>().InstallAsync();
             await _services.GetRequiredService<ScheduleHandler>().AddRequiredJobsAsync();
             _services.GetRequiredService<RegistrationHandler>().SubscribeHandlers();
+            _services.GetRequiredService<RescheduleHandler>().SubscribeHandlers();
 
             new Task(() => _services.GetRequiredService<RESTHandler>().Listen()).Start();
 
