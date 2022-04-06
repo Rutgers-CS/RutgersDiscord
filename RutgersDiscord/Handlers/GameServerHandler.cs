@@ -145,12 +145,12 @@ namespace RutgersDiscord.Handlers
 
             ulong scmatches = _config.settings.DiscordSettings.Channels.SCMatches;
             var scmatchchannel = _client.GetChannel(scmatches) as IMessageChannel;
-            string homeTeamName = (await _database.GetTeamAsync((int) cmatch.TeamHomeID)).TeamName;
-            string awayTeamName = (await _database.GetTeamAsync((int) cmatch.TeamAwayID)).TeamName;
+            string homeTeamName = result.team1_name;
+            string awayTeamName = result.team2_name;
             string msg;
             if ((bool) cmatch.HomeTeamWon)
             {
-                msg = $"{homeTeamName} has beat {awayTeam} {cmatch.ScoreHome}:{cmatch.ScoreAway}";
+                msg = $"{homeTeamName} has beat {awayTeamName} {cmatch.ScoreHome}:{cmatch.ScoreAway}";
             }
             else
             {
