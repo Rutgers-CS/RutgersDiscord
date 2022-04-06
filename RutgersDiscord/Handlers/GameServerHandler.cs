@@ -156,7 +156,7 @@ namespace RutgersDiscord.Handlers
             {
                 msg = $"{awayTeamName} has beat {homeTeamName} {cmatch.ScoreAway}:{cmatch.ScoreHome}";
             }
-            _interactivity.DelayedSendMessageAndDeleteAsync(scmatchchannel, deleteDelay: TimeSpan.FromMinutes(30), text: msg);
+            await scmatchchannel.SendMessageAsync(msg);
 
 
             //Fetch Demo
