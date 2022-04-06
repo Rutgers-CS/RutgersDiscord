@@ -25,6 +25,7 @@ namespace RutgersDiscord.Handlers
             settings = configuration.GetRequiredSection("Settings").Get<Settings>();
         }
 
+        //TODO: Move Logger somewhere else
         //actionDescription: What was issued
         public async Task LogAsync(string actionDescription, string message, ulong user = 0, ulong channel = 0)
         {
