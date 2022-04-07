@@ -143,20 +143,28 @@ namespace RutgersDiscord.Handlers
             cmatch.ScoreAway = awayTeam.score;
             await _database.UpdateMatchAsync(cmatch);
 
-            ulong scmatches = _config.settings.DiscordSettings.Channels.SCMatches;
-            var scmatchchannel = _client.GetChannel(scmatches) as IMessageChannel;
-            string homeTeamName = result.team1_name;
-            string awayTeamName = result.team2_name;
-            string msg;
-            if ((bool) cmatch.HomeTeamWon)
+            try
             {
-                msg = $"{homeTeamName} has beat {awayTeamName} {cmatch.ScoreHome}:{cmatch.ScoreAway}";
+                ulong scmatches = _config.settings.DiscordSettings.Channels.SCMatches;
+                var scmatchchannel = _client.GetChannel(scmatches) as IMessageChannel;
+                string homeTeamName = result.team1_name;
+                string awayTeamName = result.team2_name;
+                string msg;
+                if ((bool)cmatch.HomeTeamWon)
+                {
+                    msg = $"{homeTeamName} has beat {awayTeamName} {cmatch.ScoreHome}:{cmatch.ScoreAway}";
+                }
+                else
+                {
+                    msg = $"{awayTeamName} has beat {homeTeamName} {cmatch.ScoreAway}:{cmatch.ScoreHome}";
+                }
+                await scmatchchannel.SendMessageAsync(msg);
             }
-            else
+            catch (Exception ex)
             {
-                msg = $"{awayTeamName} has beat {homeTeamName} {cmatch.ScoreAway}:{cmatch.ScoreHome}";
+
+                Console.WriteLine(ex);
             }
-            await scmatchchannel.SendMessageAsync(msg);
 
 
             //Fetch Demo
