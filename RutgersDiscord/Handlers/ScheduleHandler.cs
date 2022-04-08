@@ -33,14 +33,22 @@ public class ScheduleHandler
 			List<long> players = teams.Select(t => t.Player1).ToList();
 			players.AddRange(teams.Select(t => t.Player2));
 
-			if (match.MatchTime > DateTime.Now.AddMinutes(16).Ticks)
+            try
             {
-				JobManager.AddJob(async () => await MentionUsers((ulong)match.DiscordChannel, players, false), s => s.WithName($"[match_15m_{match.MatchID}]").ToRunOnceAt(new DateTime((long)match.MatchTime) - TimeSpan.FromMinutes(15)));
-			}
-			if (match.MatchTime > DateTime.Now.AddDays(1).Ticks)
-			{
-				JobManager.AddJob(async () => await MentionUsers((ulong)match.DiscordChannel, players, true), s => s.WithName($"[match_24h_{match.MatchID}]").ToRunOnceAt(new DateTime((long)match.MatchTime) - TimeSpan.FromDays(1)));
-			}
+                if (match.MatchTime > DateTime.Now.AddMinutes(16).Ticks)
+                {
+                    JobManager.AddJob(async () => await MentionUsers((ulong)match.DiscordChannel, players, false), s => s.WithName($"[match_15m_{match.MatchID}]").ToRunOnceAt(new DateTime((long)match.MatchTime) - TimeSpan.FromMinutes(15)));
+                }
+                if (match.MatchTime > DateTime.Now.AddDays(1).Ticks)
+                {
+                    JobManager.AddJob(async () => await MentionUsers((ulong)match.DiscordChannel, players, true), s => s.WithName($"[match_24h_{match.MatchID}]").ToRunOnceAt(new DateTime((long)match.MatchTime) - TimeSpan.FromDays(1)));
+                }
+            }
+            catch (Exception ex)
+            {
+
+                Console.WriteLine(ex);
+            }
 		}
     }
 
