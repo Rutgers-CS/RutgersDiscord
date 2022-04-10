@@ -51,14 +51,15 @@ namespace RutgersDiscord.Handlers.CommandHandlers
         }
         public async Task RescheduleButtonHandler(SocketMessageComponent interaction)
         {
-            //Data format
-            //Command name, matchID, Response(Accept, Reject, Rescind), Time requested, Required User
-            Data data = new(interaction.Data.CustomId.Split("_"));
 
-            if (data.commandName != "reschedule")
+            if (!interaction.Data.CustomId.StartsWith("reschedule"))
             {
                 return;
             }
+
+            //Data format
+            //Command name, matchID, Response(Accept, Reject, Rescind), Time requested, Required User
+            Data data = new(interaction.Data.CustomId.Split("_"));
 
             MatchInfo match = (await _database.GetMatchByAttribute(discordChannel: (long?)interaction.Channel.Id)).FirstOrDefault();
             if (match == null)
