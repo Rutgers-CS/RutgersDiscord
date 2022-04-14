@@ -418,7 +418,7 @@ namespace RutgersDiscord.Handlers
 
         #region Matches Extra
 
-        public async Task<IEnumerable<MatchInfo>> GetMatchByAttribute(int? teamID1 = null, int? teamID2 = null, int? roundID = null, long? matchTime = null, int? scoreHome = null, int? scoreAway = null, bool? matchFinished = null,bool? homeTeamWon = null, int? mapID = null, long? discordChannel = null, bool? teamHomeReady = null, bool? teamAwayReady = null, string datMatchID = null, string serverID = null)
+        public async Task<IEnumerable<MatchInfo>> GetMatchByAttribute(int? teamID1 = null, int? teamID2 = null, int? seriesID = null, long? matchTime = null, int? scoreHome = null, int? scoreAway = null, bool? matchFinished = null,bool? homeTeamWon = null, int? mapID = null, long? discordChannel = null, bool? teamHomeReady = null, bool? teamAwayReady = null, string datMatchID = null, string serverID = null)
         {
             string filter = "true ";
             if (teamID1 != null)
@@ -429,9 +429,9 @@ namespace RutgersDiscord.Handlers
             {
                 filter += $"AND (TeamHomeID = {teamID2} OR TeamAwayID = {teamID2}) ";
             }
-            if (roundID != null)
+            if (seriesID != null)
             {
-                filter += $"AND RoundID = {roundID} ";
+                filter += $"AND SeriesID = {seriesID} ";
             }
             if (matchTime != null)
             {
