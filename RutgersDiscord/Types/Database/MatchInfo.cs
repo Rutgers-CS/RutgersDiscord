@@ -7,7 +7,7 @@ public class MatchInfo
 {
 	[ExplicitKey]
 	public int MatchID { get; set; }
-	public int? RoundID { get; set; }
+	public int? SeriesID { get; set; }
 	public string DatMatchID { get; set; }
 	public string ServerID { get; set; }
 	public int? TeamHomeID { get; set; }
@@ -26,7 +26,7 @@ public class MatchInfo
 	[ComplexParameterCtor]
 	public MatchInfo(
 		int id = 0,
-		int? roundID = null,
+		int? seriesID = null,
 		string datMatchID = null,
 		string serverID = null,
 		int? teamHomeID = null,
@@ -44,7 +44,7 @@ public class MatchInfo
     {
 		Random r = new();
 		MatchID = r.Next(0, int.MaxValue);
-		RoundID = roundID;
+		SeriesID = seriesID;
 		DatMatchID = datMatchID;
 		ServerID = serverID;
 		TeamHomeID = teamHomeID;
@@ -78,7 +78,7 @@ public class MatchInfo
     {
 		MatchInfo m = new();
         m.MatchID = newMatch.MatchID;
-		m.RoundID = newMatch.RoundID ?? oldMatch.RoundID;
+		m.SeriesID = newMatch.SeriesID ?? oldMatch.SeriesID;
 		m.DatMatchID = newMatch.DatMatchID ?? oldMatch.DatMatchID;
 		m.ServerID = newMatch.ServerID ?? oldMatch.ServerID;
 		m.TeamHomeID = newMatch.TeamHomeID ?? oldMatch.TeamHomeID;
