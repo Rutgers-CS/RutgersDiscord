@@ -50,11 +50,17 @@ public class GenerateMatches
 
 
         //Create match and channel;
-        MatchInfo match = new(0,teamHomeID: teamHomeID,teamAwayID: teamAwayID,matchTime: t.Ticks,matchFinished: false, teamHomeReady: false, teamAwayReady: false );
+        MatchInfo match = new(0,1,teamHomeID: teamHomeID,teamAwayID: teamAwayID,matchTime: t.Ticks,matchFinished: false, teamHomeReady: false, teamAwayReady: false );
         List<PlayerInfo> playerList = await GetUsersFromMatch(match);
         RestTextChannel channel = await CreateMatchChannel(playerList, $"{teamHome.TeamName}_vs_{teamAway.TeamName}");
         match.DiscordChannel = (long?)channel.Id;
         await _database.AddMatchAsync(match);
+
+        for(int i = 2; i <= numMatches; i++)
+        {
+            MatchInfo otherMatch = new(0, i, teamHomeID: teamHomeID, teamAwayID: teamAwayID, matchTime: t.Ticks, matchFinished: false, teamHomeReady: false, teamAwayReady: false);
+            await _database.AddMatchAsync(otherMatch);
+        }
 
         //Create Greeting message
         String greetingMessage = "Welcome ";
