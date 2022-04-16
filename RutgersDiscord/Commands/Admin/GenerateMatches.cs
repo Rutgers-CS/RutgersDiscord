@@ -35,7 +35,7 @@ public class GenerateMatches
         await CreateMatchChannel(await GetUsersFromMatch(await _database.GetMatchAsync(1)),"test");
     }
 
-    public async Task CreateMatch(int teamHomeID, int teamAwayID, DateTime t)
+    public async Task CreateMatch(int teamHomeID, int teamAwayID, DateTime t, int numMatches = 1)
     {
         //test if match exitst
         if ((await _database.GetMatchByAttribute(teamHomeID,teamAwayID,matchFinished: false)).Count() != 0)
@@ -87,6 +87,27 @@ public class GenerateMatches
 
         //Send Message
         await channel.SendMessageAsync(greetingMessage,embed: embed.Build());
+
+        //Warning message for BO3
+        if(numMatches > 1)
+        {
+            EmbedFieldBuilder pickBanDesc1 = new EmbedFieldBuilder()
+                .WithName("Team Home VS.")
+                .WithValue("Ban\n*\nPick\n*\n*\nBan")
+                .WithIsInline(true);
+            EmbedFieldBuilder pickBanDesc2 = new EmbedFieldBuilder()
+                .WithName("Team Away")
+                .WithValue("\nBan\n*\nPick\nBan");
+
+
+
+            EmbedBuilder embedBO3 = new EmbedBuilder()
+                .WithTitle("THIS MATCH IS A BEST OF 3!")
+                .WithDescription("**DO NOT DISCONNECT BETWEEN MATCHES**\nBan Format")
+                .WithFields(new EmbedFieldBuilder[] { pickBanDesc1, pickBanDesc2});
+                
+        }
+
 
         //Add job 
         if (match.MatchTime > DateTime.Now.AddMinutes(16).Ticks)
