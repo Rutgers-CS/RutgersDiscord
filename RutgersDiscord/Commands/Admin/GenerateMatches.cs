@@ -103,7 +103,8 @@ public class GenerateMatches
                 .WithIsInline(true);
             EmbedFieldBuilder pickBanDesc2 = new EmbedFieldBuilder()
                 .WithName("Team Away")
-                .WithValue("\nBan\n*\nPick\n*\nBan");
+                .WithValue("*\nBan\n*\nPick\n*\nBan")
+                .WithIsInline(true);
 
 
 
