@@ -111,7 +111,7 @@ namespace RutgersDiscord.Commands
 
             match = (await _database.GetMatchByAttribute(discordChannel: (long?)_context.Channel.Id)).FirstOrDefault();
 
-            //add back createserver()
+            //TODO Fix to be ienum of matches
             ServerInfo newServer = await _startMatchHandler.CreateMatch(match, _context.Channel.Name);
             if (newServer != null)
             {
