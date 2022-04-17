@@ -58,7 +58,25 @@ public class MatchSeriesSettings
             new KeyValuePair<string, string>("enable_ready", enable_ready.ToString()),
             new KeyValuePair<string, string>("enable_tech_pause", enable_tech_pause.ToString()),
             new KeyValuePair<string, string>("game_server_id", game_server_id),
-            //TODO Finish Values
+            new KeyValuePair<string, string>("map1", map1),
+            new KeyValuePair<string, string>("map1_start_ct", map1_start_ct),
+            new KeyValuePair<string, string>("map2", map2),
+            new KeyValuePair<string, string>("map2_start_ct", map2_start_ct),
+            new KeyValuePair<string, string>("map3", map3),
+            new KeyValuePair<string, string>("map3_start_ct", map3_start_ct),
+            new KeyValuePair<string, string>("match_end_webhook_url", match_end_webhook_url),
+            new KeyValuePair<string, string>("match_series_end_webhook_url", match_series_end_webhook_url),
+            new KeyValuePair<string, string>("message_prefix", message_prefix),
+            new KeyValuePair<string, string>("number_of_maps", number_of_maps.ToString()),
+            new KeyValuePair<string, string>("ready_min_players", ready_min_players.ToString()),
+            new KeyValuePair<string, string>("team1_name", team1_name),
+            new KeyValuePair<string, string>("team1_steam_ids", team1_steam_ids),
+            new KeyValuePair<string, string>("team2_name", team2_name),
+            new KeyValuePair<string, string>("team2_steam_ids", team2_steam_ids),
+            new KeyValuePair<string, string>("wait_for_coaches", wait_for_coaches.ToString()),
+            new KeyValuePair<string, string>("wait_for_gotv_before_nextmap", wait_for_gotv_before_nextmap.ToString()),
+            new KeyValuePair<string, string>("wait_for_spectators", wait_for_spectators.ToString()),
+            new KeyValuePair<string, string>("warmup_time", warmup_time.ToString()),
         });
     }
 }
