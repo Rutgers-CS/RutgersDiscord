@@ -35,7 +35,7 @@ public class GenerateMatches
         await CreateMatchChannel(await GetUsersFromMatch(await _database.GetMatchAsync(1)),"test");
     }
 
-    public async Task CreateMatch(int teamHomeID, int teamAwayID, DateTime t)
+    public async Task CreateMatch(int teamHomeID, int teamAwayID, DateTime t, int numMatches = 1)
     {
         //test if match exitst
         if ((await _database.GetMatchByAttribute(teamHomeID,teamAwayID,matchFinished: false)).Count() != 0)
@@ -50,11 +50,17 @@ public class GenerateMatches
 
 
         //Create match and channel;
-        MatchInfo match = new(0,teamHomeID: teamHomeID,teamAwayID: teamAwayID,matchTime: t.Ticks,matchFinished: false, teamHomeReady: false, teamAwayReady: false );
+        MatchInfo match = new(0,1,teamHomeID: teamHomeID,teamAwayID: teamAwayID,matchTime: t.Ticks,matchFinished: false, teamHomeReady: false, teamAwayReady: false );
         List<PlayerInfo> playerList = await GetUsersFromMatch(match);
         RestTextChannel channel = await CreateMatchChannel(playerList, $"{teamHome.TeamName}_vs_{teamAway.TeamName}");
         match.DiscordChannel = (long?)channel.Id;
         await _database.AddMatchAsync(match);
+
+        for(int i = 2; i <= numMatches; i++)
+        {
+            MatchInfo otherMatch = new(0, i, teamHomeID: teamHomeID, teamAwayID: teamAwayID, matchTime: t.Ticks, matchFinished: false, teamHomeReady: false, teamAwayReady: false,discordChannel: channel.Id.ToString());
+            await _database.AddMatchAsync(otherMatch);
+        }
 
         //Create Greeting message
         String greetingMessage = "Welcome ";
@@ -87,6 +93,30 @@ public class GenerateMatches
 
         //Send Message
         await channel.SendMessageAsync(greetingMessage,embed: embed.Build());
+
+        //Warning message for BO3
+        if(numMatches > 1)
+        {
+            EmbedFieldBuilder pickBanDesc1 = new EmbedFieldBuilder()
+                .WithName("Team Home VS.")
+                .WithValue("Ban\n*\nPick\n*\nBan\n*")
+                .WithIsInline(true);
+            EmbedFieldBuilder pickBanDesc2 = new EmbedFieldBuilder()
+                .WithName("Team Away")
+                .WithValue("*\nBan\n*\nPick\n*\nBan")
+                .WithIsInline(true);
+
+
+
+            EmbedBuilder embedBO3 = new EmbedBuilder()
+                .WithTitle("THIS MATCH IS A BEST OF 3!")
+                .WithDescription("**DO NOT DISCONNECT BETWEEN MATCHES**\nBan Format")
+                .WithFields(new EmbedFieldBuilder[] { pickBanDesc1, pickBanDesc2});
+
+            await channel.SendMessageAsync(embed: embedBO3.Build());
+
+        }
+
 
         //Add job 
         if (match.MatchTime > DateTime.Now.AddMinutes(16).Ticks)
