@@ -80,6 +80,16 @@ namespace RutgersDiscord.Handlers
             }
         }
 
+        public async Task<string> CreateMatchSeries(MatchSeriesSettings mss)
+        {
+            var req = mss.ToForm();
+            var response = await _httpClient.PostAsync("match-series", req);
+            using (HttpContent content = response.Content)
+            {
+                return await response.Content.ReadAsStringAsync();
+            }
+        }
+
         public async Task<string> DeleteServer(string serverID)
         {
             if (serverID == templateServerID) return "Cannot delete template";

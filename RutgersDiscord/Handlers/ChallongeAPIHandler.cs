@@ -39,15 +39,15 @@ namespace RutgersDiscord.Handlers
             }
         }
 
-        //TODO Finish
-        public async Task<string> UpdateScore(string challongeMatchID)
+        //TODO Check
+        public async Task<string> UpdateScore(string challongeMatchID, string score)
         {
             var req = new FormUrlEncodedContent(new[]
             {
-                new KeyValuePair<string, string>(),
+                new KeyValuePair<string, string>("scores_csv", score),
             });
 
-            var response = await _httpClient.PostAsync($"{challongeMatchID}.json", null);
+            var response = await _httpClient.PutAsync($"{challongeMatchID}.json", null);
             using (HttpContent content = response.Content)
             {
                 return await response.Content.ReadAsStringAsync();
