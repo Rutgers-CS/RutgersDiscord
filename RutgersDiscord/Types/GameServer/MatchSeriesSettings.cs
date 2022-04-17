@@ -43,9 +43,41 @@ public class MatchSeriesSettings
     private bool wait_for_spectators { get; set; } = false;
     public int warmup_time { get; set; } = 15;
 
-    public MatchSeriesSettings ()
+    public MatchSeriesSettings(MapInfo map1, MapInfo map2, MapInfo map3, TeamInfo homeTeam, PlayerInfo homeTeamPlayer1, PlayerInfo homeTeamPlayer2, TeamInfo awayTeam, PlayerInfo awayTeamPlayer1, PlayerInfo awayTeamPlayer2, string gameServerID, string webHookURL)
     {
+        game_server_id = gameServerID;
+        match_end_webhook_url = webHookURL;
 
+        //Dirty bad code
+        if (map1.OfficialMap)
+        {
+            this.map1 = map1.OfficialID;
+        }
+        else
+        {
+            this.map1 = $"workshop/{map1.WorkshopID}";
+        }
+        if (map2.OfficialMap)
+        {
+            this.map2 = map1.OfficialID;
+        }
+        else
+        {
+            this.map2 = $"workshop/{map1.WorkshopID}";
+        }
+        if (map3.OfficialMap)
+        {
+            this.map3 = map1.OfficialID;
+        }
+        else
+        {
+            this.map3 = $"workshop/{map1.WorkshopID}";
+        }
+
+        team1_name = homeTeam.TeamName;
+        team1_steam_ids = $"{homeTeamPlayer1.SteamID},{homeTeamPlayer2.SteamID}";
+        team2_name = awayTeam.TeamName;
+        team2_steam_ids = $"{awayTeamPlayer1.SteamID},{awayTeamPlayer2.SteamID}";
     }
 
     public FormUrlEncodedContent ToForm()
