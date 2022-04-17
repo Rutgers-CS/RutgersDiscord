@@ -57,6 +57,8 @@ namespace RutgersDiscord.Handlers
         public Application ApplicationSettings { get; set; }
         public Discord DiscordSettings { get; set; }
         public DatHost DatHostSettings { get; set; }
+
+        public Challonge ChallongeSettings { get; set; }
     }
 
     public class Application
@@ -111,5 +113,12 @@ namespace RutgersDiscord.Handlers
         public string DatHostEmail { get; set; }
         public string DatHostPassword { get; set; }
         public string TemplateServerID { get; set; }
+    }
+
+    public class Challonge
+    {
+        public string ChallongeUsername { get; set; }
+        public string ChallongeAPIKey { get; set; }
+        public string ChallongeTournamentID { get; set; }
     }
 }
