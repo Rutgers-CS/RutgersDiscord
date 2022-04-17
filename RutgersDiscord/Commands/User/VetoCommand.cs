@@ -4,7 +4,6 @@ using Discord.Rest;
 using Discord.WebSocket;
 using Interactivity;
 using RutgersDiscord.Handlers;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -33,24 +32,47 @@ public class VetoCommand
 
     public async Task StartVeto()
     {
+        IEnumerable<MatchInfo> matches = await _database.GetMatchByAttribute(matchFinished: false, discordChannel: (long?)_context.Channel.Id);
+        //Specifies voting order. True for team home, false for team away
+        bool[] voteOrder;
+        //Specifies if its a pick or ban. Pick -> true, Ban -> false
+        bool[] pickBan;
+        if (matches.Count() == 1)
+        {
+            voteOrder = new []{ true, false, true, false, true, false };
+            pickBan = new []{ false, false, false, false, false, false };
+        }
+        else
+        {
+            voteOrder = new [] { true, false, true, false, true, false };
+            pickBan = new [] { false, false, true, true, false, false };
+        }
+        await Veto(voteOrder, pickBan);
+    }
+
+    private async Task Veto(bool[] voteOrder, bool[] pickBan)
+    {
         //Test for captain
         TeamInfo team = await _database.GetTeamByDiscordIDAsync((long)_context.User.Id);
-        if(team.Player1 != (long)_context.User.Id)
+        if (team.Player1 != (long)_context.User.Id)
         {
             await _context.Channel.SendMessageAsync("User is not captain of a team");
             return;
         }
         //Find match
-        MatchInfo match = (await _database.GetMatchByAttribute(teamID1: team.TeamID, matchFinished: false,discordChannel: (long?)_context.Channel.Id)).FirstOrDefault();
+        IEnumerable<MatchInfo> matches = await _database.GetMatchByAttribute(teamID1: team.TeamID, matchFinished: false, discordChannel: (long?)_context.Channel.Id);
+        matches = matches.OrderBy(m => m.SeriesID);
+        //TODO maybe change First to Where(m => m.map == 1).First();
+        MatchInfo match = matches.FirstOrDefault();
 
         //no match found
-        if(match == null)
+        if (match == null)
         {
             await _context.Channel.SendMessageAsync("Match not found");
             return;
         }
         //map is selected
-        if(match.MapID != null)
+        if (match.MapID != null)
         {
             await _context.Channel.SendMessageAsync("Veto was already done");
             return;
@@ -72,15 +94,12 @@ public class VetoCommand
             opponent = teamHome.Player1;
         }
 
-        //TODO send confirmation to captain and create embed
+        //Send confirmation for opponent to start the veto
         ComponentBuilder component = new ComponentBuilder()
                 .WithButton("Start Veto", $"veto_accept_{match.MatchID}");
         EmbedBuilder embed = new EmbedBuilder()
             .WithTitle($"Waiting for {_context.Guild.GetUser((ulong)opponent).Username} to accept");
         RestUserMessage message = await _context.Channel.SendMessageAsync(embed: embed.Build(), components: component.Build());
-
-        //await _context.Interaction.ModifyOriginalResponseAsync(m => m.);
-
         var temp = await _interactivity.NextButtonAsync(u => (long)u.User.Id == opponent
             && ((SocketMessageComponent)u).Data.CustomId == $"veto_accept_{match.MatchID}");
         await temp.Value.DeferAsync();
@@ -90,19 +109,19 @@ public class VetoCommand
         SocketUser captainAway = _context.Guild.GetUser((ulong)teamAway.Player1);
 
         //Clear button from message
-        ComponentBuilder emptyComponent = new ComponentBuilder();
-        await message.ModifyAsync(m => { m.Embed = embed.Build(); m.Components = emptyComponent.Build(); });
+        await message.ModifyAsync(m => { m.Embed = embed.Build(); m.Components = null; });
 
         //Start veto
         List<MapInfo> mapPool = (await _database.GetAllMapsAsync()).ToList();
-        var currentTurn = captainHome;
-        int mapsRemaining = mapPool.Count;
-        bool[] banCaptainHome = new bool[mapPool.Count];
-        bool[] banCaptainAway = new bool[mapPool.Count];
-        while (mapsRemaining > 1)
+        bool?[] banCaptainHome = new bool?[mapPool.Count];
+        bool?[] banCaptainAway = new bool?[mapPool.Count];
+        int[] mapOrder = new int[mapPool.Count];
+        List<MapInfo> mapSelection = new List<MapInfo>();
+        for(int i = 0; i < mapPool.Count - 1; i++)
         {
-            embed = await EmbedHelper(captainHome, teamHome.TeamName, captainAway, teamAway.TeamName, currentTurn, mapPool, banCaptainHome, banCaptainAway);
-            ComponentBuilder dropDownMenu = DropDownMenuHelper(match, mapPool, banCaptainHome, banCaptainAway);
+            SocketUser currentTurn = voteOrder[i] ? captainHome : captainAway;
+            embed = EmbedHelper(teamHome.TeamName, teamAway.TeamName, currentTurn, mapPool, banCaptainHome, banCaptainAway, mapOrder, pickBan[i]);
+            ComponentBuilder dropDownMenu = DropDownMenuHelper(match, mapPool,banCaptainHome,banCaptainAway);
 
             //updates the message
             await message.ModifyAsync(m => { m.Embed = embed.Build(); m.Components = dropDownMenu.Build(); });
@@ -111,70 +130,83 @@ public class VetoCommand
                 && ((SocketMessageComponent)s).Data.CustomId == $"veto_main_{match.MatchID}");
             await reply.Value.DeferAsync();
 
-            int selection = int.Parse(((reply.Value as SocketMessageComponent).Data.Values as String[])[0]);
+            SocketMessageComponentData replyData = (reply.Value as SocketMessageComponent).Data;
+            int selection = int.Parse(replyData.Values.First().Split(" ")[0]);
+            string selectionName = replyData.Values.First().Split(" ")[1];
 
             if (currentTurn == captainHome)
             {
-                banCaptainHome[selection] = true;
+                banCaptainHome[selection] = pickBan[i];
             }
             else
             {
-                banCaptainAway[selection] = true;
+                banCaptainAway[selection] = pickBan[i];
             }
 
-            if (currentTurn == captainHome)
+            if(pickBan[i])
             {
-                currentTurn = captainAway;
+                mapSelection.AddRange(mapPool.Where(s => s.MapName == selectionName));
+                mapOrder[selection] = mapSelection.Count;
             }
-            else
-            {
-                currentTurn = captainHome;
-            }
-
-            mapsRemaining--;
         }
-
-        //Veto Finished
-        string mapName = "";
+        //Add LeftoverMap
         for (int i = 0; i < mapPool.Count; i++)
         {
-            if (!(banCaptainHome[i] || banCaptainAway[i]))
+            if (banCaptainAway[i] == null && banCaptainHome[i] == null)
             {
-                mapName = mapPool[i].MapName;
+                mapSelection.Add(mapPool[i]);
                 break;
             }
         }
 
+
+
+        string embedDescription = "Maps: \n";
+        int count = 1;
+        foreach (var map in mapSelection)
+        {
+            embedDescription += $"{count++}. {map.MapName}\n";
+        }
+
+        //Veto Finished
         EmbedBuilder embedPost = new EmbedBuilder()
             .WithColor(Constants.EmbedColors.reject)
             .WithTitle($"{teamHome.TeamName} VS {teamAway.TeamName}")
-            .WithDescription($"⠀\n Map:\n{mapName}")
-            .WithImageUrl(Constants.ImgurAlbum[mapName]);
+            .WithDescription(embedDescription)
+            .WithImageUrl(Constants.ImgurAlbum[mapSelection.First().MapName]);
+        await message.ModifyAsync(m => { m.Embed = embedPost.Build(); m.Components = null; });
 
 
-        await message.ModifyAsync(m => { m.Embed = embedPost.Build(); m.Components = emptyComponent.Build();});
-        MapInfo map = await _database.GetMapByNameAsync(mapName);
-        match.MapID = map.MapID;
-        await _database.UpdateMatchAsync(match);
+        foreach (var tuple in mapSelection.Zip(matches,(map,match) => (map,match)))
+        {
+            tuple.match.MapID =  tuple.map.MapID;
+            await _database.UpdateMatchAsync(tuple.match);
+        }
     }
-
-
-    private async Task<EmbedBuilder> EmbedHelper(SocketUser captainHome, string homeName, SocketUser captainAway, string awayName, SocketUser currentTurn, List<MapInfo> mapPool, bool[] banCaptainHome, bool[] banCaptainAway)
+    private EmbedBuilder EmbedHelper(string homeName, string awayName, SocketUser currentTurn, List<MapInfo> mapPool, bool?[] banCaptainHome, bool?[] banCaptainAway, int[] mapOrder, bool pickOrBan)
     {
+        string voteMode = pickOrBan ? "PICK" : "BAN";
         EmbedBuilder embed = new EmbedBuilder()
             .WithColor(Constants.EmbedColors.active)
-            .WithDescription($"**{currentTurn.Username}** turn to **BAN**");
+            .WithDescription($"**{currentTurn.Username}** turn to **{voteMode}**");
 
-        string checkmark = ":negative_squared_cross_mark:";
+        string crossmark = ":negative_squared_cross_mark:";
         int count = 0;
         string embedColumn1 = "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n";
         string embedColumn2 = "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n";
         string embedColumn3 = "⠀\n";
         foreach (MapInfo map in mapPool)
         {
-            embedColumn1 += $"{count + 1} - {(banCaptainHome[count] ? checkmark : "")}\n";
+            string homePick = "";
+            string awayPick = "";
+            if (banCaptainHome[count] == true) homePick = GetNumberEmoji(mapOrder[count]);
+            else if (banCaptainHome[count] == false) homePick = crossmark;
+            if (banCaptainAway[count] == true) awayPick = GetNumberEmoji(mapOrder[count]);
+            else if (banCaptainAway[count] == false) awayPick = crossmark;
+
+            embedColumn1 += $"{count + 1} - {homePick}\n";
             embedColumn2 += $"{map.MapName}\n";
-            embedColumn3 += $"{(banCaptainAway[count] ? checkmark : "")}\n";
+            embedColumn3 += $"{awayPick}\n";
             count++;
         }
 
@@ -196,15 +228,15 @@ public class VetoCommand
         return embed;
     }
 
-    private ComponentBuilder DropDownMenuHelper(MatchInfo match, List<MapInfo> mapPool, bool[] banCaptainHome, bool[] banCaptainAway)
+    private ComponentBuilder DropDownMenuHelper(MatchInfo match, List<MapInfo> mapPool,bool?[] teamHomeBan, bool?[] teamAwayBan)
     {
         List<SelectMenuOptionBuilder> s = new List<SelectMenuOptionBuilder>();
         int count = 0;
         foreach (MapInfo map in mapPool)
         {
-            if (!(banCaptainHome[count] || banCaptainAway[count]))
+            if(teamHomeBan[count] == null && teamAwayBan[count] == null)
             {
-                s.Add(new SelectMenuOptionBuilder(label: map.MapName, value: count.ToString()));
+                s.Add(new SelectMenuOptionBuilder(label: map.MapName, value: count.ToString() + " " + map.MapName));
             }
             count++;
         }
@@ -218,5 +250,29 @@ public class VetoCommand
             .WithSelectMenu(selectMenu);
 
         return dropDownMenu;
+    }
+
+    private string GetNumberEmoji(int input)
+    {
+        string output = "";
+        while (input > 0)
+        {
+            int digit = input % 10;
+            input /= 10;
+            switch (digit)
+            {
+                case 0: output = ":zero:" + output; break;
+                case 1: output = ":one:" + output; break;
+                case 2: output = ":two:" + output; break;
+                case 3: output = ":three:" + output; break;
+                case 4: output = ":four:" + output; break;
+                case 5: output = ":five:" + output; break;
+                case 6: output = ":six:" + output; break;
+                case 7: output = ":seven:" + output; break;
+                case 8: output = ":eight:" + output; break;
+                case 9: output = ":nine:" + output; break;
+            }
+        }
+        return output;
     }
 }

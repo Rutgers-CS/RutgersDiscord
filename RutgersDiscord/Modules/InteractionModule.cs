@@ -51,12 +51,12 @@ namespace RutgersDiscord.Modules
         }*/
 
 
-/*        [SlashCommand("veto", "Starts veto process", runMode: RunMode.Async)]
+        [SlashCommand("veto", "Starts veto process", runMode: RunMode.Async)]
         public async Task Veto()
         {
             VetoCommand v = new VetoCommand(_client, Context, _database, _interactivity);
             await v.StartVetoAcknowledge();
-        }*/
+        }
 
         [SlashCommand("ready", "Set your team as ready for the match")]
         public async Task TeamReady()

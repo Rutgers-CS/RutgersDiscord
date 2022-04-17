@@ -37,12 +37,16 @@ namespace RutgersDiscord.Commands
 
         public async Task Ready()
         {
-            MatchInfo match = (await _database.GetMatchByAttribute(discordChannel: (long?)_context.Channel.Id)).FirstOrDefault();
-            if(match == null)
+            IEnumerable<MatchInfo> matches = (await _database.GetMatchByAttribute(discordChannel: (long?)_context.Channel.Id)).OrderBy(m => m.SeriesID);
+
+            if (matches.FirstOrDefault() == null)
             {
                 await _context.Interaction.RespondAsync("Match not found", ephemeral: true);
                 return;
             }
+
+            MatchInfo match = matches.First();
+            
 
             DateTime t = new DateTime().AddTicks((long)match.MatchTime);
             if(t - DateTime.Now > TimeSpan.FromMinutes(15))
