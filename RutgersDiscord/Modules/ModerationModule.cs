@@ -127,6 +127,14 @@ namespace RutgersDiscord.Modules
             }
         }
 
+        [SlashCommand("cm3", "Creates a match with string.", runMode: RunMode.Async)]
+        public async Task CreateMatch3(int teamHomeID, int teamAwayID, int month, int day, int hour)
+        {
+            DateTime t = new DateTime(DateTime.Now.Year, month, day, hour, 0, 0);
+            GenerateMatches g = new(_client, Context, _database, _interactivity, _schedule, _config);
+            await g.CreateMatch(teamHomeID, teamAwayID, t,3);
+        }
+
         #region match management
         [SlashCommand("admin-unready", "Forces teams to unready", runMode: RunMode.Async)]
         public async Task AdminUnready()
