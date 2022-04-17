@@ -58,7 +58,7 @@ public class GenerateMatches
 
         for(int i = 2; i <= numMatches; i++)
         {
-            MatchInfo otherMatch = new(0, i, teamHomeID: teamHomeID, teamAwayID: teamAwayID, matchTime: t.Ticks, matchFinished: false, teamHomeReady: false, teamAwayReady: false);
+            MatchInfo otherMatch = new(0, i, teamHomeID: teamHomeID, teamAwayID: teamAwayID, matchTime: t.Ticks, matchFinished: false, teamHomeReady: false, teamAwayReady: false,discordChannel: channel.Id.ToString());
             await _database.AddMatchAsync(otherMatch);
         }
 
@@ -99,11 +99,11 @@ public class GenerateMatches
         {
             EmbedFieldBuilder pickBanDesc1 = new EmbedFieldBuilder()
                 .WithName("Team Home VS.")
-                .WithValue("Ban\n*\nPick\n*\n*\nBan")
+                .WithValue("Ban\n*\nPick\n*\nBan\n*")
                 .WithIsInline(true);
             EmbedFieldBuilder pickBanDesc2 = new EmbedFieldBuilder()
                 .WithName("Team Away")
-                .WithValue("\nBan\n*\nPick\nBan");
+                .WithValue("\nBan\n*\nPick\n*\nBan");
 
 
 
@@ -111,7 +111,9 @@ public class GenerateMatches
                 .WithTitle("THIS MATCH IS A BEST OF 3!")
                 .WithDescription("**DO NOT DISCONNECT BETWEEN MATCHES**\nBan Format")
                 .WithFields(new EmbedFieldBuilder[] { pickBanDesc1, pickBanDesc2});
-                
+
+            await channel.SendMessageAsync(embed: embedBO3.Build());
+
         }
 
 
