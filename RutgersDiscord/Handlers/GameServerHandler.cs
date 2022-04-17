@@ -35,6 +35,7 @@ namespace RutgersDiscord.Handlers
         public async Task UpdateDatabase(string json)
         {
             Console.WriteLine(json);
+            return;
             MatchEndWebhook result = JsonConvert.DeserializeObject<MatchEndWebhook>(json, new JsonSerializerSettings{NullValueHandling = NullValueHandling.Ignore});
 
             //update match in database
