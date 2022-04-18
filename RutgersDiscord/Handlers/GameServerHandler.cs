@@ -109,6 +109,11 @@ namespace RutgersDiscord.Handlers
             currentAwayTeam.RoundWins += awayTeam.score;
             currentAwayTeam.RoundLosses += homeTeam.score;
 
+            thisMatch.MatchFinished = true;
+            thisMatch.ScoreHome = homeTeam.score;
+            thisMatch.ScoreAway = awayTeam.score;
+            await _database.UpdateMatchAsync(thisMatch);
+
             bool seriesFinished = false;
             if (series)
             {
@@ -173,11 +178,6 @@ namespace RutgersDiscord.Handlers
                     await channel.AddPermissionOverwriteAsync(guild.GetUser((ulong)cplayer.DiscordID), new OverwritePermissions(sendMessages: PermValue.Deny));
                 }
             }
-
-            thisMatch.MatchFinished = true;
-            thisMatch.ScoreHome = homeTeam.score;
-            thisMatch.ScoreAway = awayTeam.score;
-            await _database.UpdateMatchAsync(thisMatch);
 
             //Fetch Demo
             Console.WriteLine("Waiting For Demo");

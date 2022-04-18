@@ -44,10 +44,10 @@ namespace RutgersDiscord.Handlers
         {
             var req = new FormUrlEncodedContent(new[]
             {
-                new KeyValuePair<string, string>("scores_csv", score),
+                new KeyValuePair<string, string>("match[scores_csv]", score),
             });
 
-            var response = await _httpClient.PutAsync($"{challongeMatchID}.json", null);
+            var response = await _httpClient.PutAsync($"{challongeMatchID}.json", req);
             using (HttpContent content = response.Content)
             {
                 return await response.Content.ReadAsStringAsync();

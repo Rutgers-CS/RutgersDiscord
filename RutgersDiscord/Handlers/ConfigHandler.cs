@@ -57,7 +57,6 @@ namespace RutgersDiscord.Handlers
         public Application ApplicationSettings { get; set; }
         public Discord DiscordSettings { get; set; }
         public DatHost DatHostSettings { get; set; }
-
         public Challonge ChallongeSettings { get; set; }
     }
 
