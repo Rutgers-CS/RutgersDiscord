@@ -59,7 +59,7 @@ public class MatchSeriesSettings
         }
         if (map2.OfficialMap)
         {
-            this.map2 = map1.OfficialID;
+            this.map2 = map2.OfficialID;
         }
         else
         {
@@ -67,7 +67,7 @@ public class MatchSeriesSettings
         }
         if (map3.OfficialMap)
         {
-            this.map3 = map1.OfficialID;
+            this.map3 = map3.OfficialID;
         }
         else
         {

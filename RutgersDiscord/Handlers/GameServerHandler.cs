@@ -35,59 +35,26 @@ namespace RutgersDiscord.Handlers
         public async Task UpdateDatabase(string json)
         {
             Console.WriteLine(json);
-            return;
-            if (json.Contains("match_series_id"))
-            {
-                //BO3
-                //SeriesMatchEndWebhook result = JsonConvert.DeserializeObject<SeriesMatchEndWebhook>(json, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
-                //string matchID = result.id;
-                //string serverID = result.game_server_id;
-
-                //TODO Fix this
-                //MatchInfo firstMatch = 
-            }
-            else
-            {
-                //BO1
-            }
+            bool series = json.Contains("match_series_id");
             MatchEndWebhook result = JsonConvert.DeserializeObject<MatchEndWebhook>(json, new JsonSerializerSettings{NullValueHandling = NullValueHandling.Ignore});
 
-            //update match in database
-            string matchid = result.id;
-            string serverid = result.game_server_id;
-            
-            MatchInfo cmatch = (await _database.GetMatchByAttribute(datMatchID: matchid)).First();
-            /*            cmatch.DatMatchID = matchid;
-                        cmatch.ServerID = serverid;
-                        await _database.UpdateMatchAsync(cmatch);*/
-
-            //Get Channel
+            MatchInfo thisMatch = (await _database.GetMatchByAttribute(datMatchID: result.id)).First();
             SocketGuild guild = _client.GetGuild(_config.settings.DiscordSettings.Guild);
-            SocketTextChannel channel = guild.GetTextChannel((ulong)cmatch.DiscordChannel);
+            SocketTextChannel channel = guild.GetTextChannel((ulong)thisMatch.DiscordChannel);
 
-            //Match canceled
+
             if (result.cancel_reason != null)
             {
                 string canceled = result.cancel_reason;
-                if (canceled.StartsWith("MISSING_PLAYERS:"))
-                {
-                    string[] canceledPlayers = canceled.Replace("MISSING_PLAYERS:", "").Split(',');
-                    foreach (var s in canceledPlayers)
-                    {
-                        var player = (await _database.GetPlayerByAttribute(steamID: s)).First().DiscordID;
-                        canceled += $"<@{player}> ";
-                    }
-                    canceled += "failed to connect.";
-                }
-                
-                await channel.SendMessageAsync($"Match cancelled with reason: `{canceled}`");
-                await _datHostAPIHandler.DeleteServer(serverid);
 
-                cmatch.DatMatchID = null;
-                cmatch.ServerID = null;
-                cmatch.TeamAwayReady = false;
-                cmatch.TeamHomeReady = false;
-                await _database.UpdateMatchAsync(cmatch);
+                await channel.SendMessageAsync($"Match cancelled with reason: `{canceled}`");
+                await _datHostAPIHandler.DeleteServer(result.game_server_id);
+
+                thisMatch.DatMatchID = null;
+                thisMatch.ServerID = null;
+                thisMatch.TeamAwayReady = false;
+                thisMatch.TeamHomeReady = false;
+                await _database.UpdateMatchAsync(thisMatch);
 
                 await channel.SendMessageAsync("Both teams need to ready again to start the match.");
                 return;
@@ -96,30 +63,44 @@ namespace RutgersDiscord.Handlers
             MatchTeam1Stats homeTeam = result.team1_stats;
             MatchTeam2Stats awayTeam = result.team2_stats;
 
-            var currentHomeTeam = (await _database.GetTeamByAttribute(cmatch.TeamHomeID)).First();
+            var currentHomeTeam = (await _database.GetTeamByAttribute(thisMatch.TeamHomeID)).First();
             if (currentHomeTeam.Wins == null) currentHomeTeam.Wins = 0;
             if (currentHomeTeam.Losses == null) currentHomeTeam.Losses = 0;
             if (currentHomeTeam.RoundWins == null) currentHomeTeam.RoundWins = 0;
             if (currentHomeTeam.RoundLosses == null) currentHomeTeam.RoundLosses = 0;
-            
-            var currentAwayTeam = (await _database.GetTeamByAttribute(cmatch.TeamAwayID)).First();
+
+            var currentAwayTeam = (await _database.GetTeamByAttribute(thisMatch.TeamAwayID)).First();
             if (currentAwayTeam.Wins == null) currentAwayTeam.Wins = 0;
             if (currentAwayTeam.Losses == null) currentAwayTeam.Losses = 0;
             if (currentAwayTeam.RoundWins == null) currentAwayTeam.RoundWins = 0;
             if (currentAwayTeam.RoundLosses == null) currentAwayTeam.RoundLosses = 0;
 
-            //update team in database
-            if (homeTeam.score > awayTeam.score)
+            if (series)
             {
-                currentHomeTeam.Wins += 1;
-                currentAwayTeam.Losses += 1;
-                cmatch.HomeTeamWon = true;
+                if (homeTeam.score > awayTeam.score)
+                {
+                    thisMatch.HomeTeamWon = true;
+                }
+                else
+                {
+                    thisMatch.HomeTeamWon = false;
+                }
             }
             else
             {
-                currentHomeTeam.Losses += 1;
-                currentAwayTeam.Wins += 1;
-                cmatch.HomeTeamWon = false;
+                //update team in database
+                if (homeTeam.score > awayTeam.score)
+                {
+                    currentHomeTeam.Wins += 1;
+                    currentAwayTeam.Losses += 1;
+                    thisMatch.HomeTeamWon = true;
+                }
+                else
+                {
+                    currentHomeTeam.Losses += 1;
+                    currentAwayTeam.Wins += 1;
+                    thisMatch.HomeTeamWon = false;
+                }
             }
 
             currentHomeTeam.RoundWins += homeTeam.score;
@@ -128,11 +109,50 @@ namespace RutgersDiscord.Handlers
             currentAwayTeam.RoundWins += awayTeam.score;
             currentAwayTeam.RoundLosses += homeTeam.score;
 
-            Console.WriteLine(currentHomeTeam);
+            bool seriesFinished = false;
+            if (series)
+            {
+                IEnumerable<MatchInfo> matches = await _database.GetMatchByAttribute(discordChannel: thisMatch.DiscordChannel);
+                int homeMapWins = 0;
+                int awayMapWins = 0;
+                foreach (MatchInfo match in matches)
+                {
+                    if (match.MatchFinished == true)
+                    {
+                        if (match.HomeTeamWon == true)
+                        {
+                            homeMapWins++;
+                        }
+                        else
+                        {
+                            awayMapWins++;
+                        }
+                    }
+                }
+
+                ulong scmatches = _config.settings.DiscordSettings.Channels.SCMatches;
+                var scmatchchannel = _client.GetChannel(scmatches) as IMessageChannel;
+                string homeTeamName = result.team1_name;
+                string awayTeamName = result.team2_name;
+
+                if (homeMapWins == 2)
+                {
+                    currentHomeTeam.Wins += 1;
+                    currentAwayTeam.Losses += 1;
+                    await scmatchchannel.SendMessageAsync($"{homeTeamName} has beat {awayTeamName} {homeMapWins}:{awayMapWins}");
+                    seriesFinished = true;
+                }
+                else if (awayMapWins == 2)
+                {
+                    currentAwayTeam.Wins += 1;
+                    currentHomeTeam.Losses += 1;
+                    await scmatchchannel.SendMessageAsync($"{awayTeamName} has beat {homeTeamName} {awayMapWins}:{homeMapWins}");
+                    seriesFinished = true;
+                }
+            }
 
             await _database.UpdateTeamAsync(currentHomeTeam);
             await _database.UpdateTeamAsync(currentAwayTeam);
-
 
             List<MatchPlayerStat> players = result.player_stats;
             Console.WriteLine(players.Count);
@@ -154,57 +174,32 @@ namespace RutgersDiscord.Handlers
                 }
             }
 
-            cmatch.MatchFinished = true;
-            cmatch.ScoreHome = homeTeam.score;
-            cmatch.ScoreAway = awayTeam.score;
-            await _database.UpdateMatchAsync(cmatch);
-
-            try
-            {
-                ulong scmatches = _config.settings.DiscordSettings.Channels.SCMatches;
-                var scmatchchannel = _client.GetChannel(scmatches) as IMessageChannel;
-                string homeTeamName = result.team1_name;
-                string awayTeamName = result.team2_name;
-                string msg;
-                if ((bool)cmatch.HomeTeamWon)
-                {
-                    msg = $"{homeTeamName} has beat {awayTeamName} {cmatch.ScoreHome}:{cmatch.ScoreAway}";
-                }
-                else
-                {
-                    msg = $"{awayTeamName} has beat {homeTeamName} {cmatch.ScoreAway}:{cmatch.ScoreHome}";
-                }
-                await scmatchchannel.SendMessageAsync(msg);
-            }
-            catch (Exception ex)
-            {
-
-                Console.WriteLine(ex);
-            }
-
+            thisMatch.MatchFinished = true;
+            thisMatch.ScoreHome = homeTeam.score;
+            thisMatch.ScoreAway = awayTeam.score;
+            await _database.UpdateMatchAsync(thisMatch);
 
             //Fetch Demo
             Console.WriteLine("Waiting For Demo");
             //wait 3 min for match to finish processing
             System.Threading.Thread.Sleep(180000);
             Console.WriteLine("Downloading Demo");
-            await _datHostAPIHandler.GetDemo(serverid, matchid);
+            await _datHostAPIHandler.GetDemo(result.game_server_id, result.id);
 
-            //Delete server
-            await _datHostAPIHandler.DeleteServer(serverid);
-            try
+            if (!series || seriesFinished)
             {
-                var token = await _database.GetTokenByServerID(serverid);
-                token.ServerID = null;
-                await _database.UpdateToken(token);
-            }
-            catch (Exception ex)
-            {
-
-                Console.WriteLine("Token unallocate failed\n" + ex);
+                await _datHostAPIHandler.DeleteServer(result.game_server_id);
+                try
+                {
+                    var token = await _database.GetTokenByServerID(result.game_server_id);
+                    token.ServerID = null;
+                    await _database.UpdateToken(token);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Token unallocate failed\n" + ex);
+                }
             }
         }
-
-        
     }
 }
