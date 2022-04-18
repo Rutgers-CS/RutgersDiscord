@@ -30,9 +30,8 @@ namespace RutgersDiscord.Modules
         private readonly RegistrationHandler _registrationHandler;
         private readonly DatHostAPIHandler _datHostAPIService;
         private readonly ConfigHandler _config;
-        private readonly ChallongeAPIHandler _challongeAPIHandler;
 
-        public ModerationModule(DiscordSocketClient client, InteractivityService interactivity, DatabaseHandler database, ScheduleHandler schedule, RegistrationHandler registrationHandler, DatHostAPIHandler datHostAPIService, ConfigHandler config, ChallongeAPIHandler challongeAPIHandler)
+        public ModerationModule(DiscordSocketClient client, InteractivityService interactivity, DatabaseHandler database, ScheduleHandler schedule, RegistrationHandler registrationHandler, DatHostAPIHandler datHostAPIService, ConfigHandler config)
         {
             _client = client;
             _interactivity = interactivity;
@@ -41,7 +40,6 @@ namespace RutgersDiscord.Modules
             _registrationHandler = registrationHandler;
             _datHostAPIService = datHostAPIService;
             _config = config;
-            _challongeAPIHandler = challongeAPIHandler;
         }
 
         #region database
