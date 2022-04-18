@@ -114,6 +114,7 @@ namespace RutgersDiscord.Commands
             }
 
             matches = (await _database.GetMatchByAttribute(discordChannel: (long?)_context.Channel.Id)).OrderBy(m => m.SeriesID);
+            Console.WriteLine("test1");
             ServerInfo newServer = await _startMatchHandler.CreateMatch(matches, _context.Channel.Name);
             if (newServer != null)
             {
