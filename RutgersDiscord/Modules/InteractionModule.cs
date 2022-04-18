@@ -29,8 +29,9 @@ namespace RutgersDiscord.Modules
         private readonly GameServerHandler _gameServer;
         private readonly ScheduleHandler _schedule;
         private readonly ConfigHandler _config;
+        private readonly StartMatchHandler _startMatchHandler;
         //FIX Assign teamID
-        public InteractionModule(DiscordSocketClient client, InteractivityService interactivity, DatabaseHandler database, RegistrationHandler registration, DatHostAPIHandler datHostAPI, GameServerHandler gameServer, ScheduleHandler schedule, ConfigHandler config)
+        public InteractionModule(DiscordSocketClient client, InteractivityService interactivity, DatabaseHandler database, RegistrationHandler registration, DatHostAPIHandler datHostAPI, GameServerHandler gameServer, ScheduleHandler schedule, ConfigHandler config, StartMatchHandler startMatchHandler)
         {
             _client = client;
             _interactivity = interactivity;
@@ -40,6 +41,7 @@ namespace RutgersDiscord.Modules
             _gameServer = gameServer;
             _schedule = schedule;
             _config = config;
+            _startMatchHandler = startMatchHandler;
         }
 
 /*        [SlashCommand("echo", "Echo an input", runMode: RunMode.Async)]
@@ -49,17 +51,17 @@ namespace RutgersDiscord.Modules
         }*/
 
 
-/*        [SlashCommand("veto", "Starts veto process", runMode: RunMode.Async)]
+        [SlashCommand("veto", "Starts veto process", runMode: RunMode.Async)]
         public async Task Veto()
         {
             VetoCommand v = new VetoCommand(_client, Context, _database, _interactivity);
             await v.StartVetoAcknowledge();
-        }*/
+        }
 
         [SlashCommand("ready", "Set your team as ready for the match")]
         public async Task TeamReady()
         {
-            ReadyCommand rc = new ReadyCommand(_client, Context, _database, _interactivity, _gameServer, _datHostAPI, _config);
+            ReadyCommand rc = new ReadyCommand(_client, Context, _database, _interactivity, _gameServer, _datHostAPI, _config, _startMatchHandler);
             await rc.Ready();
         }
 
