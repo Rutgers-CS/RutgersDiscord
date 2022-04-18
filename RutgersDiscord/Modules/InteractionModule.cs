@@ -93,6 +93,13 @@ namespace RutgersDiscord.Modules
             await lc.PullLeaderboard(sortBy);
         }
 
+        [SlashCommand("bracket", "Display the tournament bracket")]
+        public async Task Bracket()
+        {
+            BracketCommand bc = new BracketCommand(_client, Context, _database, _interactivity, _config);
+            await bc.GetBracket();
+        }
+
         [SlashCommand("help", "Display all user commands")]
         public async Task Help()
         {
