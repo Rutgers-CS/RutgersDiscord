@@ -113,10 +113,8 @@ namespace RutgersDiscord.Commands
                 await _context.Channel.SendMessageAsync("Starting Match...");
             }
 
-            match = (await _database.GetMatchByAttribute(discordChannel: (long?)_context.Channel.Id)).FirstOrDefault();
-
-            //TODO Fix to be ienum of matches
-            ServerInfo newServer = await _startMatchHandler.CreateMatch(match, _context.Channel.Name);
+            matches = (await _database.GetMatchByAttribute(discordChannel: (long?)_context.Channel.Id)).OrderBy(m => m.SeriesID);
+            ServerInfo newServer = await _startMatchHandler.CreateMatch(matches, _context.Channel.Name);
             if (newServer != null)
             {
                 await _context.Channel.SendMessageAsync($"Paste `connect {newServer.IP}:{newServer.Port}` in console to connect.");

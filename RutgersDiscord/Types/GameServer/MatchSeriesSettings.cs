@@ -12,11 +12,11 @@ public class MatchSeriesSettings
     public bool enable_tech_pause { get; set; } = true;
     private string game_server_id { get; set; }
     private string map1 { get; set; }
-    private string map1_start_ct { get; set; }
+    private string map1_start_ct { get; set; } = "knife";
     private string map2 { get; set; }
-    private string map2_start_ct { get; set; }
+    private string map2_start_ct { get; set; } = "knife";
     private string map3 { get; set; }
-    private string map3_start_ct { get; set; }
+    private string map3_start_ct { get; set; } = "knife";
     private string map4 { get; set; }
     private string map4_start_ct { get; set; }
     private string map5 { get; set; }
@@ -24,9 +24,9 @@ public class MatchSeriesSettings
     private string match_end_webhook_url { get; set; }
     private string match_series_end_webhook_url { get; set; }
     private string message_prefix { get; set; } = "Scarlet Classic";
-    private int number_of_maps { get; set; }
+    private int number_of_maps { get; set; } = 3;
     private string playwin_result_webhook_url { get; set; }
-    private int ready_min_players { get; set; } = 2;
+    private int ready_min_players { get; set; } = 1; //Change back
     private string round_end_webhook_url { get; set; }
     public string spectator_steam_ids { get; set; }
     private string team1_coach_steam_id { get; set; }
@@ -63,7 +63,7 @@ public class MatchSeriesSettings
         }
         else
         {
-            this.map2 = $"workshop/{map1.WorkshopID}";
+            this.map2 = $"workshop/{map2.WorkshopID}";
         }
         if (map3.OfficialMap)
         {
@@ -71,13 +71,13 @@ public class MatchSeriesSettings
         }
         else
         {
-            this.map3 = $"workshop/{map1.WorkshopID}";
+            this.map3 = $"workshop/{map3.WorkshopID}";
         }
 
         team1_name = homeTeam.TeamName;
-        team1_steam_ids = $"{homeTeamPlayer1.SteamID},{homeTeamPlayer2.SteamID}";
+        team1_steam_ids = $"{homeTeamPlayer1.SteamID}"/*,{homeTeamPlayer2.SteamID}"*/;
         team2_name = awayTeam.TeamName;
-        team2_steam_ids = $"{awayTeamPlayer1.SteamID},{awayTeamPlayer2.SteamID}";
+        team2_steam_ids = $"{awayTeamPlayer1.SteamID}"/*,{awayTeamPlayer2.SteamID}"*/;
     }
 
     public FormUrlEncodedContent ToForm()
