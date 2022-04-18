@@ -20,6 +20,7 @@ namespace RutgersDiscord.Modules
 {
     [RequireUserPermission(GuildPermission.Administrator, Group = "Permission")]
     [RequireOwner(Group = "Permission")]
+
     public class ModerationModule : InteractionModuleBase<SocketInteractionContext>
     {
         private readonly DiscordSocketClient _client;
@@ -41,6 +42,7 @@ namespace RutgersDiscord.Modules
             _config = config;
         }
 
+        #region database
         [SlashCommand("db-query", "queries database.", runMode: RunMode.Async)]
         public async Task DBQuery(string query)
         {
@@ -101,8 +103,9 @@ namespace RutgersDiscord.Modules
                     }
                     await RespondAsync(output);
                 }*/
+        #endregion
 
-/*        [SlashCommand("creatematch", "Creates a match.", runMode: RunMode.Async)]*/
+        /*        [SlashCommand("creatematch", "Creates a match.", runMode: RunMode.Async)]*/
         public async Task CreateMatch(int teamHomeID, int teamAwayID, int month, int day, int hour)
         {
             DateTime t = new DateTime(DateTime.Now.Year,month,day,hour,0,0);
@@ -124,20 +127,53 @@ namespace RutgersDiscord.Modules
             }
         }
 
-        [SlashCommand("ff", "Forfeit a match", runMode: RunMode.Async)]
+        [SlashCommand("cm3", "Creates a match with string.", runMode: RunMode.Async)]
+        public async Task CreateMatch3(int teamHomeID, int teamAwayID, int month, int day, int hour)
+        {
+            DateTime t = new DateTime(DateTime.Now.Year, month, day, hour, 0, 0);
+            GenerateMatches g = new(_client, Context, _database, _interactivity, _schedule, _config);
+            await g.CreateMatch(teamHomeID, teamAwayID, t,3);
+        }
+
+        #region match management
+        [SlashCommand("admin-unready", "Forces teams to unready", runMode: RunMode.Async)]
+        public async Task AdminUnready()
+        {
+            bool success = false;
+            var matches = await _database.GetMatchByAttribute(discordChannel: (long?)Context.Channel.Id);
+            foreach(MatchInfo match in matches)
+            {
+                match.TeamHomeReady = false;
+                match.TeamAwayReady = false;
+                await _database.UpdateMatchAsync(match);
+                success = true;
+            }
+            if (success)
+            {
+                await Context.Interaction.RespondAsync("Teams are now unready");
+            }
+            else
+            {
+                await Context.Interaction.RespondAsync("Task failed", ephemeral: true);
+            }
+        }
+
+        [SlashCommand("admin-ff", "Forfeit a match", runMode: RunMode.Async)]
         public async Task ForfeitMatch([Choice("Home", "home"), Choice("Away", "away")] string team)
         {
             ForfeitCommand ff = new(_client, Context, _database, _interactivity, _config);
             await ff.ForfeitTeam(team);
         }
 
-        [SlashCommand("grass-restart", "Only use to restart grassetto if players stuck", runMode: RunMode.Async)]
+        [SlashCommand("admin-grass-restart", "Only use to restart grassetto if players stuck", runMode: RunMode.Async)]
         public async Task RestartGrass()
         {
             RestartMatchCommand rmc = new RestartMatchCommand(Context, _database, _datHostAPIService);
             await rmc.RestartMap();
             await RespondAsync("Match is being restarted");
         }
+
+        #endregion
 
         /*[SlashCommand("match", "edits matches.", runMode: RunMode.Async)]
         public async Task Match(OperationType op, [ComplexParameter] MatchInfo match)
@@ -164,212 +200,212 @@ namespace RutgersDiscord.Modules
             }
         }*/
 
-/*        [SlashCommand("regisbutton", "creates a reg button", runMode: RunMode.Async)]
-        public async Task RegButton()
-        {
-            var builder = new ComponentBuilder()
-                .WithButton("Register Today", "spawn_registration_form", emote: new Emoji("▶"), style: ButtonStyle.Success);
-            await RespondAsync(components: builder.Build());
-        }*/
+        /*        [SlashCommand("regisbutton", "creates a reg button", runMode: RunMode.Async)]
+                public async Task RegButton()
+                {
+                    var builder = new ComponentBuilder()
+                        .WithButton("Register Today", "spawn_registration_form", emote: new Emoji("▶"), style: ButtonStyle.Success);
+                    await RespondAsync(components: builder.Build());
+                }*/
 
 
-/*        #region Manual Database Commands
-        #region Players
-        [SlashCommand("create-player", "Creates a player", runMode: RunMode.Async)]
-        public async Task CreatePlayer([ComplexParameter] PlayerInfo player)
-        {
-            await _database.AddPlayerAsync(player);
-            await RespondAsync("Player Created");
-        }
+        /*        #region Manual Database Commands
+                #region Players
+                [SlashCommand("create-player", "Creates a player", runMode: RunMode.Async)]
+                public async Task CreatePlayer([ComplexParameter] PlayerInfo player)
+                {
+                    await _database.AddPlayerAsync(player);
+                    await RespondAsync("Player Created");
+                }
 
-        [SlashCommand("read-player", "Reads a player", runMode: RunMode.Async)]
-        public async Task ReadPlayer(string playerID)
-        {
-            PlayerInfo player = await _database.GetPlayerAsync(long.Parse(playerID));
-            EmbedBuilder embed = new EmbedBuilder()
-                .WithColor(Color.Red)
-                .WithDescription(player.ToString());
+                [SlashCommand("read-player", "Reads a player", runMode: RunMode.Async)]
+                public async Task ReadPlayer(string playerID)
+                {
+                    PlayerInfo player = await _database.GetPlayerAsync(long.Parse(playerID));
+                    EmbedBuilder embed = new EmbedBuilder()
+                        .WithColor(Color.Red)
+                        .WithDescription(player.ToString());
 
-            await RespondAsync(embed: embed.Build());
-        }
+                    await RespondAsync(embed: embed.Build());
+                }
 
-        [SlashCommand("update-player", "Updates a player", runMode: RunMode.Async)]
-        public async Task UpdatePlayer([ComplexParameter] PlayerInfo player)
-        {
-            await _database.UpdatePlayerAsync(player);
-            await RespondAsync("Player Updated");
-        }
+                [SlashCommand("update-player", "Updates a player", runMode: RunMode.Async)]
+                public async Task UpdatePlayer([ComplexParameter] PlayerInfo player)
+                {
+                    await _database.UpdatePlayerAsync(player);
+                    await RespondAsync("Player Updated");
+                }
 
-        [SlashCommand("delete-player", "Deletes a player", runMode: RunMode.Async)]
-        public async Task DeletePlayer(long playerID)
-        {
-            var player = await _database.GetPlayerAsync(playerID);
-            await _database.DeletePlayerAsync(player);
-            await RespondAsync("Player Deleted");
-        }
+                [SlashCommand("delete-player", "Deletes a player", runMode: RunMode.Async)]
+                public async Task DeletePlayer(long playerID)
+                {
+                    var player = await _database.GetPlayerAsync(playerID);
+                    await _database.DeletePlayerAsync(player);
+                    await RespondAsync("Player Deleted");
+                }
 
-        [SlashCommand("list-players", "Lists all players", runMode: RunMode.Async)]
-        public async Task ListAllPlayers()
-        {
-            var players = await _database.GetAllPlayersAsync();
-            List<PlayerInfo> playerList = players.ToList();
-            string output = "";
-            foreach (var player in players)
-            {
-                output = output + player.ToString() + "\n\n";
-            }
-            await RespondAsync(output);
-        }
-        #endregion
+                [SlashCommand("list-players", "Lists all players", runMode: RunMode.Async)]
+                public async Task ListAllPlayers()
+                {
+                    var players = await _database.GetAllPlayersAsync();
+                    List<PlayerInfo> playerList = players.ToList();
+                    string output = "";
+                    foreach (var player in players)
+                    {
+                        output = output + player.ToString() + "\n\n";
+                    }
+                    await RespondAsync(output);
+                }
+                #endregion
 
-        #region Teams
-        [SlashCommand("create-team", "Creates a team", runMode: RunMode.Async)]
-        public async Task CreateTeam([ComplexParameter] TeamInfo team)
-        {
-            await _database.AddTeamAsync(team);
-            await RespondAsync("Team Created");
-        }
+                #region Teams
+                [SlashCommand("create-team", "Creates a team", runMode: RunMode.Async)]
+                public async Task CreateTeam([ComplexParameter] TeamInfo team)
+                {
+                    await _database.AddTeamAsync(team);
+                    await RespondAsync("Team Created");
+                }
 
-        [SlashCommand("read-team", "Reads a team", runMode: RunMode.Async)]
-        public async Task ReadTeam(int teamID)
-        {
-            TeamInfo team = await _database.GetTeamAsync(teamID);
-            EmbedBuilder embed = new EmbedBuilder()
-                .WithColor(Color.Red)
-                .WithDescription(team.ToString());
+                [SlashCommand("read-team", "Reads a team", runMode: RunMode.Async)]
+                public async Task ReadTeam(int teamID)
+                {
+                    TeamInfo team = await _database.GetTeamAsync(teamID);
+                    EmbedBuilder embed = new EmbedBuilder()
+                        .WithColor(Color.Red)
+                        .WithDescription(team.ToString());
 
-            await RespondAsync(embed: embed.Build());
-        }
+                    await RespondAsync(embed: embed.Build());
+                }
 
-        [SlashCommand("update-team", "Updates a team", runMode: RunMode.Async)]
-        public async Task UpdateTeam([ComplexParameter] TeamInfo team)
-        {
-            await _database.UpdateTeamAsync(team);
-            await RespondAsync("Team Updated");
-        }
+                [SlashCommand("update-team", "Updates a team", runMode: RunMode.Async)]
+                public async Task UpdateTeam([ComplexParameter] TeamInfo team)
+                {
+                    await _database.UpdateTeamAsync(team);
+                    await RespondAsync("Team Updated");
+                }
 
-        [SlashCommand("delete-team", "Deletes a team", runMode: RunMode.Async)]
-        public async Task DeleteTeam(int teamID)
-        {
-            var team = await _database.GetTeamAsync(teamID);
-            await _database.DeleteTeamAsync(team);
-            await RespondAsync("Team Deleted");
-        }
+                [SlashCommand("delete-team", "Deletes a team", runMode: RunMode.Async)]
+                public async Task DeleteTeam(int teamID)
+                {
+                    var team = await _database.GetTeamAsync(teamID);
+                    await _database.DeleteTeamAsync(team);
+                    await RespondAsync("Team Deleted");
+                }
 
-        [SlashCommand("list-teams", "Lists all teams", runMode: RunMode.Async)]
-        public async Task ListAllTeams()
-        {
-            var teams = await _database.GetAllTeamsAsync();
-            string output = "";
-            foreach (var team in teams)
-            {
-                output = output + team.ToString() + "\n\n";
-            }
+                [SlashCommand("list-teams", "Lists all teams", runMode: RunMode.Async)]
+                public async Task ListAllTeams()
+                {
+                    var teams = await _database.GetAllTeamsAsync();
+                    string output = "";
+                    foreach (var team in teams)
+                    {
+                        output = output + team.ToString() + "\n\n";
+                    }
 
-            await RespondAsync(output);
-        }
-        #endregion
+                    await RespondAsync(output);
+                }
+                #endregion
 
-        #region Matches
-        [SlashCommand("create-match", "Creates a match", runMode: RunMode.Async)]
-        public async Task CreateMatch([ComplexParameter] MatchInfo match)
-        {
-            await _database.AddMatchAsync(match);
-            await RespondAsync("Match Created");
-        }
+                #region Matches
+                [SlashCommand("create-match", "Creates a match", runMode: RunMode.Async)]
+                public async Task CreateMatch([ComplexParameter] MatchInfo match)
+                {
+                    await _database.AddMatchAsync(match);
+                    await RespondAsync("Match Created");
+                }
 
-        [SlashCommand("read-match", "Reads a match", runMode: RunMode.Async)]
-        public async Task ReadMatch(int matchID)
-        {
-            MatchInfo match = await _database.GetMatchAsync(matchID);
-            EmbedBuilder embed = new EmbedBuilder()
-                .WithColor(Color.Red)
-                .WithDescription(match.ToString());
+                [SlashCommand("read-match", "Reads a match", runMode: RunMode.Async)]
+                public async Task ReadMatch(int matchID)
+                {
+                    MatchInfo match = await _database.GetMatchAsync(matchID);
+                    EmbedBuilder embed = new EmbedBuilder()
+                        .WithColor(Color.Red)
+                        .WithDescription(match.ToString());
 
-            await RespondAsync(embed: embed.Build());
-        }
+                    await RespondAsync(embed: embed.Build());
+                }
 
-        [SlashCommand("update-match", "Updates a match", runMode: RunMode.Async)]
-        public async Task UpdateMatch([ComplexParameter] MatchInfo match)
-        {
-            await _database.UpdateMatchAsync(match);
-            await RespondAsync("Match Updated");
-        }
+                [SlashCommand("update-match", "Updates a match", runMode: RunMode.Async)]
+                public async Task UpdateMatch([ComplexParameter] MatchInfo match)
+                {
+                    await _database.UpdateMatchAsync(match);
+                    await RespondAsync("Match Updated");
+                }
 
-        [SlashCommand("delete-match", "Deletes a match", runMode: RunMode.Async)]
-        public async Task DeleteMatch([ComplexParameter] MatchInfo match)
-        {
-            await _database.DeleteMatchAsync(match);
-            await RespondAsync("Match Deleted");
-        }
+                [SlashCommand("delete-match", "Deletes a match", runMode: RunMode.Async)]
+                public async Task DeleteMatch([ComplexParameter] MatchInfo match)
+                {
+                    await _database.DeleteMatchAsync(match);
+                    await RespondAsync("Match Deleted");
+                }
 
-        [SlashCommand("list-matches", "Lists all matches", runMode: RunMode.Async)]
-        public async Task ListAllMatches()
-        {
-            var matches = await _database.GetAllMatchesAsync();
-            string output = "";
-            foreach (var match in matches)
-            {
-                output = output + match.ToString() + "\n\n";
-            }
-            await RespondAsync(output);
-        }
-        #endregion
+                [SlashCommand("list-matches", "Lists all matches", runMode: RunMode.Async)]
+                public async Task ListAllMatches()
+                {
+                    var matches = await _database.GetAllMatchesAsync();
+                    string output = "";
+                    foreach (var match in matches)
+                    {
+                        output = output + match.ToString() + "\n\n";
+                    }
+                    await RespondAsync(output);
+                }
+                #endregion
 
-        #region Maps
-        [SlashCommand("create-map", "Creates a map", runMode: RunMode.Async)]
-        public async Task CreateMap([ComplexParameter] MapInfo map)
-        {
-            await _database.AddMapAsync(map);
-            await RespondAsync("Map Created");
-        }
+                #region Maps
+                [SlashCommand("create-map", "Creates a map", runMode: RunMode.Async)]
+                public async Task CreateMap([ComplexParameter] MapInfo map)
+                {
+                    await _database.AddMapAsync(map);
+                    await RespondAsync("Map Created");
+                }
 
-        [SlashCommand("read-map", "Reads a map", runMode: RunMode.Async)]
-        public async Task ReadMap(int mapID)
-        {
-            MapInfo map = await _database.GetMapAsync(mapID);
-            EmbedBuilder embed = new EmbedBuilder()
-                .WithColor(Color.Red)
-                .WithDescription(map.ToString());
+                [SlashCommand("read-map", "Reads a map", runMode: RunMode.Async)]
+                public async Task ReadMap(int mapID)
+                {
+                    MapInfo map = await _database.GetMapAsync(mapID);
+                    EmbedBuilder embed = new EmbedBuilder()
+                        .WithColor(Color.Red)
+                        .WithDescription(map.ToString());
 
-            await RespondAsync(embed: embed.Build());
-        }
+                    await RespondAsync(embed: embed.Build());
+                }
 
-        [SlashCommand("update-map", "Updates a map", runMode: RunMode.Async)]
-        public async Task UpdateMap([ComplexParameter] MapInfo map)
-        {
-            await _database.UpdateMapAsync(map);
-            await RespondAsync("Map Updated");
-        }
+                [SlashCommand("update-map", "Updates a map", runMode: RunMode.Async)]
+                public async Task UpdateMap([ComplexParameter] MapInfo map)
+                {
+                    await _database.UpdateMapAsync(map);
+                    await RespondAsync("Map Updated");
+                }
 
-        [SlashCommand("delete-map", "Deletes a map", runMode: RunMode.Async)]
-        public async Task DeleteMap(int mapID)
-        {
-            await _database.DeleteMapAsync(mapID);
-            await RespondAsync("Map Deleted");
-        }
+                [SlashCommand("delete-map", "Deletes a map", runMode: RunMode.Async)]
+                public async Task DeleteMap(int mapID)
+                {
+                    await _database.DeleteMapAsync(mapID);
+                    await RespondAsync("Map Deleted");
+                }
 
-        [SlashCommand("list-maps", "Lists all maps", runMode: RunMode.Async)]
-        public async Task ListAllMaps()
-        {
-            var maps = await _database.GetAllMapsAsync();
-            string output = "";
-            foreach (var map in maps)
-            {
-                output = output + map.ToString() + "\n\n";
-            }
-            await RespondAsync(output);
-        }
-        #endregion
+                [SlashCommand("list-maps", "Lists all maps", runMode: RunMode.Async)]
+                public async Task ListAllMaps()
+                {
+                    var maps = await _database.GetAllMapsAsync();
+                    string output = "";
+                    foreach (var map in maps)
+                    {
+                        output = output + map.ToString() + "\n\n";
+                    }
+                    await RespondAsync(output);
+                }
+                #endregion
 
 
-        [SlashCommand("test-data", "adds test data to database", runMode: RunMode.Async)]
-        public async Task TestData()
-        {
-            await _database.AddTestData();
-            await RespondAsync("Test Data Added");
-        }
-        #endregion*/
+                [SlashCommand("test-data", "adds test data to database", runMode: RunMode.Async)]
+                public async Task TestData()
+                {
+                    await _database.AddTestData();
+                    await RespondAsync("Test Data Added");
+                }
+                #endregion*/
 
         //TODO Maybe add this
         /*[SlashCommand("resolve", "resolves admin call", runMode: RunMode.Async)]
@@ -381,12 +417,12 @@ namespace RutgersDiscord.Modules
             await RespondAsync("Issue marked resolved");
         }*/
 
-/*        [SlashCommand("create-server", "creates new server", runMode: RunMode.Async)]
-        public async Task CreateServer()
-        {
-            string rs = (await _datHostAPIService.CreateNewServer()).ToString();
-            await RespondAsync(rs);
-        }*/
+        /*        [SlashCommand("create-server", "creates new server", runMode: RunMode.Async)]
+                public async Task CreateServer()
+                {
+                    string rs = (await _datHostAPIService.CreateNewServer()).ToString();
+                    await RespondAsync(rs);
+                }*/
 
         /*[SlashCommand("fixdb","RUN ONCE", runMode: RunMode.Async)]
         public async Task FixDB()
