@@ -158,19 +158,21 @@ namespace RutgersDiscord.Handlers
 
                     var st = await _datHostAPIHandler.CreateMatchSeries(mss);
                     Console.WriteLine(st);
-                    CreateServerResponse preGameJson = JsonConvert.DeserializeObject<CreateServerResponse>(st);
+                    CreateSeriesResponse preGameJson = JsonConvert.DeserializeObject<CreateSeriesResponse>(st);
 
                     ulong scmatches = _config.settings.DiscordSettings.Channels.SCMatches;
                     var scgenChan = _client.GetChannel(scmatches) as IMessageChannel;
                     string msg = $"{homeTeam.TeamName} vs {awayTeam.TeamName} is live now!\nConnect to GOTV: `connect {newServer.IP}:{newServer.Port + 1}`";
                     _interactivity.DelayedSendMessageAndDeleteAsync(scgenChan, deleteDelay: TimeSpan.FromMinutes(60), text: msg);
 
-                    foreach (MatchInfo match in matches)
+                    List<MatchInfo> mts = matches.ToList();
+                    for (int i = 0; i < matches.Count(); i++)
                     {
-                        match.ServerID = newServer.ServerID;
-                        //match.DatMatchID = preGameJson.id;
-                        await _database.UpdateMatchAsync(match);
+                        mts[i].ServerID = newServer.ServerID;
+                        mts[i].DatMatchID = preGameJson.matches[i].id;
+                        await _database.UpdateMatchAsync(mts[i]);
                     }
+
                     return newServer;
                 }
             }
