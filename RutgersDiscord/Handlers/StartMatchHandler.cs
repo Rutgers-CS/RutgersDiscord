@@ -15,17 +15,15 @@ namespace RutgersDiscord.Handlers
     public class StartMatchHandler
     {
         private readonly DiscordSocketClient _client;
-        private readonly SocketInteractionContext _context;
         private readonly DatabaseHandler _database;
         private readonly InteractivityService _interactivity;
         private readonly DatHostAPIHandler _datHostAPIHandler;
         private readonly GameServerHandler _gameServerHandler;
         private readonly ConfigHandler _config;
 
-        public StartMatchHandler(DiscordSocketClient client, SocketInteractionContext context, DatabaseHandler database, InteractivityService interactivity, GameServerHandler gameServerHandler, DatHostAPIHandler datHostAPIHandler, ConfigHandler config)
+        public StartMatchHandler(DiscordSocketClient client, DatabaseHandler database, InteractivityService interactivity, GameServerHandler gameServerHandler, DatHostAPIHandler datHostAPIHandler, ConfigHandler config)
         {
             _client = client;
-            _context = context;
             _database = database;
             _interactivity = interactivity;
             _datHostAPIHandler = datHostAPIHandler;
@@ -60,12 +58,13 @@ namespace RutgersDiscord.Handlers
                     MapInfo map = await _database.GetMapAsync((int)match.MapID);
 
                     //Ping for grassetto
-                    if (map.MapID == 2)
+                    //TODO Broken
+                    /*if (map.MapID == 2)
                     {
                         ulong adminChannel = _config.settings.DiscordSettings.Channels.SCAdmin;
                         var chnl = _client.GetChannel(adminChannel) as IMessageChannel;
                         await chnl.SendMessageAsync($"Grassetto is being played in <#{_context.Channel.Id}>\nuse /grass-restart if players get stuck.");
-                    }
+                    }*/
 
 #if DEBUG
                     string webHook = "";
@@ -141,12 +140,13 @@ namespace RutgersDiscord.Handlers
                     foreach (MatchInfo match in matches)
                     {
                         maps.Add(await _database.GetMapAsync((int)match.MapID));
-                        if (match.MapID == 2)
+                        //TODO Broken
+                        /*if (match.MapID == 2)
                         {
                             ulong adminChannel = _config.settings.DiscordSettings.Channels.SCAdmin;
                             var chnl = _client.GetChannel(adminChannel) as IMessageChannel;
                             await chnl.SendMessageAsync($"Grassetto is being played in <#{_context.Channel.Id}>\nuse /grass-restart if players get stuck.");
-                        }
+                        }*/
                     }
 
 #if DEBUG
@@ -157,6 +157,7 @@ namespace RutgersDiscord.Handlers
                     MatchSeriesSettings mss = new MatchSeriesSettings(maps[0], maps[1], maps[2], homeTeam, hP1, hP2, awayTeam, aP1, aP2, newServer.ServerID, webHook);
 
                     var st = await _datHostAPIHandler.CreateMatchSeries(mss);
+                    Console.WriteLine(st);
                     CreateServerResponse preGameJson = JsonConvert.DeserializeObject<CreateServerResponse>(st);
 
                     ulong scmatches = _config.settings.DiscordSettings.Channels.SCMatches;
@@ -167,7 +168,7 @@ namespace RutgersDiscord.Handlers
                     foreach (MatchInfo match in matches)
                     {
                         match.ServerID = newServer.ServerID;
-                        match.DatMatchID = preGameJson.id;
+                        //match.DatMatchID = preGameJson.id;
                         await _database.UpdateMatchAsync(match);
                     }
                     return newServer;

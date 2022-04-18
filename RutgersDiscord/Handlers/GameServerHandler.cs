@@ -36,6 +36,20 @@ namespace RutgersDiscord.Handlers
         {
             Console.WriteLine(json);
             return;
+            if (json.Contains("match_series_id"))
+            {
+                //BO3
+                //SeriesMatchEndWebhook result = JsonConvert.DeserializeObject<SeriesMatchEndWebhook>(json, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
+                //string matchID = result.id;
+                //string serverID = result.game_server_id;
+
+                //TODO Fix this
+                //MatchInfo firstMatch = 
+            }
+            else
+            {
+                //BO1
+            }
             MatchEndWebhook result = JsonConvert.DeserializeObject<MatchEndWebhook>(json, new JsonSerializerSettings{NullValueHandling = NullValueHandling.Ignore});
 
             //update match in database
