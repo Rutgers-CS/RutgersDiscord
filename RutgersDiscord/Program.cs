@@ -50,6 +50,7 @@ namespace RutgersDiscord
                 .AddSingleton<GameServerHandler>()
                 .AddHttpClient()
                 .AddTransient<DatHostAPIHandler>()
+                .AddTransient<ChallongeAPIHandler>()
                 .AddSingleton(s => new InteractivityService(_client, interactiveConfig))
                 .BuildServiceProvider();
 
