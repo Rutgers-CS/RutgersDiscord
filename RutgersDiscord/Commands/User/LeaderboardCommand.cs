@@ -69,7 +69,7 @@ namespace RutgersDiscord.Commands.User
         {
             if(input == "record")
             {
-                return teamsdata.OrderByDescending(x => x.Win).ThenByDescending(x => x.WLDiff).ThenByDescending(x => x.RoundDiff).ToList();
+                return teamsdata.OrderByDescending(x => x.Win).ThenByDescending(x => x.WLDiff).ThenByDescending(x => x.RoundDiff).OrderByDescending(x => x.KD).ToList();
             } 
             else if (input == "kd") 
             {
@@ -77,11 +77,11 @@ namespace RutgersDiscord.Commands.User
             }
             else if (input == "rd")
             {
-                return teamsdata.OrderByDescending(x => x.RoundDiff).ThenByDescending(x => x.Win).ThenByDescending(x => x.WLDiff).ToList();
+                return teamsdata.OrderByDescending(x => x.RoundDiff).ThenByDescending(x => x.Win).ThenByDescending(x => x.WLDiff).OrderByDescending(x => x.KD).ToList();
             }
             else 
             {
-                return teamsdata.OrderByDescending(x => x.Win).ThenByDescending(x => x.WLDiff).ThenByDescending(x => x.RoundDiff).ToList();
+                return teamsdata.OrderByDescending(x => x.Win).ThenByDescending(x => x.WLDiff).ThenByDescending(x => x.RoundDiff).OrderByDescending(x => x.KD).ToList();
             }
         }
 
