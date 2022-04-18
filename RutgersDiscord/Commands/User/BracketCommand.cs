@@ -32,8 +32,8 @@ namespace RutgersDiscord.Commands.User
 
         public async Task GetBracket()
         {
-            await _context.Interaction.RespondAsync("https://challonge.com/sccsgo");
-
+            var bracket = ("https://challonge.com/sccsgo");
+            _interactivity.DelayedSendMessageAndDeleteAsync(_context.Channel, deleteDelay: TimeSpan.FromMinutes(5), text: bracket);
         }
 
     }
