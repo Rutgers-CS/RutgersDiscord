@@ -61,7 +61,8 @@ namespace RutgersDiscord.Handlers.CommandHandlers
             //Command name, matchID, Response(Accept, Reject, Rescind), Time requested, Required User
             Data data = new(interaction.Data.CustomId.Split("_"));
 
-            MatchInfo match = (await _database.GetMatchByAttribute(discordChannel: (long?)interaction.Channel.Id)).FirstOrDefault();
+            IEnumerable<MatchInfo> matches = (await _database.GetMatchByAttribute(discordChannel: (long?)interaction.Channel.Id)).OrderBy(m => m.SeriesID);
+            MatchInfo match = matches.FirstOrDefault();
             if (match == null)
             {
                 await interaction.RespondAsync("Match not found", ephemeral: true);
@@ -100,8 +101,12 @@ namespace RutgersDiscord.Handlers.CommandHandlers
                 TeamInfo team2 = await _database.GetTeamAsync((int)match.TeamAwayID);
 
                 await interaction.Message.ModifyAsync(m => { m.Components = null; m.Embed = originalEmbed.WithColor(Constants.EmbedColors.accept).Build(); });
-                match.MatchTime = data.timeRequested.Ticks;
-                await _database.UpdateMatchAsync(match);
+                foreach(MatchInfo m in matches)
+                {
+                    m.MatchTime = data.timeRequested.Ticks;
+                    await _database.UpdateMatchAsync(m);
+                }
+
                 DateTime discordEpoch = new DateTime(1970, 1, 1);
                 double dateSpan = (data.timeRequested.ToUniversalTime() - discordEpoch).TotalSeconds;
                 EmbedBuilder embedFollowup = new EmbedBuilder()
