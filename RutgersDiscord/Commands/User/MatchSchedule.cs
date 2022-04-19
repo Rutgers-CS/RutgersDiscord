@@ -29,7 +29,7 @@ namespace RutgersDiscord.Commands.User
 
         public async Task GetMatchSchedule(bool showChannelIDs)
         {
-            IEnumerable<MatchInfo> matches = await _database.GetMatchByAttribute(matchFinished: false,seriesID: 1);
+            IEnumerable<MatchInfo> matches = await _database.GetMatchByAttribute(matchFinished: false);
             matches = matches.OrderBy(x => x.MatchTime);
             List<ScheduleInfo> schedules = new List<ScheduleInfo>();
 

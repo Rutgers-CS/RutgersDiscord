@@ -37,8 +37,7 @@ namespace RutgersDiscord.Commands.User
         {
 
             //TODO move these checks to some sort of precondition check
-            IEnumerable<MatchInfo> matches = (await _database.GetMatchByAttribute(discordChannel: (long?)_context.Channel.Id)).OrderBy(m => m.SeriesID);
-            MatchInfo match = matches.FirstOrDefault();
+            MatchInfo match = (await _database.GetMatchByAttribute(discordChannel: (long?)_context.Channel.Id)).FirstOrDefault();
             if (match == null)
             {
                 await _config.LogAsync("Reschedule Command", "Status: `failed` \nReason: `match not found`",_context.User.Id,_context.Channel.Id);
