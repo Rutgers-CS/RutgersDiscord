@@ -174,8 +174,6 @@ namespace RutgersDiscord.Handlers
                     cplayer.Kills += player.kills;
                     cplayer.Deaths += player.deaths;
                     await _database.UpdatePlayerAsync(cplayer);
-                    //update channel permissions
-                    await channel.AddPermissionOverwriteAsync(guild.GetUser((ulong)cplayer.DiscordID), new OverwritePermissions(sendMessages: PermValue.Deny));
                 }
             }
 
@@ -188,6 +186,12 @@ namespace RutgersDiscord.Handlers
 
             if (!series || seriesFinished)
             {
+                foreach (MatchPlayerStat player in players)
+                {
+                    //update channel permissions
+                    var cplayer = (await _database.GetPlayerByAttribute(steamID: player.steam_id)).FirstOrDefault();
+                    await channel.AddPermissionOverwriteAsync(guild.GetUser((ulong)cplayer.DiscordID), new OverwritePermissions(sendMessages: PermValue.Deny));
+                }
                 await _datHostAPIHandler.DeleteServer(result.game_server_id);
                 try
                 {

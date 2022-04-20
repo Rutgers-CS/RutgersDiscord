@@ -105,7 +105,7 @@ namespace RutgersDiscord.Handlers
                     //Send gotv in scgeneral
                     ulong scmatches = _config.settings.DiscordSettings.Channels.SCMatches;
                     var scgenChan = _client.GetChannel(scmatches) as IMessageChannel;
-                    string msg = $"{homeTeam.TeamName} vs {awayTeam.TeamName} is live now!\nConnect to GOTV: `connect {newServer.IP}:{newServer.Port + 1}`";
+                    string msg = $"{homeTeam.TeamName} vs {awayTeam.TeamName} is live now!\nCheck Stream or Discord to watch."; //\nConnect to GOTV: `connect {newServer.IP}:{newServer.Port}`
                     _interactivity.DelayedSendMessageAndDeleteAsync(scgenChan, deleteDelay: TimeSpan.FromMinutes(30), text: msg);
 
                     match.ServerID = newServer.ServerID;
