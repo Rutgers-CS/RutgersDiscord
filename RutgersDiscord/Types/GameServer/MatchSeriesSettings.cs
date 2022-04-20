@@ -26,7 +26,7 @@ public class MatchSeriesSettings
     private string message_prefix { get; set; } = "Scarlet Classic";
     private int number_of_maps { get; set; } = 3;
     private string playwin_result_webhook_url { get; set; }
-    private int ready_min_players { get; set; } = 1; //Change back
+    private int ready_min_players { get; set; } = 2;
     private string round_end_webhook_url { get; set; }
     public string spectator_steam_ids { get; set; }
     private string team1_coach_steam_id { get; set; }
@@ -75,9 +75,9 @@ public class MatchSeriesSettings
         }
 
         team1_name = homeTeam.TeamName;
-        team1_steam_ids = $"{homeTeamPlayer1.SteamID}"/*,{homeTeamPlayer2.SteamID}"*/;
+        team1_steam_ids = $"{homeTeamPlayer1.SteamID},{homeTeamPlayer2.SteamID}";
         team2_name = awayTeam.TeamName;
-        team2_steam_ids = $"{awayTeamPlayer1.SteamID}"/*,{awayTeamPlayer2.SteamID}"*/;
+        team2_steam_ids = $"{awayTeamPlayer1.SteamID},{awayTeamPlayer2.SteamID}";
     }
 
     public FormUrlEncodedContent ToForm()

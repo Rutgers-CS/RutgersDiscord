@@ -116,8 +116,10 @@ namespace RutgersDiscord.Handlers
             }
             else
             {
+                Console.WriteLine("test2");
                 if (matches.First().ServerID == null)
                 {
+                    Console.WriteLine("test3");
                     ServerInfo newServer = await _datHostAPIHandler.CreateNewServer();
                     ServerTokens newToken = await _database.GetUnusedToken();
                     if (newToken == null)
@@ -156,24 +158,32 @@ namespace RutgersDiscord.Handlers
 #endif
                     MatchSeriesSettings mss = new MatchSeriesSettings(maps[0], maps[1], maps[2], homeTeam, hP1, hP2, awayTeam, aP1, aP2, newServer.ServerID, webHook);
 
-                    var st = await _datHostAPIHandler.CreateMatchSeries(mss);
-                    Console.WriteLine(st);
-                    CreateSeriesResponse preGameJson = JsonConvert.DeserializeObject<CreateSeriesResponse>(st);
-
-                    ulong scmatches = _config.settings.DiscordSettings.Channels.SCMatches;
-                    var scgenChan = _client.GetChannel(scmatches) as IMessageChannel;
-                    string msg = $"{homeTeam.TeamName} vs {awayTeam.TeamName} is live now!\nConnect to GOTV: `connect {newServer.IP}:{newServer.Port + 1}`";
-                    _interactivity.DelayedSendMessageAndDeleteAsync(scgenChan, deleteDelay: TimeSpan.FromMinutes(60), text: msg);
-
-                    List<MatchInfo> mts = matches.ToList();
-                    for (int i = 0; i < matches.Count(); i++)
+                    try
                     {
-                        mts[i].ServerID = newServer.ServerID;
-                        mts[i].DatMatchID = preGameJson.matches[i].id;
-                        await _database.UpdateMatchAsync(mts[i]);
+                        var st = await _datHostAPIHandler.CreateMatchSeries(mss);
+                        Console.WriteLine(st);
+                        CreateSeriesResponse preGameJson = JsonConvert.DeserializeObject<CreateSeriesResponse>(st);
+                        Console.WriteLine("fuck you");
+                        ulong scmatches = _config.settings.DiscordSettings.Channels.SCMatches;
+                        var scgenChan = _client.GetChannel(scmatches) as IMessageChannel;
+                        string msg = $"{homeTeam.TeamName} vs {awayTeam.TeamName} is live now!\nConnect to GOTV: `connect {newServer.IP}:{newServer.Port + 1}`";
+                        _interactivity.DelayedSendMessageAndDeleteAsync(scgenChan, deleteDelay: TimeSpan.FromMinutes(60), text: msg);
+                        Console.WriteLine(2);
+                        List<MatchInfo> mts = matches.ToList();
+                        for (int i = 0; i < matches.Count(); i++)
+                        {
+                            mts[i].ServerID = newServer.ServerID;
+                            mts[i].DatMatchID = preGameJson.matches[i].id;
+                            await _database.UpdateMatchAsync(mts[i]);
+                        }
+                        Console.WriteLine(3);
+                        return newServer;
                     }
+                    catch (Exception ex)
+                    {
 
-                    return newServer;
+                        Console.WriteLine(ex);
+                    }
                 }
             }
             return null;
