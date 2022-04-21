@@ -39,7 +39,7 @@ public class MatchSeriesSettings
     private string team2_steam_ids { get; set; }
     private int team_size { get; set; }
     private bool wait_for_coaches { get; set; } = false;
-    private bool wait_for_gotv_before_nextmap { get; set; } = true;
+    private bool wait_for_gotv_before_nextmap { get; set; } = false;
     private bool wait_for_spectators { get; set; } = false;
     public int warmup_time { get; set; } = 15;
 

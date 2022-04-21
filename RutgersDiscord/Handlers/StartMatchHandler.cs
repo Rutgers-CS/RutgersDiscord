@@ -166,7 +166,7 @@ namespace RutgersDiscord.Handlers
                         Console.WriteLine("fuck you");
                         ulong scmatches = _config.settings.DiscordSettings.Channels.SCMatches;
                         var scgenChan = _client.GetChannel(scmatches) as IMessageChannel;
-                        string msg = $"{homeTeam.TeamName} vs {awayTeam.TeamName} is live now!\nConnect to GOTV: `connect {newServer.IP}:{newServer.Port + 1}`";
+                        string msg = $"{homeTeam.TeamName} vs {awayTeam.TeamName} is live now!\nCheck Stream or Discord to watch.`";
                         _interactivity.DelayedSendMessageAndDeleteAsync(scgenChan, deleteDelay: TimeSpan.FromMinutes(60), text: msg);
                         Console.WriteLine(2);
                         List<MatchInfo> mts = matches.ToList();
